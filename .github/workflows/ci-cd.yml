@@ -1,0 +1,294 @@
+name: Schooledule Professional CI/CD
+
+on:
+  push:
+    branches: ["dev", "feature/**"]
+  pull_request:
+    branches: ["dev"]
+  workflow_dispatch:
+
+env:
+  DOCKER_IMAGE: schooledule-test
+  POSTGRES_USER: admin
+  POSTGRES_PASSWORD: password123
+  POSTGRES_DB: schooledule
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
+  security-events: write
+
+jobs:
+  # 🔍 JOB 1: Lint & Validation (Checking ALL code)
+  lint:
+    name: 🔍 Lint & Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run Pre-commit (Lint all code)
+        uses: pre-commit/action@v3.0.1
+
+      - name: Validate GitHub Actions (actionlint)
+        run: |
+          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          ./actionlint -color
+
+      - name: Lint Dockerfile (hadolint)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: infraestructura/Dockerfile
+          ignore: DL3018
+          failure-threshold: error
+
+  # 🐳 JOB 2: Build Docker Image (following Odoo pattern with caching)
+  build:
+    name: 🐳 Build Test Container
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infraestructura/Dockerfile
+          target: test
+          tags: ${{ env.DOCKER_IMAGE }}:latest
+          outputs: type=docker,dest=/tmp/${{ env.DOCKER_IMAGE }}.tar
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Gzip Image
+        run: gzip /tmp/${{ env.DOCKER_IMAGE }}.tar
+
+      - name: Upload Docker Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-image
+          path: /tmp/${{ env.DOCKER_IMAGE }}.tar.gz
+          retention-days: 1
+
+  # 🧪 JOB 3: Unit & Integration Tests (Running @src/test/** inside Container)
+  test:
+    name: 🧪 Containerized Tests
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U admin -d schooledule"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Docker Image
+        uses: actions/download-artifact@v4
+        with:
+          name: test-image
+          path: /tmp
+
+      - name: Load Docker Image
+        run: gunzip -c /tmp/${{ env.DOCKER_IMAGE }}.tar.gz | docker load
+
+      - name: ⏳ Wait for Postgres
+        run: |
+          until pg_isready -h localhost -p 5432 -U admin; do
+            echo "Waiting for postgres..."
+            sleep 2
+          done
+        shell: bash
+
+      - name: Run Maven Tests in Container
+        id: run-tests
+        run: |
+          rm -rf target && mkdir -p target
+          docker run --rm --network host \
+            -v ${{ github.workspace }}/target:/app/target \
+            -e SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/${{ env.POSTGRES_DB }} \
+            -e SPRING_DATASOURCE_USERNAME=${{ env.POSTGRES_USER }} \
+            -e SPRING_DATASOURCE_PASSWORD=${{ env.POSTGRES_PASSWORD }} \
+            -e SPRING_FLYWAY_ENABLED=true \
+            ${{ env.DOCKER_IMAGE }}:latest 2>&1 | tee maven_build.log
+
+      - name: 📝 CI/CD Summary & Reporting
+        if: always()
+        run: |
+          {
+            echo "### 📊 CI/CD Execution Summary"
+
+            # Check Maven build status from log
+            if [ -f "maven_build.log" ]; then
+              if grep -q "BUILD SUCCESS" maven_build.log; then
+                echo "✅ **Build Success**: Maven completed successfully (PMD audited, Tests passed)."
+              else
+                echo "❌ **Build Failed**: Detectados errores en la ejecución."
+                echo "#### 🔍 Maven Errors"
+                # Extraemos líneas que contienen 'Error: ' ignorando mayúsculas
+                grep -i -m 20 "Error: " maven_build.log | sed 's/.*Error: //I' | sed 's/^/- /'
+              fi
+            fi
+
+            # Report PMD Violations (Does NOT block the pipeline)
+            if [ -f "target/pmd.xml" ]; then
+              VIOLATIONS=$(grep -c "<violation" target/pmd.xml || echo "0")
+              if [ "$VIOLATIONS" -gt 0 ]; then
+                echo "#### ⚠️ PMD Audit: $VIOLATIONS findings (Not blocking promotion)"
+                echo "| File | Line | Rule | Description |"
+                echo "| --- | --- | --- | --- |"
+                # Parseamos el XML de forma segura evitando Broken Pipe
+                grep -m 15 "<violation" target/pmd.xml | sed -E 's/.*beginline="([^"]*)".*rule="([^"]*)".*ruleset="([^"]*)".*class="([^"]*)".*externalInfoUrl="([^"]*)".*>(.*)<\/violation>.*/| \4 | \1 | \2 | \6 |/'
+                if [ "$VIOLATIONS" -gt 15 ]; then echo "... and $((VIOLATIONS-15)) more findings."; fi
+              else
+                echo "✅ **PMD Audit**: No code smells detected."
+              fi
+            fi
+
+            # Report JUnit Test Failures (This IS what blocks the pipeline)
+            REPORTS_DIRS=""
+            if [ -d "target/surefire-reports" ]; then REPORTS_DIRS="$REPORTS_DIRS target/surefire-reports"; fi
+            if [ -d "target/failsafe-reports" ]; then REPORTS_DIRS="$REPORTS_DIRS target/failsafe-reports"; fi
+
+            if [ -n "$REPORTS_DIRS" ]; then
+              # shellcheck disable=SC2086
+              FAILED_TESTS=$(find $REPORTS_DIRS -name "*.txt" -type f -exec grep -l "FAILURE" {} + 2>/dev/null | wc -l || echo "0")
+              if [ "$FAILED_TESTS" -gt 0 ]; then
+                echo "#### ❌ Test Failures: $FAILED_TESTS tests failed (Blocking promotion)"
+                # shellcheck disable=SC2086
+                find $REPORTS_DIRS -name "*.txt" -type f -exec grep -l "FAILURE" {} + 2>/dev/null | while read -r file; do
+                  echo "- **File**: \`$(basename "$file")\`"
+                  echo "  \`\`\`text"
+                  grep -m 1 "FAILURE" "$file" -A 5 || true
+                  echo "  \`\`\`"
+                done
+              fi
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+        shell: bash
+      - name: 📦 Upload Test Reports (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-execution-reports
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+          retention-days: 5
+
+      - name: Verify JaCoCo Coverage (>80%)
+        if: success()
+        run: |
+          REPORT_PATH="target/site/jacoco/index.html"
+          if [ -f "$REPORT_PATH" ]; then
+            # El uso de '|| echo 0' evita que el pipeline falle si no encuentra la linea
+            COVERAGE=$(grep -m 1 -oP 'Total.*?(\d+)%' "$REPORT_PATH" | grep -oP '\d+' || echo "0")
+            echo "📊 Current Coverage: $COVERAGE%"
+            if [ "$COVERAGE" -lt 80 ]; then
+              echo "❌ ERROR: Coverage is $COVERAGE%, threshold is 80%"
+              exit 1
+            fi
+          fi
+        shell: bash
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
+
+  # 🔄 JOB 4: Purge & Promote to Pre-Prod
+  promote-to-preprod:
+    name: 🔄 Purge & Promote to Pre-Prod
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🧹 Sync, Purge & Force Push Pre-Prod
+        id: push_preprod
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          echo "🚀 Starting Purge & Promote process..."
+
+          # Crear rama pre-prod localmente desde el estado actual de dev
+          git checkout -B pre-prod
+
+          # Ejecutar Purga
+          CLEAN_LIST=".agents/ conductor/ .gemini/ .gemini_security/ .idea/ .vscode/ target/ GEMINI.md CLAUDE.md plan.md skills-lock.json HELP.md ideaProyecto.txt DefinicionTecnica.txt .gitignore_gen"
+          for item in $CLEAN_LIST; do
+            if [ -e "$item" ]; then
+              echo "Removing $item"
+              rm -rf "$item"
+            fi
+          done
+
+          # Commit del estado limpio
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes detected after purge."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "build: clean release for pre-prod [skip ci]"
+
+            echo "Pushing purged state to origin/pre-prod..."
+            git push origin pre-prod --force
+
+            # Crear Tag para trazabilidad
+            TAG_NAME="build-${{ github.run_number }}-${{ github.sha }}"
+            git tag "$TAG_NAME"
+            git push origin "$TAG_NAME"
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+        shell: bash
+
+      - name: 🚀 Ensure PR to Main exists
+        if: steps.push_preprod.outputs.has_changes == 'true'
+        run: |
+          # Intentar crear el PR. Si ya existe, el comando fallará pero el '|| true' evitará que el job falle.
+          gh pr create \
+            --base main \
+            --head pre-prod \
+            --title "🚀 PROD: Release build-${{ github.run_number }}" \
+            --body "## 📦 Production Promotion Request
+            This PR contains the **cleaned** production-ready code from \`dev\`.
+
+            **Verification Details:**
+            - ✅ All Unit & Integration tests passed inside Docker.
+            - ✅ Code Coverage > 80% (JaCoCo).
+            - ✅ AI/Dev files (.agents, conductor, gemini) have been purged.
+
+            **Build Tag:** \`build-${{ github.run_number }}-${{ github.sha }}\`" \
+            || echo "PR already exists or could not be created."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

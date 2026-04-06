@@ -1,0 +1,40 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>Selecciona Perfil</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}" />
+  </head>
+  <body>
+    <div class="login" style="text-align: center">
+      <h2>Hola, <span th:text="${#authentication.name}">Usuario</span></h2>
+      <p>¿Cómo quieres acceder hoy?</p>
+
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          margin-top: 20px;
+        "
+      >
+        <div th:each="authority : ${#authentication.authorities}">
+          <form th:action="@{/cambiar-rol}" method="post">
+            <input
+              type="hidden"
+              name="rolElegido"
+              th:value="${authority.authority}"
+            />
+
+            <button
+              type="submit"
+              class="button1"
+              th:text="${authority.authority}"
+            >
+              ADMIN
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

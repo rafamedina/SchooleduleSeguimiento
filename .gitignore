@@ -1,0 +1,87 @@
+# --- Compiled class files ---
+*.class
+
+# --- Log files ---
+*.log
+logs/
+*.log.*
+
+# --- Package Files ---
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# --- Virtual machine crash logs ---
+hs_err_pid*
+replay_pid*
+
+# --- Maven ---
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# --- IDEs (IntelliJ, Eclipse, VS Code, NetBeans) ---
+.idea/
+*.iml
+*.iws
+*.ipr
+.apt_generated/
+.apt_generated_tests/
+.settings/
+.project/
+.classpath/
+.factorypath/
+.nb-gradle/
+nbproject/
+build/
+bin/
+.vscode/
+*.code-workspace
+.history/
+.recommenders/
+
+# --- Docker & Environment ---
+.docker/
+.env
+.env.local
+.env.*.local
+docker-compose.override.yml
+
+# --- System Files ---
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+ehthumbs.db
+[Dd]esktop.ini
+
+# --- Agent & Workspace Tools ---
+.gemini/
+conductor/
+.gemini_security/
+gha-creds-*.json
+.site/
+skills-lock.json
+.agents/
+GEMINI.md
+HELP.md
+app_logs.txt
+backlog.md
+skills-lock.json
+
+# --- OS Specific ---
+*.swp
+*.bak
+*~
+.directory

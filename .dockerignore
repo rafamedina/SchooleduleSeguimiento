@@ -1,0 +1,17 @@
+target/
+mvnw
+mvnw.cmd
+.mvn/
+.git/
+.gitignore
+.idea/
+.vscode/
+*.iml
+*.log
+.env
+infraestructura/
+README.md
+HELP.md
+conductor/
+GEMINI.md
+CLAUDE.md
