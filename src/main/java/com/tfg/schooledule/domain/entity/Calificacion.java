@@ -12,7 +12,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Entity
 @Table(
     name = "calificaciones",
-    uniqueConstraints = {@UniqueConstraint(columnNames = {"matricula_id", "item_evaluable_id"})})
+    uniqueConstraints = {
+      @UniqueConstraint(columnNames = {"matricula_id", "criterio_evaluacion_id"})
+    })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,8 +30,8 @@ public class Calificacion {
   private Matricula matricula;
 
   @ManyToOne(optional = false)
-  @JoinColumn(name = "item_evaluable_id", nullable = false)
-  private ItemEvaluable itemEvaluable;
+  @JoinColumn(name = "criterio_evaluacion_id", nullable = false)
+  private CriterioEvaluacion criterioEvaluacion;
 
   @Column(precision = 5, scale = 2)
   private BigDecimal valor;

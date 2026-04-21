@@ -1,21 +1,11 @@
-package com.tfg.schooledule.domain.DTO;
+package com.tfg.schooledule.domain.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class AlumnoProfileDTO {
-  private Integer id;
-  private String username;
-  private String nombre;
-  private String apellidos;
-  private String email;
-  private String centroNombre;
-  private String grupoNombre;
-  private String cursoAcademico;
-}
+public record AlumnoProfileDTO(
+    Integer id,
+    String username,
+    String nombre,
+    String apellidos,
+    String email,
+    String centroNombre,
+    String grupoNombre,
+    String cursoAcademico) {}

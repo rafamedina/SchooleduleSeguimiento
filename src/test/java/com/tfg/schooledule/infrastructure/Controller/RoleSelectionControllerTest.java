@@ -1,4 +1,4 @@
-package com.tfg.schooledule.infrastructure.Controller;
+package com.tfg.schooledule.infrastructure.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;

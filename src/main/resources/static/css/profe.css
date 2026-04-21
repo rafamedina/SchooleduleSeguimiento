@@ -1,0 +1,665 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   SCHOOLEDULE — Profesor Dashboard
+   Estética: editorial / académico
+   ───────────────────────────────────────────────────────────────────────────── */
+
+@import url("schooledule.css");
+
+/* ── Lista de centros (ledger style) ──────────────────────────────────────── */
+.ledger {
+  border-top: 1px solid var(--rule-heavy);
+  list-style: none;
+}
+
+.ledger__row {
+  display: grid;
+  grid-template-columns: 4rem 1fr auto;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+  text-decoration: none;
+  color: inherit;
+}
+
+.ledger__row:hover {
+  background-color: var(--paper-alt);
+  padding-left: 0.75rem;
+  margin-left: -0.75rem;
+  padding-right: 0.75rem;
+  border-radius: 4px;
+}
+
+.ledger__row:focus-visible {
+  outline: 2px solid var(--hot);
+  outline-offset: 3px;
+}
+
+.ledger__serial {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--ink-muted);
+  font-feature-settings: "onum", "pnum";
+  text-align: right;
+  user-select: none;
+}
+
+.ledger__name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+  color: var(--ink);
+  line-height: 1.1;
+  display: block;
+  transition: color var(--transition-base);
+}
+
+.ledger__row:hover .ledger__name {
+  color: var(--hot);
+}
+
+.ledger__meta {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  display: block;
+  margin-top: 0.2rem;
+  font-variant: small-caps;
+}
+
+.ledger__count {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: var(--accent);
+  text-align: right;
+  font-feature-settings: "onum", "pnum";
+  line-height: 1;
+  min-width: 4rem;
+}
+
+.ledger__count-label {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-muted);
+  display: block;
+  text-align: right;
+  margin-top: 0.2rem;
+}
+
+/* ── Tabla de asignaturas ─────────────────────────────────────────────────── */
+.subject-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.subject-table thead tr {
+  border-bottom: 1px solid var(--rule-heavy);
+}
+
+.subject-table th {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-muted);
+  padding: 0 0.75rem 0.75rem;
+  text-align: left;
+}
+
+.subject-table th:last-child {
+  text-align: right;
+}
+
+.subject-table td {
+  padding: 1rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-soft);
+  vertical-align: middle;
+}
+
+.subject-table tbody tr {
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+}
+
+.subject-table tbody tr:hover {
+  background-color: var(--paper-alt);
+}
+
+.subject-table tbody tr:hover .subject-table__modname {
+  transform: translateX(6px);
+}
+
+.subject-table__code {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.subject-table__modname {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.0625rem;
+  color: var(--ink);
+  transition: transform var(--transition-base);
+  display: inline-block;
+}
+
+.subject-table__num {
+  text-align: right;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.25rem;
+  color: var(--accent);
+  font-feature-settings: "lnum", "tnum";
+}
+
+/* ── Listado de alumnos ───────────────────────────────────────────────────── */
+.roster {
+  list-style: none;
+  border-top: 1px solid var(--rule-heavy);
+}
+
+.roster__item {
+  display: grid;
+  grid-template-columns: 3rem 1fr auto;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+  border-radius: 0;
+}
+
+.roster__item:hover {
+  background-color: var(--paper-alt);
+  padding-left: 0.5rem;
+  margin-left: -0.5rem;
+  padding-right: 0.5rem;
+  border-radius: 4px;
+}
+
+.roster__item:focus-visible {
+  outline: 2px solid var(--hot);
+  outline-offset: 3px;
+}
+
+.roster__serial {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.9375rem;
+  color: var(--ink-muted);
+  text-align: right;
+}
+
+.roster__name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.25rem, 1.8vw, 1.625rem);
+  color: var(--ink);
+  display: block;
+  line-height: 1.1;
+}
+
+.roster__email {
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+  display: block;
+  margin-top: 0.15rem;
+  font-family: "Geist Mono", monospace;
+}
+
+/* ── Modal de notas ───────────────────────────────────────────────────────── */
+dialog#gradesModal {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  border: none;
+  border-radius: 8px;
+  padding: 0;
+  max-width: min(860px, 95vw);
+  width: 100%;
+  height: min(90vh, 800px);
+  overflow: hidden;
+  background: var(--paper);
+  box-shadow:
+    0 24px 80px rgba(27, 31, 42, 0.18),
+    0 4px 16px rgba(27, 31, 42, 0.08);
+}
+
+dialog#gradesModal::backdrop {
+  background: rgba(27, 31, 42, 0.55);
+  backdrop-filter: blur(6px);
+}
+
+.modal-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: auto;
+  height: 100%;
+}
+
+.modal-header {
+  padding: 1.75rem 2rem 1.25rem;
+  border-bottom: 1px solid var(--rule);
+  flex-shrink: 0;
+}
+
+.modal-header__name {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  color: var(--ink);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.modal-header__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--ink-muted);
+  display: block;
+  margin-top: 0.35rem;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.5rem;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  color: var(--ink-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+  transition: color var(--transition-base);
+}
+.modal-close:hover {
+  color: var(--hot);
+}
+
+.modal-body {
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.modal-footer {
+  padding: 1.25rem 2rem;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.media-global-display {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+}
+
+.media-global-display strong {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.5rem;
+  color: var(--accent);
+  font-feature-settings: "lnum", "tnum";
+  margin-left: 0.5rem;
+}
+
+/* ── Periodos en modal ────────────────────────────────────────────────────── */
+.periodo-section {
+  margin-bottom: 2rem;
+}
+
+.periodo-section--cerrado {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.periodo-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.periodo-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: var(--ink);
+}
+
+.peso-chip {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.2em 0.5em;
+  background: var(--paper-alt);
+  border-radius: 2px;
+  color: var(--ink-soft);
+}
+
+.cerrado-chip {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.2em 0.5em;
+  background: rgba(194, 78, 61, 0.1);
+  color: var(--hot);
+  border-radius: 2px;
+}
+
+.periodo-media {
+  margin-left: auto;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.5rem;
+  color: var(--accent);
+  font-feature-settings: "lnum", "tnum";
+}
+
+/* ── Tabla de items evaluables en modal ────────────────────────────────────── */
+.grade-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.grade-table th {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-muted);
+  padding: 0 0.5rem 0.5rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.grade-table td {
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: middle;
+  color: var(--ink-soft);
+}
+
+.grade-table__tipo {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-muted);
+}
+
+.grade-input {
+  width: 5.5rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--rule-heavy);
+  background: var(--paper);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--ink);
+  border-radius: 3px;
+  font-feature-settings: "lnum", "tnum";
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.grade-input:focus {
+  outline: none;
+  border-color: var(--hot);
+  box-shadow: 0 0 0 3px rgba(194, 78, 61, 0.12);
+}
+
+.comment-input {
+  width: 100%;
+  min-width: 8rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--rule-heavy);
+  background: var(--paper);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  border-radius: 3px;
+  transition: border-color var(--transition-base);
+}
+
+.comment-input:focus {
+  outline: none;
+  border-color: var(--hot);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .masthead__nav {
+    gap: 1rem;
+  }
+
+  .ledger__row {
+    grid-template-columns: 0 1fr auto;
+    gap: 1rem;
+  }
+  .ledger__serial {
+    display: none;
+  }
+
+  .subject-table th:nth-child(3),
+  .subject-table td:nth-child(3) {
+    display: none;
+  }
+
+  .roster__item {
+    grid-template-columns: 1fr auto;
+  }
+  .roster__serial {
+    display: none;
+  }
+
+  .roster__chip {
+    margin-top: 0.25rem;
+  }
+
+  dialog#gradesModal {
+    max-width: 100vw;
+    max-height: 100dvh;
+    border-radius: 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    margin: 0;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    animation: slide-up 220ms ease forwards;
+  }
+
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+}
+
+/* ── Jerarquía RA / CE dentro del modal ──────────────────────────────────── */
+
+.periodo-section {
+  margin-bottom: 1.5rem;
+}
+
+.periodo-section--cerrado {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.periodo-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 1rem;
+}
+
+.periodo-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.periodo-media {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.25rem;
+  color: var(--accent);
+  font-feature-settings: "lnum", "tnum";
+  margin-left: auto;
+}
+
+/* RA block */
+.ra-block {
+  border-top: 1px solid var(--rule);
+  padding: 0.75rem 0;
+}
+
+.ra-block + .ra-block {
+  border-top: none;
+}
+
+.ra-block__summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  list-style: none;
+  padding: 0.25rem 0;
+  user-select: none;
+}
+
+.ra-block__summary::-webkit-details-marker {
+  display: none;
+}
+
+.ra-block__toggle {
+  font-size: 0.65rem;
+  color: var(--ink-muted);
+  transition: transform 160ms ease;
+  display: inline-block;
+}
+
+details[open] .ra-block__toggle {
+  transform: rotate(90deg);
+}
+
+.ra-block__code {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.ra-block__name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--ink);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ra-block__media {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.125rem;
+  color: var(--hot);
+  font-feature-settings: "lnum", "tnum";
+  white-space: nowrap;
+}
+
+/* CE rows moved to schooledule.css */
+
+.ce-nota-input {
+  width: 5.5rem;
+  text-align: right;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: #fff;
+  color: var(--ink);
+  transition: border-color 120ms;
+}
+
+.ce-nota-input:focus {
+  outline: 2px solid var(--hot);
+  outline-offset: 2px;
+  border-color: var(--hot);
+}
+
+.ce-nota-input:disabled {
+  background: transparent;
+  border-color: transparent;
+  color: var(--ink-muted);
+}
+
+.ce-comment-input {
+  width: 100%;
+  min-width: 8rem;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.ce-comment-input:focus {
+  outline: 2px solid var(--hot);
+  outline-offset: 2px;
+  border-color: var(--hot);
+}
+
+.ce-comment-input:disabled {
+  background: transparent;
+  border-color: transparent;
+  color: var(--ink-muted);
+}

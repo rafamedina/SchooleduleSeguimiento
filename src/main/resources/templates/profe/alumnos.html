@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{profe/fragments/layout :: head('Alumnos')}"></head>
+  <body>
+    <div th:replace="~{profe/fragments/layout :: topnav('alumnos')}"></div>
+
+    <main class="page-content">
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb animate-in" aria-label="Ruta de navegación">
+        <a th:href="@{/profe/dashboard}">Centros</a>
+        <span class="breadcrumb__sep">·</span>
+        <a
+          th:href="@{/profe/centro/{id}/asignaturas(id=${centroId != null ? centroId : 0})}"
+          >Asignaturas</a
+        >
+        <span class="breadcrumb__sep">·</span>
+        <span>Alumnos</span>
+      </nav>
+
+      <!-- Hero con label de impartición dividido -->
+      <div class="hero animate-in">
+        <div>
+          <h1
+            class="hero__title"
+            th:if="${imparticionLabel != null and #strings.contains(imparticionLabel,'·')}"
+          >
+            <span
+              th:text="${#strings.substringBefore(imparticionLabel, '·').trim()}"
+              >DAW1-A</span
+            >
+            <br />
+            <em
+              th:text="${#strings.substringAfter(imparticionLabel, '·').trim()}"
+              >Módulo</em
+            >
+          </h1>
+          <h1
+            class="hero__title"
+            th:unless="${imparticionLabel != null and #strings.contains(imparticionLabel,'·')}"
+            th:text="${imparticionLabel}"
+          >
+            Impartición
+          </h1>
+        </div>
+        <p class="hero__body" th:if="${!alumnos.isEmpty()}">
+          <span th:text="${alumnos.size()}">0</span> alumno(s) activo(s). Haz
+          clic en un alumno para gestionar sus calificaciones.
+        </p>
+      </div>
+
+      <!-- Listado de alumnos -->
+      <ul
+        th:if="${!alumnos.isEmpty()}"
+        class="roster"
+        id="rosterList"
+        aria-label="Listado de alumnos"
+      >
+        <li
+          th:each="alumno, iter : ${alumnos}"
+          class="roster__item animate-in"
+          role="button"
+          tabindex="0"
+          th:data-matricula-id="${alumno.matriculaId}"
+          th:aria-label="'Abrir calificaciones de ' + ${alumno.nombreCompleto}"
+        >
+          <span
+            class="roster__serial"
+            th:text="${iter.count < 10 ? '0' + iter.count : iter.count}"
+            >01</span
+          >
+
+          <div>
+            <span class="roster__name" th:text="${alumno.nombreCompleto}"
+              >Ana López</span
+            >
+            <span class="roster__email" th:text="${alumno.email}"
+              >ana@t.com</span
+            >
+          </div>
+
+          <span class="chip chip--hot" th:if="${alumno.esRepetidor}"
+            >Repetidor</span
+          >
+        </li>
+      </ul>
+
+      <!-- Estado vacío -->
+      <div th:if="${alumnos.isEmpty()}" class="empty-state animate-in">
+        <p class="empty-state__title">Sin alumnos activos.</p>
+        <p class="empty-state__body">
+          No hay matrículas activas para esta asignatura.
+        </p>
+      </div>
+    </main>
+
+    <div th:replace="~{profe/fragments/layout :: colophon}"></div>
+
+    <!-- ── Modal de calificaciones ──────────────────────────────────────────────── -->
+    <dialog
+      id="gradesModal"
+      aria-labelledby="gradesModalTitle"
+      aria-modal="true"
+    >
+      <div class="modal-layout">
+        <header class="modal-header">
+          <h2 id="gradesModalTitle" class="modal-header__name">—</h2>
+          <span id="gradesModalLabel" class="modal-header__label"></span>
+          <button
+            class="modal-close"
+            id="closeGradesTop"
+            aria-label="Cerrar modal"
+          >
+            ✕
+          </button>
+        </header>
+
+        <div class="modal-body" id="gradesBody">
+          <!-- Relleno por JS -->
+        </div>
+
+        <footer class="modal-footer">
+          <div class="media-global-display">
+            Media global <strong id="mediaGlobal">—</strong>
+          </div>
+          <div class="btn-group">
+            <button id="saveGrades" class="btn-editorial-primary">
+              Guardar
+            </button>
+            <button id="closeGrades" class="btn-editorial-ghost">Cerrar</button>
+          </div>
+        </footer>
+      </div>
+    </dialog>
+
+    <script type="module" th:src="@{/js/profe-grades.js}"></script>
+  </body>
+</html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{profe/fragments/layout :: head('Asignaturas')}"></head>
+  <body>
+    <div th:replace="~{profe/fragments/layout :: topnav('asignaturas')}"></div>
+
+    <main class="page-content">
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb animate-in" aria-label="Ruta de navegación">
+        <a th:href="@{/profe/dashboard}">Centros</a>
+        <span class="breadcrumb__sep">·</span>
+        <span th:text="${centroNombre != null ? centroNombre : 'Centro'}"
+          >Centro</span
+        >
+      </nav>
+
+      <!-- Hero -->
+      <div class="hero animate-in">
+        <div>
+          <h1 class="hero__title">
+            <span th:text="${centroNombre != null ? centroNombre : 'Centro'}"
+              >IES Central</span
+            >
+          </h1>
+          <p
+            style="
+              font-family: var(--font-display);
+              font-style: italic;
+              font-size: 1rem;
+              color: var(--ink-muted);
+              margin-top: 0.4rem;
+            "
+          >
+            Tus asignaturas
+          </p>
+        </div>
+        <p class="hero__body" th:if="${!asignaturas.isEmpty()}">
+          <span th:text="${asignaturas.size()}">0</span> asignatura(s) activas
+          este curso. Haz clic en una para ver el listado de alumnos.
+        </p>
+      </div>
+
+      <!-- Tabla ledger de asignaturas -->
+      <div th:if="${!asignaturas.isEmpty()}" class="animate-in">
+        <table class="subject-table" aria-label="Asignaturas asignadas">
+          <thead>
+            <tr>
+              <th scope="col">Código</th>
+              <th scope="col">Módulo</th>
+              <th scope="col">Grupo</th>
+              <th scope="col">Curso</th>
+              <th scope="col">Alumnos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              th:each="asig : ${asignaturas}"
+              class="animate-in"
+              th:onclick="'location.href=\'/profe/imparticion/' + ${asig.imparticionId} + '/alumnos\''"
+            >
+              <td class="subject-table__code" th:text="${asig.moduloCodigo}">
+                DAW1101
+              </td>
+              <td>
+                <span
+                  class="subject-table__modname"
+                  th:text="${asig.moduloNombre}"
+                  >Desarrollo Web</span
+                >
+              </td>
+              <td th:text="${asig.grupoNombre}">DAW1-A</td>
+              <td th:text="${asig.cursoAcademicoNombre}">2025/2026</td>
+              <td class="subject-table__num" th:text="${asig.alumnosCount}">
+                20
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Estado vacío -->
+      <div th:if="${asignaturas.isEmpty()}" class="empty-state animate-in">
+        <p class="empty-state__title">Sin asignaturas.</p>
+        <p class="empty-state__body">
+          No tienes imparticiones asignadas en este centro para el curso actual.
+        </p>
+      </div>
+    </main>
+
+    <div th:replace="~{profe/fragments/layout :: colophon}"></div>
+  </body>
+</html>

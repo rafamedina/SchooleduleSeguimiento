@@ -2,10 +2,13 @@ package com.tfg.schooledule.domain.entity;
 
 import jakarta.persistence.*;
 import java.util.Map;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -26,6 +29,12 @@ public class Centro {
 
   @Column(length = 200)
   private String ubicacion;
+
+  @ManyToMany(mappedBy = "centros")
+  @Builder.Default
+  @ToString.Exclude
+  @EqualsAndHashCode.Exclude
+  private Set<Usuario> profesores = new java.util.HashSet<>();
 
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(columnDefinition = "jsonb")

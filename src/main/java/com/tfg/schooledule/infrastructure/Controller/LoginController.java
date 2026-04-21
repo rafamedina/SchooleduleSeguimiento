@@ -1,4 +1,4 @@
-package com.tfg.schooledule.infrastructure.Controller;
+package com.tfg.schooledule.infrastructure.controller;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;

@@ -1,0 +1,97 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head th:fragment="head(title)">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${title} + ' — Schooledule'">Schooledule</title>
+    <meta th:name="_csrf" th:content="${_csrf.token}" />
+    <meta th:name="_csrf_header" th:content="${_csrf.headerName}" />
+    <link rel="stylesheet" th:href="@{/css/alumno.css}" />
+  </head>
+
+  <nav th:fragment="topnav(active)" class="masthead" role="banner">
+    <div class="masthead__inner">
+      <a th:href="@{/alumno/dashboard}" class="text-decoration-none">
+        <span class="masthead__wordmark">Schooledule</span>
+        <span class="masthead__subtitle">Aula</span>
+      </a>
+
+      <ul
+        class="masthead__nav"
+        role="navigation"
+        aria-label="Navegación principal"
+      >
+        <li>
+          <a
+            th:href="@{/alumno/dashboard}"
+            th:classappend="${active == 'dashboard'} ? 'active' : ''"
+          >
+            Dashboard
+          </a>
+        </li>
+        <li>
+          <a
+            th:href="@{/alumno/notas}"
+            th:classappend="${active == 'notas'} ? 'active' : ''"
+          >
+            Notas
+          </a>
+        </li>
+
+        <li class="perfil-menu">
+          <button
+            type="button"
+            class="perfil-menu__trigger"
+            aria-haspopup="true"
+            aria-expanded="false"
+            id="perfilMenuButton"
+          >
+            <span class="perfil-menu__label">Perfil</span>
+            <span class="perfil-menu__caret" aria-hidden="true">▾</span>
+          </button>
+          <ul
+            class="perfil-menu__items"
+            role="menu"
+            aria-labelledby="perfilMenuButton"
+          >
+            <li role="menuitem">
+              <a th:href="@{/alumno/perfil}">Mi perfil</a>
+            </li>
+            <li role="menuitem">
+              <a th:href="@{/alumno/dashboard}">Mis clases</a>
+            </li>
+            <li role="menuitem" class="perfil-menu__sep">
+              <form th:action="@{/logout}" method="post" style="margin: 0">
+                <input
+                  type="hidden"
+                  th:name="${_csrf.parameterName}"
+                  th:value="${_csrf.token}"
+                />
+                <button type="submit" class="perfil-menu__logout">
+                  Cerrar sesión
+                </button>
+              </form>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <footer th:fragment="colophon" role="contentinfo">
+    <div class="colophon">
+      <span th:if="${profile?.centroNombre}" th:text="${profile.centroNombre}"
+        >—</span
+      >
+      <span th:unless="${profile?.centroNombre}">Schooledule</span>
+      &nbsp;·&nbsp;
+      <span
+        th:text="${#temporals.format(#temporals.createNow(), 'dd MMM yyyy')}"
+        >hoy</span
+      >
+    </div>
+  </footer>
+</html>

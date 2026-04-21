@@ -1,0 +1,125 @@
+/* ── SCHOOLEDULE — Admin Dashboard ────────────────────────────────────────── */
+
+@import url("schooledule.css");
+
+/* ── Sidebar Layout ──────────────────────────────────────────────────────── */
+.admin-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  background: var(--ink);
+  color: var(--paper);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-wordmark {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.25rem;
+  padding: 2rem 1.5rem;
+  border-bottom: 1px solid rgba(247, 242, 234, 0.15);
+  color: var(--paper);
+}
+
+.sidebar-nav {
+  list-style: none;
+  padding: 1.5rem 0;
+}
+
+.sidebar-nav li a {
+  display: block;
+  padding: 0.625rem 1.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(247, 242, 234, 0.65);
+  transition:
+    color var(--transition-base),
+    border-left var(--transition-base);
+  border-left: 2px solid transparent;
+}
+
+.sidebar-nav li a:hover,
+.sidebar-nav li a.active {
+  color: var(--paper);
+  background: rgba(247, 242, 234, 0.05);
+  border-left-color: var(--hot);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 1.5rem;
+  border-top: 1px solid rgba(247, 242, 234, 0.15);
+}
+
+.admin-content {
+  overflow-y: auto;
+  padding: 3rem 2.5rem;
+  background: var(--paper);
+}
+
+/* ── Stats Grid ──────────────────────────────────────────────────────────── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.stat-card {
+  padding: 2rem;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--hot);
+  border-radius: 4px;
+  transition: transform var(--transition-base);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(27, 31, 42, 0.08);
+}
+
+.stat-card__num {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  color: var(--accent);
+  line-height: 1;
+  font-feature-settings: "lnum", "tnum";
+}
+
+.stat-card__label {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-muted);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .admin-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar {
+    display: none;
+  }
+
+  .admin-content {
+    padding: 2rem 1.25rem;
+  }
+}

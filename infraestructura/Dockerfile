@@ -8,7 +8,7 @@ RUN mvn dependency:go-offline -B
 
 # Copiamos el código fuente y construimos el proyecto
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN mvn spotless:apply clean package -DskipTests
 
 # --- STAGE 1.5: Test ---
 FROM builder AS test

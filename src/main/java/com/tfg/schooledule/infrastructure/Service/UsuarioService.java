@@ -1,15 +1,18 @@
-package com.tfg.schooledule.infrastructure.Service;
+package com.tfg.schooledule.infrastructure.service;
 
-import com.tfg.schooledule.domain.DTO.AlumnoProfileDTO;
-import com.tfg.schooledule.domain.DTO.GradeDTO;
-import com.tfg.schooledule.domain.DTO.GradeDashboardDTO;
+import com.tfg.schooledule.domain.dto.AlumnoProfileDTO;
+import com.tfg.schooledule.domain.dto.GradeDashboardDTO;
+import com.tfg.schooledule.domain.dto.TeacherStudentGradesDTO;
 import com.tfg.schooledule.domain.entity.*;
+import com.tfg.schooledule.infrastructure.mapper.AlumnoProfileMapper;
+import com.tfg.schooledule.infrastructure.mapper.GradeDashboardMapper;
 import com.tfg.schooledule.infrastructure.repository.CalificacionRepository;
 import com.tfg.schooledule.infrastructure.repository.MatriculaRepository;
 import com.tfg.schooledule.infrastructure.repository.PeriodoEvaluacionRepository;
 import com.tfg.schooledule.infrastructure.repository.UsuarioRepository;
 import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,14 +20,13 @@ import org.springframework.stereotype.Service;
 public class UsuarioService {
 
   @Autowired private UsuarioRepository usuarioRepository;
-
   @Autowired private PasswordEncoder passwordEncoder;
-
   @Autowired private MatriculaRepository matriculaRepository;
-
   @Autowired private CalificacionRepository calificacionRepository;
-
   @Autowired private PeriodoEvaluacionRepository periodoRepository;
+  @Autowired private AlumnoProfileMapper alumnoProfileMapper;
+  @Autowired private GradeDashboardMapper gradeDashboardMapper;
+  @Autowired private TeacherDashboardService teacherDashboardService;
 
   public AlumnoProfileDTO getAlumnoProfile(Integer usuarioId) {
     Usuario usuario =
@@ -37,52 +39,37 @@ public class UsuarioService {
             .findFirstByAlumnoIdOrderByImparticionGrupoCursoAcademicoIdDesc(usuarioId)
             .orElseThrow(() -> new RuntimeException("Matricula no encontrada"));
 
-    Grupo grupo = matricula.getImparticion().getGrupo();
+    return alumnoProfileMapper.toDto(usuario, matricula);
+  }
 
-    return AlumnoProfileDTO.builder()
-        .id(usuario.getId())
-        .username(usuario.getUsername())
-        .nombre(usuario.getNombre())
-        .apellidos(usuario.getApellidos())
-        .email(usuario.getEmail())
-        .centroNombre(matricula.getCentro().getNombre())
-        .grupoNombre(grupo.getNombre())
-        .cursoAcademico(grupo.getCursoAcademico().getNombre())
-        .build();
+  public List<Matricula> getAsignaturasAlumno(Integer usuarioId) {
+    return matriculaRepository.findActivasByAlumnoId(usuarioId);
+  }
+
+  /**
+   * Detalle completo de notas (Periodos → RAs → CEs) para una matrícula del propio alumno.
+   * AccessDeniedException si la matrícula no pertenece al alumno.
+   */
+  public TeacherStudentGradesDTO getAlumnoMatriculaGrades(Integer alumnoId, Integer matriculaId) {
+    Matricula matricula =
+        matriculaRepository
+            .findById(matriculaId)
+            .orElseThrow(
+                () -> new AccessDeniedException("Matrícula no encontrada: " + matriculaId));
+    if (!matricula.getAlumno().getId().equals(alumnoId)) {
+      throw new AccessDeniedException("La matrícula no pertenece al alumno");
+    }
+    return teacherDashboardService.buildGradesDTO(matricula);
   }
 
   public GradeDashboardDTO getStudentGrades(Integer usuarioId, Integer periodoId) {
     List<Calificacion> calificaciones =
         calificacionRepository.findByAlumnoIdAndPeriodoId(usuarioId, periodoId);
 
-    if (calificaciones.isEmpty()) {
-      return GradeDashboardDTO.builder().gradesByModulo(new HashMap<>()).build();
-    }
-
     String periodoNombre =
-        calificaciones.get(0).getItemEvaluable().getPeriodoEvaluacion().getNombre();
+        periodoRepository.findById(periodoId).map(p -> p.getNombre()).orElse(null);
 
-    Map<String, List<GradeDTO>> gradesByModulo = new HashMap<>();
-
-    for (Calificacion calif : calificaciones) {
-      String moduloNombre = calif.getMatricula().getImparticion().getModulo().getNombre();
-
-      GradeDTO gradeDTO =
-          GradeDTO.builder()
-              .itemNombre(calif.getItemEvaluable().getNombre())
-              .valor(calif.getValor())
-              .comentario(calif.getComentario())
-              .fecha(calif.getItemEvaluable().getFecha())
-              .tipoActividad(calif.getItemEvaluable().getTipo().name())
-              .build();
-
-      gradesByModulo.computeIfAbsent(moduloNombre, k -> new ArrayList<>()).add(gradeDTO);
-    }
-
-    return GradeDashboardDTO.builder()
-        .periodoNombre(periodoNombre)
-        .gradesByModulo(gradesByModulo)
-        .build();
+    return gradeDashboardMapper.toDto(calificaciones, periodoNombre);
   }
 
   public boolean comprobarPassword(String email, String password) {
@@ -90,7 +77,6 @@ public class UsuarioService {
     if (usuario.isEmpty()) {
       return false;
     }
-
     return passwordEncoder.matches(password, usuario.get().getPasswordHash());
   }
 
@@ -105,11 +91,9 @@ public class UsuarioService {
   public List<PeriodoEvaluacion> getStudentPeriods(Integer usuarioId) {
     List<Matricula> matriculas = matriculaRepository.findByAlumnoId(usuarioId);
     Set<PeriodoEvaluacion> periodos = new HashSet<>();
-
     for (Matricula m : matriculas) {
       periodos.addAll(periodoRepository.findByImparticionId(m.getImparticion().getId()));
     }
-
     return new ArrayList<>(periodos);
   }
 }

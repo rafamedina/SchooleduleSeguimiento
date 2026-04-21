@@ -51,4 +51,14 @@ public class Usuario {
   @ToString.Exclude
   @EqualsAndHashCode.Exclude
   private Set<Rol> roles = new HashSet<>();
+
+  @ManyToMany
+  @JoinTable(
+      name = "profesores_sedes",
+      joinColumns = @JoinColumn(name = "usuario_id"),
+      inverseJoinColumns = @JoinColumn(name = "centro_id"))
+  @Builder.Default
+  @ToString.Exclude
+  @EqualsAndHashCode.Exclude
+  private Set<Centro> centros = new HashSet<>();
 }

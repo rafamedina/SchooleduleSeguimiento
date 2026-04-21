@@ -1,0 +1,615 @@
+/* ── SCHOOLEDULE — Alumno Dashboard ───────────────────────────────────────── */
+
+@import url("schooledule.css");
+
+/* ── Sidebar Layout ──────────────────────────────────────────────────────── */
+.alumno-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.alumno-sidebar {
+  background: var(--accent);
+  color: var(--paper);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-wordmark {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.25rem;
+  padding: 2rem 1.5rem;
+  border-bottom: 1px solid rgba(247, 242, 234, 0.15);
+  color: var(--paper);
+}
+
+.sidebar-nav {
+  list-style: none;
+  padding: 1.5rem 0;
+}
+
+.sidebar-nav li a {
+  display: block;
+  padding: 0.625rem 1.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(247, 242, 234, 0.65);
+  transition:
+    color var(--transition-base),
+    border-left var(--transition-base);
+  border-left: 2px solid transparent;
+}
+
+.sidebar-nav li a:hover,
+.sidebar-nav li a.active {
+  color: var(--paper);
+  background: rgba(247, 242, 234, 0.05);
+  border-left-color: var(--hot);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 1.5rem;
+  border-top: 1px solid rgba(247, 242, 234, 0.15);
+}
+
+.alumno-content {
+  overflow-y: auto;
+  padding: 3rem 2.5rem;
+  background: var(--paper);
+}
+
+/* ── Perfil ──────────────────────────────────────────────────────────────── */
+.profile-block {
+  border-top: 1px solid var(--rule-heavy);
+  padding-top: 2rem;
+  margin-top: 2rem;
+}
+
+.profile-field {
+  display: grid;
+  grid-template-columns: 12rem 1fr;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--rule);
+  align-items: baseline;
+}
+
+.profile-field__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-muted);
+}
+
+.profile-field__value {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.0625rem;
+  color: var(--ink);
+}
+
+/* ── Dashboard notas ─────────────────────────────────────────────────────── */
+.modulo-block {
+  margin-bottom: 4rem;
+}
+
+.modulo-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  color: var(--ink);
+  border-bottom: 1px solid var(--rule-heavy);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.nota-badge {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.25rem;
+  font-feature-settings: "lnum", "tnum";
+}
+
+.nota-badge--pass {
+  color: var(--accent);
+}
+
+.nota-badge--fail {
+  color: var(--hot);
+}
+
+.periodo-selector-form {
+  margin-bottom: 2.5rem;
+}
+
+.periodo-selector-form select {
+  border: none;
+  border-bottom: 1px solid var(--rule-heavy);
+  background: transparent;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: var(--ink);
+  padding: 0.5rem 0;
+  cursor: pointer;
+  outline: none;
+}
+
+.periodo-selector-form select:focus {
+  border-bottom-color: var(--hot);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .alumno-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .alumno-sidebar {
+    display: none; /* Simplificado: en una app real habría un toggle */
+  }
+
+  .alumno-content {
+    padding: 2rem 1.25rem;
+  }
+
+  .profile-field {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}
+
+/* ── Masthead (topnav alumno) ──────────────────────────────────────────── */
+.masthead {
+  border-bottom: 1px solid var(--rule-heavy);
+  padding: 1.25rem 0;
+}
+.masthead__inner {
+  max-width: 72rem;
+  margin: 0 auto;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 2rem;
+}
+.masthead__wordmark {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.5rem;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.masthead__subtitle {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--ink-muted);
+  margin-left: 0.75rem;
+}
+.masthead__nav {
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+  align-items: center;
+}
+.masthead__nav a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+.masthead__nav a.active {
+  color: var(--ink);
+  border-bottom: 2px solid var(--hot);
+  padding-bottom: 2px;
+}
+
+/* ── Menú de perfil (dropdown) ─────────────────────────────────────────── */
+.perfil-menu {
+  position: relative;
+}
+.perfil-menu__trigger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.5rem;
+}
+.perfil-menu__trigger[aria-expanded="true"] {
+  color: var(--ink);
+}
+.perfil-menu__caret {
+  font-size: 0.7rem;
+  transition: transform 160ms ease;
+}
+.perfil-menu__trigger[aria-expanded="true"] .perfil-menu__caret {
+  transform: rotate(180deg);
+}
+.perfil-menu__items {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 0.5rem;
+  min-width: 11rem;
+  background: var(--paper);
+  border: 1px solid var(--rule-heavy);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(27, 31, 42, 0.12);
+  list-style: none;
+  padding: 0.4rem 0;
+  display: none;
+  z-index: 50;
+}
+.perfil-menu__items.is-open {
+  display: block;
+}
+.perfil-menu__items a,
+.perfil-menu__logout {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 0.875rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+.perfil-menu__items a:hover,
+.perfil-menu__logout:hover {
+  background: var(--paper-alt);
+  color: var(--ink);
+}
+.perfil-menu__sep {
+  border-top: 1px solid var(--rule);
+  margin-top: 0.3rem;
+  padding-top: 0.3rem;
+}
+
+/* ── Grid de asignaturas en el dashboard ───────────────────────────────── */
+.asignatura-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 1rem;
+  padding: 0;
+}
+.asignatura-card {
+  border-left: 3px solid var(--accent);
+  background: var(--paper);
+  transition: background-color var(--transition-base);
+}
+.asignatura-card:hover {
+  background: var(--paper-alt);
+}
+.asignatura-card__link {
+  display: block;
+  padding: 1.25rem 1.5rem;
+  text-decoration: none;
+  color: inherit;
+}
+.asignatura-card__label {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.1rem, 1.5vw, 1.35rem);
+  color: var(--ink);
+}
+.asignatura-card__meta {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+}
+
+/* ── Layout notas (sidebar + contenido) ────────────────────────────────── */
+.notas-layout {
+  display: grid;
+  grid-template-columns: 16rem 1fr;
+  gap: 2rem;
+}
+.notas-sidebar__title {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-muted);
+  margin-bottom: 0.75rem;
+}
+.notas-sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+.notas-sidebar a {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  color: var(--ink-soft);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  font-size: 0.9375rem;
+}
+.notas-sidebar a.is-active {
+  color: var(--ink);
+  border-left-color: var(--hot);
+  background: var(--paper-alt);
+}
+
+/* ── Colophon (footer alumno) ──────────────────────────────────────────── */
+.colophon {
+  max-width: 72rem;
+  margin: 3rem auto 2rem;
+  padding: 1rem 2rem 0;
+  border-top: 1px solid var(--rule);
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+/* ── Mobile notas-layout ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .notas-layout {
+    grid-template-columns: 1fr;
+  }
+  .notas-sidebar {
+    overflow-x: auto;
+  }
+  .notas-sidebar ul {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .notas-sidebar a.is-active {
+    border-left: none;
+    border-bottom: 2px solid var(--hot);
+  }
+}
+
+/* ── Modal de calificaciones (comparte look con profesor) ──────────────── */
+dialog#gradesModal {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  border: none;
+  border-radius: 8px;
+  padding: 0;
+  max-width: min(860px, 95vw);
+  width: 100%;
+  height: min(90vh, 800px);
+  overflow: hidden;
+  background: var(--paper);
+  box-shadow:
+    0 24px 80px rgba(27, 31, 42, 0.18),
+    0 4px 16px rgba(27, 31, 42, 0.08);
+}
+
+dialog#gradesModal::backdrop {
+  background: rgba(27, 31, 42, 0.55);
+  backdrop-filter: blur(6px);
+}
+
+.modal-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: auto;
+  height: 100%;
+}
+
+.modal-header {
+  padding: 1.75rem 2rem 1.25rem;
+  border-bottom: 1px solid var(--rule);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.modal-header__name {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  color: var(--ink);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.modal-header__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--ink-muted);
+  display: block;
+  margin-top: 0.35rem;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.5rem;
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--ink-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+  transition: color var(--transition-base);
+}
+.modal-close:hover {
+  color: var(--hot);
+}
+
+.modal-body {
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.modal-footer {
+  padding: 1.25rem 2rem;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.media-global-display {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+}
+.media-global-display strong {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.5rem;
+  color: var(--accent);
+  font-feature-settings: "lnum", "tnum";
+  margin-left: 0.5rem;
+}
+
+/* ── Periodos, RAs, CEs en modal ───────────────────────────────────────── */
+.periodo-section {
+  margin-bottom: 1.5rem;
+}
+.periodo-section--cerrado {
+  opacity: 0.6;
+  pointer-events: none;
+}
+.periodo-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 1rem;
+}
+.periodo-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--ink);
+}
+.peso-chip {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.2em 0.5em;
+  background: var(--paper-alt);
+  border-radius: 2px;
+  color: var(--ink-soft);
+}
+.cerrado-chip {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.2em 0.5em;
+  background: rgba(194, 78, 61, 0.1);
+  color: var(--hot);
+  border-radius: 2px;
+}
+.periodo-media {
+  margin-left: auto;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.25rem;
+  color: var(--accent);
+  font-feature-settings: "lnum", "tnum";
+}
+
+.ra-block {
+  border-top: 1px solid var(--rule);
+  padding: 0.75rem 0;
+}
+.ra-block + .ra-block {
+  border-top: none;
+}
+.ra-block__summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  list-style: none;
+  padding: 0.25rem 0;
+  user-select: none;
+}
+.ra-block__summary::-webkit-details-marker {
+  display: none;
+}
+.ra-block__toggle {
+  font-size: 0.65rem;
+  color: var(--ink-muted);
+  transition: transform 160ms ease;
+  display: inline-block;
+}
+details[open] .ra-block__toggle {
+  transform: rotate(90deg);
+}
+.ra-block__code {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.ra-block__name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--ink);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ra-block__media {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.125rem;
+  color: var(--hot);
+  font-feature-settings: "lnum", "tnum";
+  white-space: nowrap;
+}
+
+/* ── Mobile modal ──────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  dialog#gradesModal {
+    max-width: 100vw;
+    max-height: 100dvh;
+    border-radius: 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    margin: 0;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+  }
+}
+
+/* ── Asignatura-card clickable (keyboard focus) ────────────────────────── */
+.asignatura-card:focus-visible {
+  outline: 2px solid var(--hot);
+  outline-offset: 2px;
+}
+.asignatura-card {
+  cursor: pointer;
+}

@@ -14,6 +14,7 @@ logs/
 *.zip
 *.tar.gz
 *.rar
+memoria/
 
 # --- Virtual machine crash logs ---
 hs_err_pid*
@@ -65,9 +66,12 @@ desktop.ini
 $RECYCLE.BIN/
 ehthumbs.db
 [Dd]esktop.ini
+memoria_tfg.pdf
 
 # --- Agent & Workspace Tools ---
 .gemini/
+.claude/
+.agents/
 conductor/
 .gemini_security/
 gha-creds-*.json
@@ -79,6 +83,14 @@ HELP.md
 app_logs.txt
 backlog.md
 skills-lock.json
+node_modules/
+CLAUDE.md
+config-tone.md
+Package-lock.json
+Package.json
+skills-lock.json
+sonarqube_issues.json
+
 
 # --- OS Specific ---
 *.swp

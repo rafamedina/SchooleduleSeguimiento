@@ -26,7 +26,11 @@ El dominio es el corazón de la aplicación y se encuentra en `com.tfg.schooledu
 - **Calificación:** Almacena los resultados académicos vinculados a criterios de evaluación y periodos específicos.
 - **Estructura Académica:** Incluye entidades como `Modulo`, `Grupo`, `Imparticion`, `CriterioEvaluacion` y `ResultadoAprendizaje`, que modelan la jerarquía educativa.
 
-### 2.2 Tipos de Datos (`enums/`)
+### 2.2 DTOs (`dto/`)
+
+Los DTOs son **Java `record`** (inmutables, sin setters, igualdad estructural). Se construyen exclusivamente a través de mappers MapStruct — nunca con builders manuales en el código de negocio.
+
+### 2.3 Tipos de Datos (`enums/`)
 
 Se utilizan enums para estandarizar estados críticos, como `EstadoMatricula` (ACTIVA, BAJA, etc.) y `TipoActividad`.
 
@@ -36,15 +40,24 @@ Se utilizan enums para estandarizar estados críticos, como `EstadoMatricula` (A
 
 Ubicada en `com.tfg.schooledule.infrastructure`, esta capa conecta el dominio con el mundo exterior.
 
-### 3.1 Servicios (`Service/`)
+### 3.1 Mappers (`mapper/`)
 
-El componente principal es el **`UsuarioService`**, que orquestra la lógica compleja:
+Capa de traducción `Entidad → DTO` generada en tiempo de compilación por **MapStruct**. Todos son beans Spring (`componentModel = "spring"`):
 
-- **Gestión de Perfiles:** Transforma datos de múltiples entidades (`Usuario`, `Matricula`, `Grupo`) en un objeto `AlumnoProfileDTO` consolidado.
-- **Gestión de Notas:** Procesa las calificaciones de un alumno para generar cuadros de mando (`GradeDashboardDTO`).
+- **`UsuarioMapper`** — `Usuario → UsuarioDTO`. Convierte la colección de `Rol` a `String` concatenado.
+- **`GradeMapper`** — `Calificacion → GradeDTO`. Navega `itemEvaluable.*` vía `@Mapping(source = "itemEvaluable.nombre")`.
+- **`AlumnoProfileMapper`** — multi-fuente `(Usuario, Matricula) → AlumnoProfileDTO`. Navega hasta `matricula.imparticion.grupo.cursoAcademico.nombre`.
+- **`GradeDashboardMapper`** — `abstract class` que agrupa `List<Calificacion>` por módulo usando `Collectors.groupingBy` e inyecta `GradeMapper`.
+
+### 3.2 Servicios (`service/`)
+
+El componente principal es el **`UsuarioService`**, que orquesta la lógica compleja:
+
+- **Gestión de Perfiles:** Recupera `Usuario` + `Matricula` y delega a `AlumnoProfileMapper` para construir `AlumnoProfileDTO`.
+- **Gestión de Notas:** Recupera `Calificacion` y delega a `GradeDashboardMapper` para construir `GradeDashboardDTO`.
 - **Seguridad:** Implementa la codificación de contraseñas y la búsqueda de usuarios para la autenticación.
 
-### 3.2 Controladores (`Controller/`)
+### 3.3 Controladores (`Controller/`)
 
 La comunicación con el usuario se divide por roles para facilitar el mantenimiento:
 
@@ -52,7 +65,7 @@ La comunicación con el usuario se divide por roles para facilitar el mantenimie
 - **`ProfeController` / `AdminController`:** Puntos de entrada específicos para la gestión docente y administrativa.
 - **`LoginController`:** Gestiona el flujo de autenticación y selección de roles.
 
-### 3.3 Repositorios (`repository/`)
+### 3.4 Repositorios (`repository/`)
 
 Interfaces de Spring Data JPA que abstraen las consultas a la base de datos PostgreSQL, utilizando convenciones de nombres para búsquedas complejas (ej. `findFirstByAlumnoIdOrderBy...`).
 
