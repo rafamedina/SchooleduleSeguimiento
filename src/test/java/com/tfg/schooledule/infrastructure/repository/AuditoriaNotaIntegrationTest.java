@@ -36,20 +36,24 @@ class AuditoriaNotaIntegrationTest {
   static PostgreSQLContainer<?> postgres;
 
   static {
-    // Si no hay una URL de base de datos definida, arrancamos Testcontainers (entorno local)
-    if (System.getenv("SPRING_DATASOURCE_URL") == null) {
+    // Si detectamos TEST_DB_URL, la usamos (caso CI).
+    // Si no, y no hay SPRING_DATASOURCE_URL, arrancamos Testcontainers (caso local).
+    String ciDbUrl = System.getenv("TEST_DB_URL");
+    if (ciDbUrl == null && System.getenv("SPRING_DATASOURCE_URL") == null) {
       postgres = new PostgreSQLContainer<>("postgres:16-alpine");
       postgres.start();
     }
   }
 
-  /**
-   * Registra las propiedades de conexión de forma dinámica. Si estamos en CI, no hace nada y Spring
-   * Boot usa las variables de entorno.
-   */
+  /** Registra las propiedades de conexión de forma dinámica. */
   @DynamicPropertySource
   static void registerProperties(DynamicPropertyRegistry registry) {
-    if (postgres != null) {
+    String ciDbUrl = System.getenv("TEST_DB_URL");
+    if (ciDbUrl != null) {
+      registry.add("spring.datasource.url", () -> ciDbUrl);
+      registry.add("spring.datasource.username", () -> System.getenv("TEST_DB_USERNAME"));
+      registry.add("spring.datasource.password", () -> System.getenv("TEST_DB_PASSWORD"));
+    } else if (postgres != null) {
       registry.add("spring.datasource.url", postgres::getJdbcUrl);
       registry.add("spring.datasource.username", postgres::getUsername);
       registry.add("spring.datasource.password", postgres::getPassword);
