@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{profe/fragments/layout :: head('Dashboard')}"></head>
+  <body>
+    <div th:replace="~{profe/fragments/layout :: topnav('dashboard')}"></div>
+
+    <main class="page-content">
+      <!-- Hero -->
+      <div class="hero animate-in">
+        <div>
+          <h1 class="hero__title">Elige un<br /><em>centro</em></h1>
+        </div>
+        <p class="hero__body">
+          Selecciona el centro en el que impartes clase para ver tus asignaturas
+          y gestionar las calificaciones de tus alumnos.
+        </p>
+      </div>
+
+      <!-- Lista de centros -->
+      <ul
+        th:if="${!centros.isEmpty()}"
+        class="ledger"
+        aria-label="Centros asignados"
+      >
+        <li th:each="centro, iter : ${centros}" class="animate-in">
+          <a
+            th:href="@{/profe/centro/{id}/asignaturas(id=${centro.id})}"
+            class="ledger__row"
+            th:title="${centro.nombre} + ' — ' + ${centro.imparticionesCount} + ' asignaturas activas'"
+          >
+            <span
+              class="ledger__serial"
+              th:text="'—' + ${#strings.length(iter.count.toString()) == 1 ? '0' + iter.count : iter.count}"
+              >—01</span
+            >
+
+            <div class="ledger__main">
+              <span class="ledger__name" th:text="${centro.nombre}"
+                >IES Central</span
+              >
+              <span class="ledger__meta" th:text="${centro.ubicacion}"
+                >Madrid</span
+              >
+            </div>
+
+            <div>
+              <span
+                class="ledger__count tabular"
+                th:text="${centro.imparticionesCount}"
+                >2</span
+              >
+              <span class="ledger__count-label">asignaturas</span>
+            </div>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Estado vacío -->
+      <div th:if="${centros.isEmpty()}" class="empty-state animate-in">
+        <p class="empty-state__title">Sin asignaciones.</p>
+        <p class="empty-state__body">
+          Contacta con la dirección para que te asocien a un centro.
+        </p>
+      </div>
+    </main>
+
+    <div th:replace="~{profe/fragments/layout :: colophon}"></div>
+  </body>
+</html>

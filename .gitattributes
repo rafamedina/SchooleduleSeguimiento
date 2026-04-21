@@ -1,0 +1,7 @@
+# Fuerza LF en todos los ficheros de texto para compatibilidad Linux/Docker
+* text=auto eol=lf
+
+# Scripts de Maven y Windows
+/mvnw text eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf

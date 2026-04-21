@@ -1,11 +1,79 @@
 <!doctype html>
-<html lang="en">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Document</title>
+    <title>Administración — Schooledule</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
   </head>
   <body>
-    Hola admin
+    <div class="admin-shell">
+      <!-- Sidebar -->
+      <nav class="admin-sidebar">
+        <div class="sidebar-wordmark">Schooledule</div>
+        <ul class="sidebar-nav">
+          <li><a href="/admin/dashboard" class="active">Dashboard</a></li>
+          <!-- Futuras opciones de gestión -->
+        </ul>
+        <div class="sidebar-footer">
+          <form th:action="@{/logout}" method="post">
+            <button
+              type="submit"
+              class="btn-editorial-ghost"
+              style="
+                width: 100%;
+                color: var(--paper);
+                border-color: rgba(247, 242, 234, 0.3);
+              "
+            >
+              Cerrar Sesión
+            </button>
+          </form>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="admin-content">
+        <div class="hero animate-in">
+          <div class="hero__left">
+            <nav class="breadcrumb">
+              <a href="/admin/dashboard">Administración</a>
+              <span class="breadcrumb__sep">/</span>
+              <span>Dashboard</span>
+            </nav>
+            <h1 class="hero__title">Panel de <em>Gestión</em></h1>
+          </div>
+          <div class="hero__right">
+            <p class="hero__body">
+              Bienvenido al centro de control de Schooledule. Desde aquí podrás
+              gestionar usuarios, centros y la infraestructura global.
+            </p>
+          </div>
+        </div>
+
+        <div class="stat-grid animate-in">
+          <div class="stat-card">
+            <span class="stat-card__num">0</span>
+            <span class="stat-card__label">Centros Activos</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__num">0</span>
+            <span class="stat-card__label">Usuarios Totales</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__num">0</span>
+            <span class="stat-card__label">Incidencias</span>
+          </div>
+        </div>
+
+        <div class="empty-state animate-in" style="margin-top: 4rem">
+          <h2 class="empty-state__title">Modo Infraestructura</h2>
+          <p class="empty-state__body">
+            Las herramientas de gestión granular se habilitarán en la próxima
+            fase del track.
+          </p>
+        </div>
+      </main>
+    </div>
   </body>
 </html>

@@ -1,55 +1,37 @@
 <!doctype html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mis Notas - Schooledule</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      body {
-        background-color: #f8f9fa;
-      }
-      .module-card {
-        margin-bottom: 2rem;
-        border: none;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-      }
-      .module-header {
-        background-color: #e9ecef;
-        border-radius: 10px 10px 0 0;
-        padding: 1rem;
-      }
-    </style>
-  </head>
+  <head th:replace="~{alumno/fragments/layout :: head('Mis notas')}"></head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-      <div class="container">
-        <a class="navbar-brand" href="/alumno/dashboard">Schooledule</a>
-        <div class="navbar-nav ms-auto">
-          <a class="nav-link" href="/alumno/perfil">Mi Perfil</a>
-          <a class="nav-link active" href="/alumno/notas">Mis Notas</a>
-          <form th:action="@{/logout}" method="post" class="d-inline">
-            <button type="submit" class="btn btn-link nav-link">
-              Cerrar Sesión
-            </button>
-          </form>
-        </div>
-      </div>
-    </nav>
+    <div th:replace="~{alumno/fragments/layout :: topnav('notas')}"></div>
 
-    <div class="container">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Mis Calificaciones</h2>
-        <form class="d-flex" method="get" th:action="@{/alumno/notas}">
-          <select
-            name="periodoId"
-            class="form-select me-2"
-            onchange="this.form.submit()"
-          >
+    <main class="page-content notas-layout">
+      <aside class="notas-sidebar" aria-label="Mis clases">
+        <h2 class="notas-sidebar__title">Clases</h2>
+        <ul>
+          <li th:each="m : ${asignaturas}">
+            <a
+              th:href="@{/alumno/notas(imparticionId=${m.imparticion.id})}"
+              th:classappend="${m.imparticion.id == selectedImparticionId} ? 'is-active' : ''"
+              th:text="${m.imparticion.modulo.nombre}"
+            >
+              Módulo
+            </a>
+          </li>
+        </ul>
+      </aside>
+
+      <section class="notas-content">
+        <form
+          class="periodo-selector-form animate-in"
+          method="get"
+          th:action="@{/alumno/notas}"
+        >
+          <input
+            type="hidden"
+            name="imparticionId"
+            th:value="${selectedImparticionId}"
+          />
+          <select name="periodoId" onchange="this.form.submit()">
             <option
               th:each="p : ${periodos}"
               th:value="${p.id}"
@@ -60,63 +42,69 @@
             </option>
           </select>
         </form>
-      </div>
 
-      <div
-        th:if="${dashboard == null || dashboard.gradesByModulo.isEmpty()}"
-        class="alert alert-info"
-      >
-        No se han encontrado calificaciones para este periodo.
-      </div>
+        <div
+          th:if="${dashboard == null || dashboard.gradesByModulo.isEmpty()}"
+          class="empty-state animate-in"
+        >
+          <h2 class="empty-state__title">No hay notas publicadas.</h2>
+          <p class="empty-state__body">
+            No hay calificaciones en el periodo seleccionado.
+          </p>
+        </div>
 
-      <div
-        th:if="${dashboard != null}"
-        th:each="entry : ${dashboard.gradesByModulo}"
-      >
-        <div class="card module-card">
-          <div class="module-header">
-            <h4 class="mb-0" th:text="${entry.key}">Nombre del Módulo</h4>
-          </div>
-          <div class="card-body">
-            <table class="table table-hover">
-              <thead class="table-light">
+        <th:block th:if="${dashboard != null}">
+          <div
+            th:each="entry : ${dashboard.gradesByModulo}"
+            class="modulo-block animate-in"
+          >
+            <h2 class="modulo-title" th:text="${entry.key}">
+              Nombre del Módulo
+            </h2>
+            <table class="ce-table">
+              <thead>
                 <tr>
                   <th>Actividad</th>
                   <th>Tipo</th>
                   <th>Fecha</th>
-                  <th class="text-center">Nota</th>
-                  <th>Comentarios</th>
+                  <th style="text-align: right">Nota</th>
+                  <th>Comentario</th>
                 </tr>
               </thead>
               <tbody>
                 <tr th:each="grade : ${entry.value}">
-                  <td th:text="${grade.itemNombre}">Examen Tema 1</td>
+                  <td class="ce-table__desc" th:text="${grade.itemNombre}">
+                    Examen
+                  </td>
                   <td>
-                    <span
-                      class="badge bg-secondary"
-                      th:text="${grade.tipoActividad}"
+                    <span class="chip" th:text="${grade.tipoActividad}"
                       >TIPO</span
                     >
                   </td>
-                  <td th:text="${grade.fecha}">2026-02-25</td>
-                  <td
-                    class="text-center fw-bold"
-                    th:text="${grade.valor}"
-                    th:classappend="${grade.valor != null && grade.valor < 5 ? 'text-danger' : 'text-success'}"
-                  >
-                    8.50
+                  <td class="ce-table__desc" th:text="${grade.fecha}">
+                    2026-02-25
                   </td>
-                  <td th:text="${grade.comentario}" class="small text-muted">
-                    Buen trabajo
+                  <td style="text-align: right">
+                    <span
+                      class="nota-badge"
+                      th:text="${grade.valor}"
+                      th:classappend="${grade.valor != null && grade.valor < 5 ? 'nota-badge--fail' : 'nota-badge--pass'}"
+                    >
+                      8.50
+                    </span>
+                  </td>
+                  <td class="ce-table__desc" th:text="${grade.comentario}">
+                    —
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
-    </div>
+        </th:block>
+      </section>
+    </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <div th:replace="~{alumno/fragments/layout :: colophon}"></div>
+    <script defer th:src="@{/js/alumno-perfil-menu.js}"></script>
   </body>
 </html>

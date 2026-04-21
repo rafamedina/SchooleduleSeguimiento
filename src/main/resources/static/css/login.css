@@ -1,230 +1,221 @@
-/* =========================================
-   LOGIN THEME: GENGAR LIGHT (DÍA)
-   ========================================= */
+/* ── SCHOOLEDULE — Login Page ────────────────────────────────────────────── */
 
-html {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+@import url("schooledule.css");
 
-  /* FONDO: El degradado Lavanda suave que te gustó */
-  background: linear-gradient(135deg, #f8f0fc 0%, #e0c3fc 100%);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+/* ── Layout: dos columnas ───────────────────────────────────────────────── */
+.login-shell {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
 }
 
-/* =========================================
-   LA TARJETA DEL FORMULARIO
-   ========================================= */
-.form {
-  /* Fondo Blanco para máxima limpieza */
-  background-color: #ffffff;
-
-  /* Borde Púrpura suave */
-  border: 2px solid #e0aaff;
-
+/* ── Columna izquierda: decorativa ──────────────────────────────────────── */
+.login-aside {
+  background: var(--accent);
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  padding: 2.5em;
-  border-radius: 25px;
-
-  /* Sombra elegante en tonos morados */
-  box-shadow: 0 10px 40px rgba(60, 9, 108, 0.15);
-  transition: 0.4s ease-in-out;
-  width: 320px; /* Un ancho fijo ayuda a que se vea centrado */
+  justify-content: flex-end;
+  padding: 3.5rem;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Efecto al pasar el ratón: Flota un poco y el borde brilla */
-.form:hover {
-  transform: translateY(-5px);
-  border-color: #9d4edd; /* Se vuelve color amatista */
-  box-shadow: 0 15px 50px rgba(123, 44, 191, 0.25);
+/* Textura de fondo sutil */
+.login-aside::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.025) 0px,
+    rgba(255, 255, 255, 0.025) 1px,
+    transparent 1px,
+    transparent 12px
+  );
 }
 
-#heading {
-  text-align: center;
-  margin: 1em 0 1.5em 0;
-
-  /* Texto Púrpura Oscuro (Casi negro) para contraste */
-  color: #3c096c;
-  font-size: 1.8em;
-  font-weight: 800;
-  letter-spacing: 1px;
+.aside-word {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(3.5rem, 7vw, 6rem);
+  line-height: 0.95;
+  color: var(--paper);
+  letter-spacing: -0.02em;
+  position: relative;
+  hyphens: manual;
 }
 
-/* =========================================
-   INPUTS (CAMPOS DE TEXTO)
-   ========================================= */
-.field {
+.aside-sub {
+  margin-top: 1.25rem;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(247, 242, 234, 0.5);
+  position: relative;
+}
+
+/* ── Columna derecha: formulario ────────────────────────────────────────── */
+.login-main {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5em;
-  border-radius: 50px;
-  padding: 0.8em 1em;
-
-  /* Fondo gris/lavanda muy muy claro */
-  background-color: #f3e5f5;
-  border: 1px solid transparent;
-  outline: none;
-  color: #240046;
-  transition: all 0.3s ease;
-}
-
-/* Al escribir: Borde morado y fondo blanco puro */
-.field:focus-within {
-  background-color: #ffffff;
-  border-color: #7b2cbf;
-  box-shadow: 0 0 0 4px rgba(123, 44, 191, 0.1); /* Anillo de enfoque suave */
-}
-
-.input-icon {
-  height: 1.3em;
-  width: 1.3em;
-  fill: #9d4edd; /* Iconos color amatista */
-}
-
-.input-field {
-  background: none;
-  border: none;
-  outline: none;
-  width: 100%;
-  color: #3c096c; /* Texto oscuro */
-  font-weight: 600;
-}
-
-.input-field::placeholder {
-  color: #bfa2db; /* Placeholder lila suave */
-}
-
-/* =========================================
-   BOTONES
-   ========================================= */
-.form .btn {
-  display: flex;
-  justify-content: center;
-  flex-direction: row;
-  margin-top: 2em;
-  gap: 10px;
-}
-
-/* BOTÓN 1: LOGIN (Púrpura Vibrante) */
-.button1 {
-  padding: 0.7em 1.5em;
-  border-radius: 50px;
-  border: none;
-  outline: none;
-  transition: 0.3s ease-in-out;
-
-  /* Gradiente Gengar */
-  background: linear-gradient(135deg, #7b2cbf 0%, #3c096c 100%);
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(60, 9, 108, 0.2);
-}
-
-.button1:hover {
-  background: linear-gradient(135deg, #9d4edd 0%, #5a189a 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(60, 9, 108, 0.3);
-}
-
-/* BOTÓN 2: SIGN UP (Blanco con borde) */
-.button2 {
-  padding: 0.7em 1.5em;
-  border-radius: 50px;
-  border: 2px solid #e0aaff;
-  outline: none;
-  transition: 0.3s ease-in-out;
-  background-color: transparent;
-  color: #7b2cbf;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.button2:hover {
-  background-color: #f3e5f5;
-  border-color: #7b2cbf;
-  color: #3c096c;
-}
-
-/* BOTÓN 3: FORGOT PASSWORD (El toque rojo) */
-.button3 {
-  margin-bottom: 1em;
-  padding: 0.5em;
-  border-radius: 5px;
-  border: none;
-  outline: none;
-  transition: 0.3s ease-in-out;
-  background-color: transparent;
-  color: #9d4edd; /* Lila */
-  cursor: pointer;
-  font-size: 0.9em;
-  margin-top: 10px;
-}
-
-/* Al pasar el ratón se pone ROJO (Ojos de Gengar) */
-.button3:hover {
-  color: #ff0054;
-  text-shadow: 0 0 10px rgba(255, 0, 84, 0.2);
-}
-
-/* Estilo de la ventana */
-dialog {
-  border: none;
-  border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
+  background: var(--paper);
 }
 
-/* Estilo del fondo oscuro automático */
-dialog::backdrop {
-  background-color: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(2px); /* Efecto borroso opcional */
+.login-card {
+  width: 100%;
+  max-width: 380px;
 }
 
-/* Animación de entrada (Opcional, queda muy pro) */
-dialog[open] {
-  animation: zoomIn 0.3s ease-out;
+/* ── Cabecera de la tarjeta ─────────────────────────────────────────────── */
+.login-card__eyebrow {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 0.75rem;
 }
 
-@keyframes zoomIn {
-  from {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
+.login-card__title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.05;
+  color: var(--ink);
+  margin-bottom: 2rem;
 }
 
-/* Contenedor de botones */
-.botones-grid {
+.login-card__title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
+/* ── Alertas ────────────────────────────────────────────────────────────── */
+.login-alert {
+  font-size: 0.825rem;
+  padding: 0.6rem 0.875rem;
+  margin-bottom: 1.25rem;
+  border-left: 3px solid;
+}
+
+.login-alert--error {
+  border-color: var(--hot);
+  background: rgba(194, 78, 61, 0.07);
+  color: var(--hot);
+}
+
+.login-alert--ok {
+  border-color: var(--accent);
+  background: rgba(46, 58, 92, 0.07);
+  color: var(--accent);
+}
+
+/* ── Formulario ─────────────────────────────────────────────────────────── */
+.login-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 1.25rem;
 }
 
-.botones-grid button {
-  padding: 12px;
-  background-color: #4a90e2; /* Tu color corporativo */
-  color: white;
+.login-form__group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.login-form__label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.login-form__input {
+  background: transparent;
   border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.2s;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 0.55rem 0;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 160ms ease;
 }
 
-.botones-grid button:hover {
-  background-color: #357abd;
+.login-form__input::placeholder {
+  color: var(--ink-muted);
+  opacity: 0.6;
+}
+
+.login-form__input:focus {
+  border-bottom-color: var(--accent);
+}
+
+/* ── Botón ──────────────────────────────────────────────────────────────── */
+.login-form__submit {
+  margin-top: 0.75rem;
+  padding: 0.75rem 2rem;
+  background: var(--accent);
+  color: var(--paper);
+  border: none;
+  border-radius: 0;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  align-self: flex-start;
+  transition:
+    background 160ms ease,
+    outline-offset 100ms ease;
+  outline: 2px solid transparent;
+  outline-offset: 0;
+}
+
+.login-form__submit:hover {
+  background: var(--ink);
+}
+
+.login-form__submit:focus-visible {
+  outline: 2px solid var(--hot);
+  outline-offset: 3px;
+}
+
+/* ── Pie de tarjeta ─────────────────────────────────────────────────────── */
+.login-card__footer {
+  margin-top: 3rem;
+  display: flex;
+  gap: 1rem;
+  font-size: 0.7rem;
+  color: var(--ink-muted);
+  letter-spacing: 0.05em;
+}
+
+.login-card__footer span + span::before {
+  content: "·";
+  margin-right: 1rem;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .login-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .login-aside {
+    padding: 2rem;
+    min-height: 160px;
+    justify-content: flex-end;
+  }
+
+  .aside-word {
+    font-size: clamp(2.5rem, 10vw, 3.5rem);
+  }
 }

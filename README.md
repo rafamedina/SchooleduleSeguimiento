@@ -8,20 +8,20 @@ Schooledule es una solución empresarial de gestión académica diseñada para c
 
 ## 🚀 Características Principales
 
-*   **Arquitectura Multi-Sede:** Aislamiento lógico de datos que permite la gestión de múltiples centros educativos en una única instancia.
-*   **Gestión de Identidad (RBAC):** Sistema de control de acceso basado en roles (Admin, Profesor, Alumno) con soporte para perfiles múltiples por usuario.
-*   **Auditoría Forense de Calificaciones:** Registro automático e inmutable de cualquier modificación en las notas mediante disparadores (triggers) a nivel de base de datos.
-*   **Infraestructura como Código:** Despliegue orquestado mediante Docker para asegurar la paridad absoluta entre entornos.
+- **Arquitectura Multi-Sede:** Aislamiento lógico de datos que permite la gestión de múltiples centros educativos en una única instancia.
+- **Gestión de Identidad (RBAC):** Sistema de control de acceso basado en roles (Admin, Profesor, Alumno) con soporte para perfiles múltiples por usuario.
+- **Auditoría Forense de Calificaciones:** Registro automático e inmutable de cualquier modificación en las notas mediante disparadores (triggers) a nivel de base de datos.
+- **Infraestructura como Código:** Despliegue orquestado mediante Docker para asegurar la paridad absoluta entre entornos.
 
 ---
 
 ## 🛠️ Stack Tecnológico
 
-*   **Backend:** Java 21 (LTS) & Spring Boot 3.3.5.
-*   **Persistencia:** PostgreSQL 16 (con soporte para tipos JSONB y Auditoría PL/pgSQL).
-*   **Seguridad:** Spring Security (BCrypt, RBAC, Gestión de Sesiones Persistente).
-*   **Frontend:** Thymeleaf + Vanilla CSS/JS (Diseño moderno y ligero).
-*   **Infraestructura:** Docker & Docker Compose.
+- **Backend:** Java 21 (LTS) & Spring Boot 3.3.5.
+- **Persistencia:** PostgreSQL 16 (con soporte para tipos JSONB y Auditoría PL/pgSQL).
+- **Seguridad:** Spring Security (BCrypt, RBAC, Gestión de Sesiones Persistente).
+- **Frontend:** Thymeleaf + Vanilla CSS/JS (Diseño moderno y ligero).
+- **Infraestructura:** Docker & Docker Compose.
 
 ---
 
@@ -53,9 +53,11 @@ La forma más rápida de evaluar el sistema es utilizando la infraestructura de 
 ## 🧪 Pruebas y Calidad
 
 El proyecto mantiene un estándar de calidad riguroso:
-*   **Pruebas Unitarias e Integrales:** Ejecutables mediante `./mvnw test`.
-*   **Cobertura de Código:** Umbral mínimo del 80% garantizado por JaCoCo.
-*   **Validación Local:** Integración de hooks de pre-commit para asegurar el estilo de código y la seguridad.
+
+- **Pruebas Unitarias e Integrales:** Ejecutables mediante `./mvnw test`.
+- **Cobertura de Código:** Umbral mínimo del 80% garantizado por JaCoCo.
+- **Validación Local:** Integración de hooks de pre-commit para asegurar el estilo de código y la seguridad.
 
 ---
-*Schooledule - Proyecto Final de Grado 2026*
+
+_Schooledule - Proyecto Final de Grado 2026_

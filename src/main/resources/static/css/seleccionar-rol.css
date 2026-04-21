@@ -1,0 +1,95 @@
+/* ── SCHOOLEDULE — Role Selection ────────────────────────────────────────── */
+
+@import url("schooledule.css");
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.roles-shell {
+  max-width: 860px;
+  width: 100%;
+  text-align: center;
+}
+
+.roles-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--ink-muted);
+  margin-bottom: 0.75rem;
+}
+
+.roles-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(2rem, 5vw, 3rem);
+  color: var(--ink);
+  margin-bottom: 3.5rem;
+  letter-spacing: -0.02em;
+}
+
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.role-card {
+  background: var(--paper);
+  padding: 2.5rem 2rem;
+  border-radius: 4px;
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base),
+    background-color var(--transition-base);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid var(--rule);
+}
+
+.role-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(27, 31, 42, 0.12);
+  background: #fff;
+}
+
+.role-card__icon {
+  font-size: 2.5rem;
+  color: var(--accent);
+  margin-bottom: 1rem;
+  line-height: 1;
+}
+
+.role-card__name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: var(--ink);
+  display: block;
+}
+
+.role-card__desc {
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+
+.roles-logout {
+  margin-top: 3rem;
+}
+
+@media (max-width: 640px) {
+  .roles-grid {
+    grid-template-columns: 1fr;
+    padding: 0 1.5rem;
+  }
+}

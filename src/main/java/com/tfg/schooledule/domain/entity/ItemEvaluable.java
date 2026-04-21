@@ -41,6 +41,10 @@ public class ItemEvaluable {
   @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
   private TipoActividad tipo;
 
+  @ManyToOne(optional = false, fetch = FetchType.LAZY)
+  @JoinColumn(name = "resultado_aprendizaje_id", nullable = false)
+  private ResultadoAprendizaje resultadoAprendizaje;
+
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "configuracion_rubrica", columnDefinition = "jsonb")
   private Map<String, Object> configuracionRubrica;

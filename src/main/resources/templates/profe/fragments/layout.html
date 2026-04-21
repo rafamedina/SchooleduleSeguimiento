@@ -1,0 +1,80 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head th:fragment="head(title)">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${title} + ' — Schooledule'">Schooledule</title>
+    <!-- CSRF para peticiones AJAX -->
+    <meta th:name="_csrf" th:content="${_csrf.token}" />
+    <meta th:name="_csrf_header" th:content="${_csrf.headerName}" />
+    <!-- Diseño editorial propio -->
+    <link rel="stylesheet" th:href="@{/css/profe.css}" />
+  </head>
+
+  <!-- Masthead (cabecera editorial) -->
+  <nav th:fragment="topnav(active)" class="masthead" role="banner">
+    <div class="masthead__inner">
+      <a href="/profe/dashboard" class="text-decoration-none">
+        <span class="masthead__wordmark">Schooledule</span>
+        <span class="masthead__subtitle">Claustro</span>
+      </a>
+      <ul
+        class="masthead__nav"
+        role="navigation"
+        aria-label="Navegación principal"
+      >
+        <li>
+          <a
+            th:href="@{/profe/dashboard}"
+            th:classappend="${active == 'dashboard'} ? 'active' : ''"
+            aria-current="${active == 'dashboard'} ? 'page' : false"
+          >
+            Dashboard
+          </a>
+        </li>
+        <li>
+          <form th:action="@{/logout}" method="post" style="margin: 0">
+            <input
+              type="hidden"
+              th:name="${_csrf.parameterName}"
+              th:value="${_csrf.token}"
+            />
+            <button
+              type="submit"
+              class="masthead__nav"
+              style="
+                background: none;
+                border: none;
+                padding: 0;
+                cursor: pointer;
+                font: inherit;
+              "
+            >
+              Cerrar Sesión
+            </button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Pie de página -->
+  <footer th:fragment="colophon" role="contentinfo">
+    <div class="colophon">
+      <span th:if="${centroNombre}" th:text="${centroNombre}">—</span>
+      <span th:unless="${centroNombre}">Schooledule</span>
+      &nbsp;·&nbsp;
+      <span th:text="${cursoNombre != null} ? ${cursoNombre} : '2025 / 2026'"
+        >2025 / 2026</span
+      >
+      &nbsp;·&nbsp;
+      <span
+        th:text="${#temporals.format(#temporals.createNow(), 'dd MMM yyyy')}"
+        >hoy</span
+      >
+    </div>
+  </footer>
+</html>

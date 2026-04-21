@@ -18,9 +18,22 @@
 
     <properties>
         <java.version>21</java.version>
-        <spring-ai.version>1.0.0-M3</spring-ai.version> </properties>
+        <spring-ai.version>1.0.0-M3</spring-ai.version>
+        <!-- SonarQube Configuration -->
+        <sonar.java.binaries>target/classes</sonar.java.binaries>
+        <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.projectKey>Schooledule</sonar.projectKey>
+        <sonar.projectName>Schooledule</sonar.projectName>
+        <sonar.host.url>http://localhost:9000</sonar.host.url>
+    </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>1.5.5.Final</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -102,6 +115,21 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -130,6 +158,7 @@
                         </googleJavaFormat>
                         <removeUnusedImports/>
                     </java>
+                    <lineEndings>UNIX</lineEndings>
                 </configuration>
                 <executions>
                     <execution>
@@ -151,6 +180,7 @@
                     <target>${java.version}</target>
                     <fork>true</fork>
                     <compilerArgs>
+                        <arg>-Amapstruct.defaultComponentModel=spring</arg>
                         <arg>-XDcompilePolicy=simple</arg>
                         <arg>-Xplugin:ErrorProne</arg>
                         <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
@@ -171,6 +201,16 @@
                             <version>${lombok.version}</version>
                         </path>
                         <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok-mapstruct-binding</artifactId>
+                            <version>0.2.0</version>
+                        </path>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>1.5.5.Final</version>
+                        </path>
+                        <path>
                             <groupId>com.google.errorprone</groupId>
                             <artifactId>error_prone_core</artifactId>
                             <version>2.27.0</version>
@@ -179,31 +219,11 @@
                 </configuration>
             </plugin>
 
-            <!-- 3. PMD: Análisis estático de anti-patrones -->
+            <!-- 3. SonarQube: Análisis de calidad y seguridad -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.22.0</version>
-                <configuration>
-                    <linkXRef>false</linkXRef>
-                    <printFailingErrors>true</printFailingErrors>
-                    <failOnViolation>false</failOnViolation>
-                    <includeTests>true</includeTests>
-                    <minimumPriority>3</minimumPriority>
-                    <rulesets>
-                        <ruleset>/category/java/bestpractices.xml</ruleset>
-                        <ruleset>/category/java/codestyle.xml</ruleset>
-                        <ruleset>/category/java/errorprone.xml</ruleset>
-                    </rulesets>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <phase>verify</phase>
-                    </execution>
-                </executions>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>5.0.0.4389</version>
             </plugin>
 
             <plugin>
