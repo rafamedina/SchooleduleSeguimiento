@@ -62,9 +62,10 @@ El proyecto mantiene un estándar de calidad riguroso:
 
 Si quieres descargarlo para probarlo los correos a probar son los siiguiente:
 
+```
 cuenta mixta: pedro@tfg.com   - 1234
 alumno: ana@tfg.com - 1234
 profesor: juan@tfg.com - 1234
 admin: admin@tfg.com - 1234
-
+```
 _Schooledule - Proyecto Final de Grado 2026_
