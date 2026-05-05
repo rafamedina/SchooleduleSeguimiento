@@ -25,21 +25,21 @@ Schooledule es un sistema ERP académico para centros de formación profesional 
 
 ## Stack Tecnológico
 
-| Capa | Tecnología |
-|---|---|
-| Lenguaje | Java 21 (LTS) + Lombok |
-| Framework | Spring Boot 3.3.5 |
-| Seguridad | Spring Security 6 (RBAC, CSRF, sesiones JDBC) |
-| Persistencia | Spring Data JPA + Hibernate 6 + PostgreSQL 16 |
-| Migraciones | Flyway |
-| Mapeo de DTOs | MapStruct 1.5.5 (compile-time) |
-| Frontend | Thymeleaf + Bootstrap 5 + Vanilla JS |
-| Rate Limiting | Bucket4j 8.10 |
-| API Docs | SpringDoc OpenAPI (Swagger UI) |
-| Contenedores | Docker + Docker Compose |
-| Calidad | SonarQube 10.7, Spotless, Error Prone, JaCoCo |
-| Testing | JUnit 5, Mockito, Testcontainers, H2 |
-| Build | Maven 3 |
+| Capa          | Tecnología                                    |
+| ------------- | --------------------------------------------- |
+| Lenguaje      | Java 21 (LTS) + Lombok                        |
+| Framework     | Spring Boot 3.3.5                             |
+| Seguridad     | Spring Security 6 (RBAC, CSRF, sesiones JDBC) |
+| Persistencia  | Spring Data JPA + Hibernate 6 + PostgreSQL 16 |
+| Migraciones   | Flyway                                        |
+| Mapeo de DTOs | MapStruct 1.5.5 (compile-time)                |
+| Frontend      | Thymeleaf + Bootstrap 5 + Vanilla JS          |
+| Rate Limiting | Bucket4j 8.10                                 |
+| API Docs      | SpringDoc OpenAPI (Swagger UI)                |
+| Contenedores  | Docker + Docker Compose                       |
+| Calidad       | SonarQube 10.7, Spotless, Error Prone, JaCoCo |
+| Testing       | JUnit 5, Mockito, Testcontainers, H2          |
+| Build         | Maven 3                                       |
 
 ---
 
@@ -77,12 +77,12 @@ docker-compose up -d
 
 Esto levanta cuatro servicios:
 
-| Servicio | URL | Descripción |
-|---|---|---|
-| Aplicación | `http://localhost:8080` | Schooledule (Spring Boot) |
-| pgAdmin | `http://localhost:5050` | Gestor visual de PostgreSQL |
-| SonarQube | `http://localhost:9000` | Análisis de calidad de código |
-| PostgreSQL | `localhost:5432` | Base de datos (acceso interno) |
+| Servicio   | URL                     | Descripción                    |
+| ---------- | ----------------------- | ------------------------------ |
+| Aplicación | `http://localhost:8080` | Schooledule (Spring Boot)      |
+| pgAdmin    | `http://localhost:5050` | Gestor visual de PostgreSQL    |
+| SonarQube  | `http://localhost:9000` | Análisis de calidad de código  |
+| PostgreSQL | `localhost:5432`        | Base de datos (acceso interno) |
 
 > [!NOTE]
 > Revisa el archivo `infraestructura/.env` para ajustar puertos y credenciales antes de arrancar por primera vez.
@@ -117,13 +117,13 @@ docker-compose up -d postgres
 
 ## Variables de Entorno
 
-| Variable | Descripción | Valor por defecto (dev) |
-|---|---|---|
-| `DB_USERNAME` | Usuario de PostgreSQL | `postgres` |
-| `DB_PASSWORD` | Contraseña de PostgreSQL | `root123` |
-| `DB_PORT` | Puerto expuesto de la BD | `5432` |
-| `APP_PORT` | Puerto de la aplicación | `8080` |
-| `SPRING_PROFILES_ACTIVE` | Perfil de Spring activo | `dev` |
+| Variable                 | Descripción              | Valor por defecto (dev) |
+| ------------------------ | ------------------------ | ----------------------- |
+| `DB_USERNAME`            | Usuario de PostgreSQL    | `postgres`              |
+| `DB_PASSWORD`            | Contraseña de PostgreSQL | `root123`               |
+| `DB_PORT`                | Puerto expuesto de la BD | `5432`                  |
+| `APP_PORT`               | Puerto de la aplicación  | `8080`                  |
+| `SPRING_PROFILES_ACTIVE` | Perfil de Spring activo  | `dev`                   |
 
 > [!WARNING]
 > En producción, `DB_PASSWORD` no tiene fallback seguro. Define siempre `SPRING_PROFILES_ACTIVE=prod` y gestiona las credenciales mediante secretos externos.
@@ -132,12 +132,12 @@ docker-compose up -d postgres
 
 ## Tests y Calidad
 
-| Comando | Descripción |
-|---|---|
-| `./mvnw test` | Ejecuta la suite completa (JUnit 5 + Mockito + H2) |
-| `./mvnw verify` | Build completo con tests e informe JaCoCo |
-| `./mvnw sonar:sonar` | Envía métricas a SonarQube (requiere instancia activa) |
-| `pre-commit run --all-files` | Valida estilo y reglas de seguridad localmente |
+| Comando                      | Descripción                                            |
+| ---------------------------- | ------------------------------------------------------ |
+| `./mvnw test`                | Ejecuta la suite completa (JUnit 5 + Mockito + H2)     |
+| `./mvnw verify`              | Build completo con tests e informe JaCoCo              |
+| `./mvnw sonar:sonar`         | Envía métricas a SonarQube (requiere instancia activa) |
+| `pre-commit run --all-files` | Valida estilo y reglas de seguridad localmente         |
 
 El umbral de cobertura mínimo es **80%**, verificado automáticamente por JaCoCo en cada build. Los tests de seguridad son obligatorios en cada track: se valida 401 sin autenticación, 403 con rol incorrecto, y 403/404 al acceder a datos de otro centro.
 
