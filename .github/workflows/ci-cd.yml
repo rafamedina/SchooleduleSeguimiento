@@ -245,7 +245,7 @@ jobs:
           git checkout -B pre-prod
 
           # Ejecutar Purga
-          CLEAN_LIST=".agents/ conductor/ .gemini/ .gemini_security/ .idea/ .vscode/ target/ GEMINI.md CLAUDE.md plan.md skills-lock.json HELP.md ideaProyecto.txt DefinicionTecnica.txt .gitignore_gen"
+          CLEAN_LIST="documentacion/ asignaturas/"
           for item in $CLEAN_LIST; do
             if [ -e "$item" ]; then
               echo "Removing $item"
