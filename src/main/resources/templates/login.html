@@ -48,6 +48,14 @@
           >
             Sesión cerrada correctamente.
           </div>
+          <div
+            th:if="${param.norole}"
+            class="login-alert login-alert--error"
+            role="alert"
+          >
+            Tu cuenta no tiene ningún rol asignado. Contacta con el
+            administrador.
+          </div>
 
           <!-- Formulario -->
           <form
@@ -58,14 +66,14 @@
           >
             <div class="login-form__group">
               <label class="login-form__label" for="username"
-                >Correo electrónico</label
+                >Correo electrónico o usuario</label
               >
               <input
                 class="login-form__input"
-                type="email"
+                type="text"
                 id="username"
                 name="username"
-                autocomplete="email"
+                autocomplete="username"
                 placeholder="juan@centro.es"
                 required
               />

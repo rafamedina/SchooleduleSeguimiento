@@ -78,6 +78,6 @@ class CustomLoginSuccessHandlerTest {
 
     handler.onAuthenticationSuccess(request, response, authentication);
 
-    verify(response).sendRedirect("/");
+    verify(response).sendRedirect("/login?norole");
   }
 }

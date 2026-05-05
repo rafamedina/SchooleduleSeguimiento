@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head
+    th:replace="~{admin/fragments/layout :: head(${form.id != null} ? 'Editar impartición' : 'Nueva impartición')}"
+  ></head>
+  <body>
+    <div class="admin-shell">
+      <div
+        th:replace="~{admin/fragments/layout :: sidebar('imparticiones')}"
+      ></div>
+
+      <main class="admin-content">
+        <div class="hero animate-in">
+          <div class="hero__left">
+            <nav class="breadcrumb">
+              <a th:href="@{/admin/dashboard}">Administración</a>
+              <span class="breadcrumb__sep">/</span>
+              <a th:href="@{/admin/imparticiones}">Imparticiones</a>
+              <span class="breadcrumb__sep">/</span>
+              <span th:text="${form.id != null} ? 'Editar' : 'Nueva'"
+                >Nueva</span
+              >
+            </nav>
+            <h1 class="hero__title">
+              <span th:text="${form.id != null} ? 'Editar' : 'Nueva'"
+                >Nueva</span
+              >
+              <em>Impartición</em>
+            </h1>
+          </div>
+        </div>
+
+        <div class="animate-in">
+          <div
+            th:if="${error}"
+            class="alert alert-danger"
+            th:text="${error}"
+          ></div>
+
+          <form
+            th:action="${form.id != null} ? @{/admin/imparticiones/{id}/editar(id=${form.id})} : @{/admin/imparticiones/nuevo}"
+            th:object="${form}"
+            method="post"
+          >
+            <div class="form-group">
+              <label for="moduloId">Módulo</label>
+              <select
+                id="moduloId"
+                th:field="*{moduloId}"
+                class="form-control"
+                th:classappend="${#fields.hasErrors('moduloId')} ? 'is-invalid' : ''"
+              >
+                <option value="">-- Selecciona un módulo --</option>
+                <option
+                  th:each="m : ${modulos}"
+                  th:value="${m.id}"
+                  th:text="${m.codigo + ' — ' + m.nombre}"
+                ></option>
+              </select>
+              <div
+                class="invalid-feedback"
+                th:if="${#fields.hasErrors('moduloId')}"
+                th:errors="*{moduloId}"
+              ></div>
+            </div>
+
+            <div class="form-group">
+              <label for="grupoId">Grupo</label>
+              <select
+                id="grupoId"
+                th:field="*{grupoId}"
+                class="form-control"
+                th:classappend="${#fields.hasErrors('grupoId')} ? 'is-invalid' : ''"
+              >
+                <option value="">-- Selecciona un grupo --</option>
+                <option
+                  th:each="g : ${grupos}"
+                  th:value="${g.id}"
+                  th:text="${g.nombre + ' (' + g.centro.nombre + ')'}"
+                ></option>
+              </select>
+              <div
+                class="invalid-feedback"
+                th:if="${#fields.hasErrors('grupoId')}"
+                th:errors="*{grupoId}"
+              ></div>
+            </div>
+
+            <div class="form-group">
+              <label for="profesorId">Profesor</label>
+              <select
+                id="profesorId"
+                th:field="*{profesorId}"
+                class="form-control"
+                th:classappend="${#fields.hasErrors('profesorId')} ? 'is-invalid' : ''"
+              >
+                <option value="">-- Selecciona un profesor --</option>
+                <option
+                  th:each="p : ${profesores}"
+                  th:value="${p.id}"
+                  th:text="${p.apellidos + ', ' + p.nombre}"
+                ></option>
+              </select>
+              <div
+                class="invalid-feedback"
+                th:if="${#fields.hasErrors('profesorId')}"
+                th:errors="*{profesorId}"
+              ></div>
+            </div>
+
+            <div class="form-group">
+              <label for="centroId">Centro</label>
+              <select
+                id="centroId"
+                th:field="*{centroId}"
+                class="form-control"
+                th:classappend="${#fields.hasErrors('centroId')} ? 'is-invalid' : ''"
+              >
+                <option value="">-- Selecciona un centro --</option>
+                <option
+                  th:each="c : ${centros}"
+                  th:value="${c.id}"
+                  th:text="${c.nombre}"
+                ></option>
+              </select>
+              <div
+                class="invalid-feedback"
+                th:if="${#fields.hasErrors('centroId')}"
+                th:errors="*{centroId}"
+              ></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a th:href="@{/admin/imparticiones}" class="btn btn-secondary"
+              >Cancelar</a
+            >
+          </form>
+        </div>
+      </main>
+
+      <div th:replace="~{admin/fragments/layout :: colophon}"></div>
+    </div>
+  </body>
+</html>

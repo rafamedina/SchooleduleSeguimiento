@@ -106,7 +106,7 @@ class ProfeControllerIntegrationTest {
   void postNotas_periodoCerrado_retorna409Json() throws Exception {
     GradeUpsertRequest req =
         new GradeUpsertRequest(
-            1, List.of(new GradeUpsertRequest.Entry(1, new BigDecimal("8.00"), null)));
+            1, List.of(new GradeUpsertRequest.Entry(1, 1, new BigDecimal("8.00"), null)));
 
     // El servicio detecta el periodo cerrado antes de persistir
     when(teacherService.upsertGrades(2, "juan@tfg.com", req))
@@ -135,7 +135,7 @@ class ProfeControllerIntegrationTest {
     // body.matriculaId = 99, path = 1 → mismatch → 400
     GradeUpsertRequest req =
         new GradeUpsertRequest(
-            99, List.of(new GradeUpsertRequest.Entry(1, new BigDecimal("7.00"), null)));
+            99, List.of(new GradeUpsertRequest.Entry(1, 1, new BigDecimal("7.00"), null)));
 
     mockMvc
         .perform(

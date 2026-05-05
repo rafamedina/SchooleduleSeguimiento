@@ -41,7 +41,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
     } else if (roles.contains("ROLE_ALUMNO")) {
       response.sendRedirect("/alumno/dashboard");
     } else {
-      response.sendRedirect("/");
+      response.sendRedirect("/login?norole");
     }
   }
 }

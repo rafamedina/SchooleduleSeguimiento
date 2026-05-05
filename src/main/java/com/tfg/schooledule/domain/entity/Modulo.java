@@ -23,4 +23,8 @@ public class Modulo {
 
   @Column(nullable = false, length = 150)
   private String nombre;
+
+  @Column(nullable = false)
+  @Builder.Default
+  private Boolean activo = true;
 }

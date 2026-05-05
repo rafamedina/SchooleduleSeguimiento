@@ -53,25 +53,50 @@
             </tr>
           </thead>
           <tbody>
-            <tr
-              th:each="asig : ${asignaturas}"
-              class="animate-in"
-              th:onclick="'location.href=\'/profe/imparticion/' + ${asig.imparticionId} + '/alumnos\''"
-            >
-              <td class="subject-table__code" th:text="${asig.moduloCodigo}">
-                DAW1101
-              </td>
-              <td>
-                <span
-                  class="subject-table__modname"
-                  th:text="${asig.moduloNombre}"
-                  >Desarrollo Web</span
+            <tr th:each="asig : ${asignaturas}" class="animate-in">
+              <td class="subject-table__code">
+                <a
+                  class="subject-row-link"
+                  th:href="@{/profe/imparticion/{id}/alumnos(id=${asig.imparticionId})}"
+                  th:text="${asig.moduloCodigo}"
+                  >DAW1101</a
                 >
               </td>
-              <td th:text="${asig.grupoNombre}">DAW1-A</td>
-              <td th:text="${asig.cursoAcademicoNombre}">2025/2026</td>
-              <td class="subject-table__num" th:text="${asig.alumnosCount}">
-                20
+              <td>
+                <a
+                  class="subject-row-link"
+                  th:href="@{/profe/imparticion/{id}/alumnos(id=${asig.imparticionId})}"
+                >
+                  <span
+                    class="subject-table__modname"
+                    th:text="${asig.moduloNombre}"
+                    >Desarrollo Web</span
+                  >
+                </a>
+              </td>
+              <td>
+                <a
+                  class="subject-row-link"
+                  th:href="@{/profe/imparticion/{id}/alumnos(id=${asig.imparticionId})}"
+                  th:text="${asig.grupoNombre}"
+                  >DAW1-A</a
+                >
+              </td>
+              <td>
+                <a
+                  class="subject-row-link"
+                  th:href="@{/profe/imparticion/{id}/alumnos(id=${asig.imparticionId})}"
+                  th:text="${asig.cursoAcademicoNombre}"
+                  >2025/2026</a
+                >
+              </td>
+              <td class="subject-table__num">
+                <a
+                  class="subject-row-link"
+                  th:href="@{/profe/imparticion/{id}/alumnos(id=${asig.imparticionId})}"
+                  th:text="${asig.alumnosCount}"
+                  >20</a
+                >
               </td>
             </tr>
           </tbody>

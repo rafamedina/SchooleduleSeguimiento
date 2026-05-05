@@ -48,6 +48,96 @@
         </p>
       </div>
 
+      <!-- Gestión de ítems evaluables -->
+      <section class="items-panel animate-in">
+        <h2 class="section-title">Ítems evaluables</h2>
+
+        <p class="msg msg--ok" th:if="${okItem}" th:text="${okItem}"></p>
+        <p
+          class="msg msg--error"
+          th:if="${errorItem}"
+          th:text="${errorItem}"
+        ></p>
+
+        <!-- Formulario crear ítem -->
+        <form
+          th:action="@{/profe/imparticion/{id}/items(id=${imparticionId})}"
+          method="post"
+          th:object="${itemForm}"
+          class="item-form"
+        >
+          <select th:field="*{periodoEvaluacionId}" required>
+            <option value="" disabled selected>— Periodo —</option>
+            <option
+              th:each="p : ${periodos}"
+              th:value="${p.id}"
+              th:text="${p.nombre}"
+            ></option>
+          </select>
+          <select th:field="*{resultadoAprendizajeId}" required>
+            <option value="" disabled selected>
+              — Resultado de Aprendizaje —
+            </option>
+            <option
+              th:each="ra : ${ras}"
+              th:value="${ra.id}"
+              th:text="${ra.codigo + ' — ' + ra.descripcion}"
+            ></option>
+          </select>
+          <select th:field="*{tipo}" required>
+            <option value="EXAMEN">Examen</option>
+            <option value="PRACTICA">Práctica</option>
+            <option value="RECUPERACION">Recuperación</option>
+            <option value="ACTITUD">Actitud</option>
+          </select>
+          <input
+            th:field="*{nombre}"
+            type="text"
+            placeholder="Nombre del ítem"
+            required
+          />
+          <input th:field="*{fecha}" type="date" required />
+          <button type="submit" class="btn-editorial-primary">
+            Añadir ítem
+          </button>
+        </form>
+
+        <!-- Lista de ítems existentes -->
+        <ul class="item-list" th:if="${items != null and !items.isEmpty()}">
+          <li th:each="item : ${items}" class="item-list__row">
+            <span class="chip chip--tipo" th:text="${item.tipo}"></span>
+            <span th:text="${item.periodoEvaluacion.nombre}"></span>
+            <span th:text="${item.resultadoAprendizaje.codigo}"></span>
+            <span th:text="${item.nombre}"></span>
+            <span
+              class="item-list__fecha"
+              th:if="${item.fecha != null}"
+              th:text="${#temporals.format(item.fecha, 'dd/MM/yyyy')}"
+            ></span>
+            <form
+              th:action="@{/profe/items/{id}/eliminar(id=${item.id})}"
+              method="post"
+            >
+              <button
+                type="submit"
+                class="btn-icon btn-icon--danger"
+                aria-label="Eliminar ítem"
+                onclick="return confirm('¿Eliminar este ítem?')"
+              >
+                ✕
+              </button>
+            </form>
+          </li>
+        </ul>
+
+        <p
+          th:if="${items == null or items.isEmpty()}"
+          class="empty-state__body"
+        >
+          No hay ítems evaluables. Crea el primero.
+        </p>
+      </section>
+
       <!-- Listado de alumnos -->
       <ul
         th:if="${!alumnos.isEmpty()}"
@@ -81,6 +171,11 @@
           <span class="chip chip--hot" th:if="${alumno.esRepetidor}"
             >Repetidor</span
           >
+          <span
+            class="chip chip--danger"
+            th:if="${alumno.cesSuspensas > 0}"
+            th:text="${alumno.cesSuspensas + ' CE(s) suspensa(s)'}"
+          ></span>
         </li>
       </ul>
 

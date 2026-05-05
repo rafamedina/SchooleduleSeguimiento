@@ -1,0 +1,114 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head th:fragment="head(title)">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title th:text="${title} + ' — Schooledule'">Schooledule</title>
+    <meta th:name="_csrf" th:content="${_csrf.token}" />
+    <meta th:name="_csrf_header" th:content="${_csrf.headerName}" />
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+  </head>
+
+  <nav th:fragment="sidebar(active)" class="admin-sidebar">
+    <div class="sidebar-wordmark">Schooledule</div>
+    <ul class="sidebar-nav">
+      <li>
+        <a
+          th:href="@{/admin/dashboard}"
+          th:classappend="${active == 'dashboard'} ? 'active' : ''"
+          >Dashboard</a
+        >
+      </li>
+      <li>
+        <a
+          th:href="@{/admin/usuarios}"
+          th:classappend="${active == 'usuarios'} ? 'active' : ''"
+          >Usuarios</a
+        >
+      </li>
+      <li>
+        <a
+          th:href="@{/admin/centros}"
+          th:classappend="${active == 'centros'} ? 'active' : ''"
+          >Centros</a
+        >
+      </li>
+      <li>
+        <a
+          th:href="@{/admin/cursos}"
+          th:classappend="${active == 'cursos'} ? 'active' : ''"
+          >Cursos</a
+        >
+      </li>
+      <li>
+        <a
+          th:href="@{/admin/grupos}"
+          th:classappend="${active == 'grupos'} ? 'active' : ''"
+          >Grupos</a
+        >
+      </li>
+      <li>
+        <a
+          th:href="@{/admin/modulos}"
+          th:classappend="${active == 'modulos'} ? 'active' : ''"
+          >Módulos</a
+        >
+      </li>
+      <li>
+        <a
+          th:href="@{/admin/alumnos}"
+          th:classappend="${active == 'alumnos'} ? 'active' : ''"
+          >Alumnos</a
+        >
+      </li>
+      <li>
+        <a
+          th:href="@{/admin/imparticiones}"
+          th:classappend="${active == 'imparticiones'} ? 'active' : ''"
+          >Imparticiones</a
+        >
+      </li>
+      <li>
+        <a
+          th:href="@{/admin/auditoria}"
+          th:classappend="${active == 'auditoria'} ? 'active' : ''"
+          >Auditoría</a
+        >
+      </li>
+    </ul>
+    <div class="sidebar-footer">
+      <form th:action="@{/logout}" method="post">
+        <input
+          type="hidden"
+          th:name="${_csrf.parameterName}"
+          th:value="${_csrf.token}"
+        />
+        <button
+          type="submit"
+          class="btn-editorial-ghost"
+          style="
+            width: 100%;
+            color: var(--paper);
+            border-color: rgba(247, 242, 234, 0.3);
+          "
+        >
+          Cerrar Sesión
+        </button>
+      </form>
+    </div>
+  </nav>
+
+  <footer th:fragment="colophon" role="contentinfo">
+    <div class="colophon">
+      <span>Schooledule</span>
+      &nbsp;·&nbsp;
+      <span
+        th:text="${#temporals.format(#temporals.createNow(), 'dd MMM yyyy')}"
+        >hoy</span
+      >
+    </div>
+  </footer>
+</html>

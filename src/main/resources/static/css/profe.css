@@ -166,6 +166,12 @@
   font-feature-settings: "lnum", "tnum";
 }
 
+.subject-row-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
 /* ── Listado de alumnos ───────────────────────────────────────────────────── */
 .roster {
   list-style: none;
@@ -662,4 +668,146 @@ details[open] .ra-block__toggle {
   background: transparent;
   border-color: transparent;
   color: var(--ink-muted);
+}
+
+/* ── Recuperación / items panel ──────────────────────────────────────────── */
+.chip--warn {
+  background: #f59e0b;
+  color: #fff;
+}
+.nota-ref {
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  display: block;
+  margin-bottom: 4px;
+}
+.input--recuperacion {
+  border-color: #f59e0b;
+}
+
+/* ── Items panel ─────────────────────────────────────────────────────────── */
+.items-panel {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--paper-alt);
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--ink);
+  margin-bottom: 1rem;
+}
+
+.item-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.item-form select,
+.item-form input[type="text"],
+.item-form input[type="date"] {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--rule-heavy);
+  border-radius: 3px;
+  font-size: 0.875rem;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.item-list {
+  list-style: none;
+  margin-top: 0.75rem;
+}
+
+.item-list__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.875rem;
+}
+
+.item-list__fecha {
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+  font-family: "Geist Mono", monospace;
+}
+
+.btn-icon {
+  background: none;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.btn-icon--danger {
+  color: var(--hot);
+}
+
+.btn-icon--danger:hover {
+  background: var(--hot);
+  color: #fff;
+}
+
+.chip--tipo {
+  background: var(--paper);
+  border: 1px solid var(--rule-heavy);
+  color: var(--ink-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.15em 0.45em;
+  border-radius: 2px;
+}
+
+.chip--danger {
+  background: rgba(194, 78, 61, 0.12);
+  color: var(--hot);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.2em 0.5em;
+  border-radius: 2px;
+}
+
+.chip--info {
+  background: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.2em 0.5em;
+  border-radius: 2px;
+}
+
+.msg {
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.msg--ok {
+  background: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+}
+
+.msg--error {
+  background: rgba(194, 78, 61, 0.12);
+  color: var(--hot);
 }

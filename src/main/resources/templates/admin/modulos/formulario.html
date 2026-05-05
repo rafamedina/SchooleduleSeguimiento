@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head
+    th:replace="~{admin/fragments/layout :: head(${form.id != null} ? 'Editar módulo' : 'Nuevo módulo')}"
+  ></head>
+  <body>
+    <div class="admin-shell">
+      <div th:replace="~{admin/fragments/layout :: sidebar('modulos')}"></div>
+
+      <main class="admin-content">
+        <div class="hero animate-in">
+          <div class="hero__left">
+            <nav class="breadcrumb">
+              <a th:href="@{/admin/dashboard}">Administración</a>
+              <span class="breadcrumb__sep">/</span>
+              <a th:href="@{/admin/modulos}">Módulos</a>
+              <span class="breadcrumb__sep">/</span>
+              <span th:text="${form.id != null} ? 'Editar' : 'Nuevo'"
+                >Nuevo</span
+              >
+            </nav>
+            <h1 class="hero__title">
+              <span th:text="${form.id != null} ? 'Editar' : 'Nuevo'"
+                >Nuevo</span
+              >
+              <em>Módulo</em>
+            </h1>
+          </div>
+        </div>
+
+        <div class="animate-in">
+          <div
+            th:if="${error}"
+            class="alert alert-danger"
+            th:text="${error}"
+          ></div>
+
+          <form
+            th:action="${form.id != null} ? @{/admin/modulos/{id}/editar(id=${form.id})} : @{/admin/modulos/nuevo}"
+            th:object="${form}"
+            method="post"
+          >
+            <div class="form-group">
+              <label for="codigo">Código</label>
+              <input
+                type="text"
+                id="codigo"
+                th:field="*{codigo}"
+                class="form-control"
+                th:classappend="${#fields.hasErrors('codigo')} ? 'is-invalid' : ''"
+                placeholder="Ej: DAW01"
+              />
+              <div
+                class="invalid-feedback"
+                th:if="${#fields.hasErrors('codigo')}"
+                th:errors="*{codigo}"
+              ></div>
+            </div>
+
+            <div class="form-group">
+              <label for="nombre">Nombre</label>
+              <input
+                type="text"
+                id="nombre"
+                th:field="*{nombre}"
+                class="form-control"
+                th:classappend="${#fields.hasErrors('nombre')} ? 'is-invalid' : ''"
+              />
+              <div
+                class="invalid-feedback"
+                th:if="${#fields.hasErrors('nombre')}"
+                th:errors="*{nombre}"
+              ></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a th:href="@{/admin/modulos}" class="btn btn-secondary"
+              >Cancelar</a
+            >
+          </form>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

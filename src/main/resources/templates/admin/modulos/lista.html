@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments/layout :: head('Módulos')}"></head>
+  <body>
+    <div class="admin-shell">
+      <div th:replace="~{admin/fragments/layout :: sidebar('modulos')}"></div>
+
+      <main class="admin-content">
+        <div class="hero animate-in">
+          <div class="hero__left">
+            <nav class="breadcrumb">
+              <a th:href="@{/admin/dashboard}">Administración</a>
+              <span class="breadcrumb__sep">/</span>
+              <span>Módulos</span>
+            </nav>
+            <h1 class="hero__title">Gestión de <em>Módulos</em></h1>
+          </div>
+          <div class="hero__right">
+            <a th:href="@{/admin/modulos/nuevo}" class="btn btn-primary"
+              >Nuevo módulo</a
+            >
+          </div>
+        </div>
+
+        <div class="animate-in">
+          <div
+            th:if="${error}"
+            class="alert alert-danger"
+            th:text="${error}"
+          ></div>
+
+          <div th:if="${#lists.isEmpty(modulos)}" class="empty-state">
+            <p>No hay módulos registrados.</p>
+            <a th:href="@{/admin/modulos/nuevo}" class="btn btn-primary"
+              >Crear el primero</a
+            >
+          </div>
+
+          <table class="table" th:unless="${#lists.isEmpty(modulos)}">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Imparticiones</th>
+                <th>Resultados Aprendizaje</th>
+                <th>Activo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="m : ${modulos}">
+                <td th:text="${m.codigo}"></td>
+                <td th:text="${m.nombre}"></td>
+                <td th:text="${m.numImparticiones}"></td>
+                <td th:text="${m.numResultadosAprendizaje}"></td>
+                <td th:text="${m.activo ? 'Sí' : 'No'}"></td>
+                <td>
+                  <a
+                    th:href="@{/admin/modulos/{id}/editar(id=${m.id})}"
+                    class="btn btn-sm btn-secondary"
+                    >Editar</a
+                  >
+                  <form
+                    th:action="@{/admin/modulos/{id}/toggle-activo(id=${m.id})}"
+                    method="post"
+                    style="display: inline"
+                  >
+                    <input
+                      type="hidden"
+                      th:name="${_csrf.parameterName}"
+                      th:value="${_csrf.token}"
+                    />
+                    <button
+                      type="submit"
+                      class="btn btn-sm"
+                      th:text="${m.activo ? 'Desactivar' : 'Activar'}"
+                    >
+                      Activar
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

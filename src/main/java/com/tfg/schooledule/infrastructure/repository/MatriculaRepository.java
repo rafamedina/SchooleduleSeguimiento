@@ -32,4 +32,11 @@ public interface MatriculaRepository extends JpaRepository<Matricula, Integer> {
   List<Matricula> findByImparticionIdAndEstado(Integer imparticionId, EstadoMatricula estado);
 
   Optional<Matricula> findByIdAndImparticionProfesorId(Integer id, Integer profesorId);
+
+  boolean existsByAlumnoIdAndImparticionId(Integer alumnoId, Integer imparticionId);
+
+  boolean existsByImparticionId(Integer imparticionId);
+
+  @Query(value = "SELECT COUNT(*) FROM matriculas WHERE estado = 'ACTIVA'", nativeQuery = true)
+  long countMatriculasActivas();
 }

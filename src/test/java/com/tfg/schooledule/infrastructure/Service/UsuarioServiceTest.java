@@ -2,6 +2,7 @@ package com.tfg.schooledule.infrastructure.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import com.tfg.schooledule.domain.dto.AlumnoProfileDTO;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,6 +30,7 @@ public class UsuarioServiceTest {
   @Mock private UsuarioRepository usuarioRepository;
   @Mock private MatriculaRepository matriculaRepository;
   @Mock private CalificacionRepository calificacionRepository;
+  @Mock private TeacherDashboardService teacherDashboardService;
   @Mock private PeriodoEvaluacionRepository periodoRepository;
   @Mock private PasswordEncoder passwordEncoder;
   @Mock private AlumnoProfileMapper alumnoProfileMapper;
@@ -102,11 +105,12 @@ public class UsuarioServiceTest {
   public void testGetStudentGrades_Success() {
     Integer usuarioId = 1;
     Integer periodoId = 1;
+    Integer imparticionId = 10;
 
     PeriodoEvaluacion periodo =
         PeriodoEvaluacion.builder().id(periodoId).nombre("1er Trimestre").build();
     Modulo modulo = Modulo.builder().nombre("Programacion").build();
-    Imparticion imparticion = Imparticion.builder().modulo(modulo).build();
+    Imparticion imparticion = Imparticion.builder().id(imparticionId).modulo(modulo).build();
     Matricula matricula = Matricula.builder().imparticion(imparticion).build();
     CriterioEvaluacion ce =
         CriterioEvaluacion.builder().id(1).codigo("a").descripcion("Examen 1").build();
@@ -120,6 +124,8 @@ public class UsuarioServiceTest {
     GradeDashboardDTO expected =
         new GradeDashboardDTO("1er Trimestre", Map.of("Programacion", List.of()));
 
+    when(matriculaRepository.findByAlumnoId(usuarioId)).thenReturn(List.of(matricula));
+    when(periodoRepository.findByImparticionId(imparticionId)).thenReturn(List.of(periodo));
     when(calificacionRepository.findByAlumnoIdAndPeriodoId(usuarioId, periodoId))
         .thenReturn(List.of(calif));
     when(periodoRepository.findById(periodoId)).thenReturn(Optional.of(periodo));
@@ -136,8 +142,15 @@ public class UsuarioServiceTest {
   public void testGetStudentGrades_Empty() {
     Integer usuarioId = 1;
     Integer periodoId = 1;
+    Integer imparticionId = 10;
+
+    PeriodoEvaluacion periodo = PeriodoEvaluacion.builder().id(periodoId).nombre("P1").build();
+    Imparticion imparticion = Imparticion.builder().id(imparticionId).build();
+    Matricula matricula = Matricula.builder().imparticion(imparticion).build();
     GradeDashboardDTO expected = new GradeDashboardDTO(null, new HashMap<>());
 
+    when(matriculaRepository.findByAlumnoId(usuarioId)).thenReturn(List.of(matricula));
+    when(periodoRepository.findByImparticionId(imparticionId)).thenReturn(List.of(periodo));
     when(calificacionRepository.findByAlumnoIdAndPeriodoId(usuarioId, periodoId))
         .thenReturn(Collections.emptyList());
     when(gradeDashboardMapper.toDto(Collections.emptyList(), null)).thenReturn(expected);
@@ -147,6 +160,34 @@ public class UsuarioServiceTest {
     assertNotNull(dashboard);
     assertTrue(dashboard.gradesByModulo().isEmpty());
     assertNull(dashboard.periodoNombre());
+  }
+
+  @Test
+  public void testGetStudentGrades_IDOR_periodoNoPertenecealAlumno_lanzaAccessDeniedException() {
+    Integer usuarioId = 1;
+    Integer periodoId = 99;
+    Integer imparticionId = 10;
+
+    PeriodoEvaluacion otherPeriodo = PeriodoEvaluacion.builder().id(5).build();
+    Imparticion imparticion = Imparticion.builder().id(imparticionId).build();
+    Matricula matricula = Matricula.builder().imparticion(imparticion).build();
+
+    when(matriculaRepository.findByAlumnoId(usuarioId)).thenReturn(List.of(matricula));
+    when(periodoRepository.findByImparticionId(imparticionId)).thenReturn(List.of(otherPeriodo));
+
+    assertThrows(
+        AccessDeniedException.class, () -> usuarioService.getStudentGrades(usuarioId, periodoId));
+  }
+
+  @Test
+  public void testGetStudentGrades_IDOR_sinMatriculas_lanzaAccessDeniedException() {
+    Integer usuarioId = 1;
+    Integer periodoId = 1;
+
+    when(matriculaRepository.findByAlumnoId(usuarioId)).thenReturn(Collections.emptyList());
+
+    assertThrows(
+        AccessDeniedException.class, () -> usuarioService.getStudentGrades(usuarioId, periodoId));
   }
 
   @Test
@@ -241,5 +282,64 @@ public class UsuarioServiceTest {
 
     assertTrue(result.isEmpty());
     verify(matriculaRepository).findActivasByAlumnoId(usuarioId);
+  }
+
+  @Test
+  public void testGetStudentGrades_delegaEnGradeDashboardMapper() {
+    Integer usuarioId = 1;
+    Integer periodoId = 1;
+    Integer imparticionId = 10;
+
+    PeriodoEvaluacion periodo =
+        PeriodoEvaluacion.builder().id(periodoId).nombre("1er Trimestre").build();
+    Modulo modulo = Modulo.builder().nombre("Programacion").build();
+    Imparticion imparticion = Imparticion.builder().id(imparticionId).modulo(modulo).build();
+    Matricula matricula = Matricula.builder().imparticion(imparticion).build();
+
+    GradeDashboardDTO expected = new GradeDashboardDTO("1er Trimestre", Map.of());
+
+    when(matriculaRepository.findByAlumnoId(usuarioId)).thenReturn(List.of(matricula));
+    when(periodoRepository.findByImparticionId(imparticionId)).thenReturn(List.of(periodo));
+    when(calificacionRepository.findByAlumnoIdAndPeriodoId(usuarioId, periodoId))
+        .thenReturn(Collections.emptyList());
+    when(periodoRepository.findById(periodoId)).thenReturn(Optional.of(periodo));
+    when(gradeDashboardMapper.toDto(any(), eq("1er Trimestre"))).thenReturn(expected);
+
+    GradeDashboardDTO result = usuarioService.getStudentGrades(usuarioId, periodoId);
+
+    assertNotNull(result);
+    verify(gradeDashboardMapper).toDto(any(), eq("1er Trimestre"));
+  }
+
+  @Test
+  public void testGetStudentGrades_retornaDTOConFueModificadaPropagada() {
+    // GradeDashboardMapper.toDto() is responsible for setting fueModificada.
+    // This test verifies that UsuarioService correctly propagates the DTO returned by the mapper,
+    // including any fueModificada=true values.
+    Integer usuarioId = 1;
+    Integer periodoId = 1;
+    Integer imparticionId = 10;
+
+    PeriodoEvaluacion periodo = PeriodoEvaluacion.builder().id(periodoId).nombre("P1").build();
+    Imparticion imparticion = Imparticion.builder().id(imparticionId).build();
+    Matricula matricula = Matricula.builder().imparticion(imparticion).build();
+
+    com.tfg.schooledule.domain.dto.GradeDTO gradeConRecuperacion =
+        new com.tfg.schooledule.domain.dto.GradeDTO(
+            "a – CE1", new BigDecimal("8.00"), null, null, "EXAMEN", true);
+    GradeDashboardDTO expected =
+        new GradeDashboardDTO("P1", Map.of("Programacion", List.of(gradeConRecuperacion)));
+
+    when(matriculaRepository.findByAlumnoId(usuarioId)).thenReturn(List.of(matricula));
+    when(periodoRepository.findByImparticionId(imparticionId)).thenReturn(List.of(periodo));
+    when(calificacionRepository.findByAlumnoIdAndPeriodoId(usuarioId, periodoId))
+        .thenReturn(Collections.emptyList());
+    when(periodoRepository.findById(periodoId)).thenReturn(Optional.of(periodo));
+    when(gradeDashboardMapper.toDto(any(), eq("P1"))).thenReturn(expected);
+
+    GradeDashboardDTO result = usuarioService.getStudentGrades(usuarioId, periodoId);
+
+    assertNotNull(result);
+    assertTrue(result.gradesByModulo().get("Programacion").get(0).fueModificada());
   }
 }

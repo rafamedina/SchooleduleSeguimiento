@@ -63,6 +63,16 @@ public class UsuarioService {
   }
 
   public GradeDashboardDTO getStudentGrades(Integer usuarioId, Integer periodoId) {
+    boolean perteneceAlAlumno =
+        matriculaRepository.findByAlumnoId(usuarioId).stream()
+            .anyMatch(
+                m ->
+                    periodoRepository.findByImparticionId(m.getImparticion().getId()).stream()
+                        .anyMatch(p -> p.getId().equals(periodoId)));
+    if (!perteneceAlAlumno) {
+      throw new AccessDeniedException("El periodo no pertenece al alumno");
+    }
+
     List<Calificacion> calificaciones =
         calificacionRepository.findByAlumnoIdAndPeriodoId(usuarioId, periodoId);
 

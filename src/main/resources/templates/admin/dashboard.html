@@ -1,43 +1,15 @@
 <!doctype html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Administración — Schooledule</title>
-    <link rel="stylesheet" th:href="@{/css/admin.css}" />
-  </head>
+  <head th:replace="~{admin/fragments/layout :: head('Dashboard')}"></head>
   <body>
     <div class="admin-shell">
-      <!-- Sidebar -->
-      <nav class="admin-sidebar">
-        <div class="sidebar-wordmark">Schooledule</div>
-        <ul class="sidebar-nav">
-          <li><a href="/admin/dashboard" class="active">Dashboard</a></li>
-          <!-- Futuras opciones de gestión -->
-        </ul>
-        <div class="sidebar-footer">
-          <form th:action="@{/logout}" method="post">
-            <button
-              type="submit"
-              class="btn-editorial-ghost"
-              style="
-                width: 100%;
-                color: var(--paper);
-                border-color: rgba(247, 242, 234, 0.3);
-              "
-            >
-              Cerrar Sesión
-            </button>
-          </form>
-        </div>
-      </nav>
+      <div th:replace="~{admin/fragments/layout :: sidebar('dashboard')}"></div>
 
-      <!-- Main Content -->
       <main class="admin-content">
         <div class="hero animate-in">
           <div class="hero__left">
             <nav class="breadcrumb">
-              <a href="/admin/dashboard">Administración</a>
+              <a th:href="@{/admin/dashboard}">Administración</a>
               <span class="breadcrumb__sep">/</span>
               <span>Dashboard</span>
             </nav>
@@ -53,27 +25,48 @@
 
         <div class="stat-grid animate-in">
           <div class="stat-card">
-            <span class="stat-card__num">0</span>
+            <span
+              class="stat-card__num"
+              th:text="${stats != null} ? ${stats.totalCentros} : 0"
+              >0</span
+            >
             <span class="stat-card__label">Centros Activos</span>
           </div>
           <div class="stat-card">
-            <span class="stat-card__num">0</span>
+            <span
+              class="stat-card__num"
+              th:text="${stats != null} ? ${stats.totalUsuarios} : 0"
+              >0</span
+            >
             <span class="stat-card__label">Usuarios Totales</span>
           </div>
           <div class="stat-card">
-            <span class="stat-card__num">0</span>
-            <span class="stat-card__label">Incidencias</span>
+            <span
+              class="stat-card__num"
+              th:text="${stats != null} ? ${stats.activos} : 0"
+              >0</span
+            >
+            <span class="stat-card__label">Usuarios Activos</span>
           </div>
-        </div>
-
-        <div class="empty-state animate-in" style="margin-top: 4rem">
-          <h2 class="empty-state__title">Modo Infraestructura</h2>
-          <p class="empty-state__body">
-            Las herramientas de gestión granular se habilitarán en la próxima
-            fase del track.
-          </p>
+          <div class="stat-card">
+            <span
+              class="stat-card__num"
+              th:text="${stats != null} ? ${stats.totalMatriculasActivas} : 0"
+              >0</span
+            >
+            <span class="stat-card__label">Matrículas Activas</span>
+          </div>
+          <div class="stat-card">
+            <span
+              class="stat-card__num"
+              th:text="${stats != null} ? ${stats.totalImparticiones} : 0"
+              >0</span
+            >
+            <span class="stat-card__label">Imparticiones</span>
+          </div>
         </div>
       </main>
     </div>
+    <div th:replace="~{admin/fragments/layout :: colophon}"></div>
   </body>
 </html>

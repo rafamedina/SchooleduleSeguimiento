@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments/layout :: head('Imparticiones')}"></head>
+  <body>
+    <div class="admin-shell">
+      <div
+        th:replace="~{admin/fragments/layout :: sidebar('imparticiones')}"
+      ></div>
+
+      <main class="admin-content">
+        <div class="hero animate-in">
+          <div class="hero__left">
+            <nav class="breadcrumb">
+              <a th:href="@{/admin/dashboard}">Administración</a>
+              <span class="breadcrumb__sep">/</span>
+              <span>Imparticiones</span>
+            </nav>
+            <h1 class="hero__title">Gestión de <em>Imparticiones</em></h1>
+          </div>
+          <div class="hero__right">
+            <a th:href="@{/admin/imparticiones/nuevo}" class="btn btn-primary"
+              >Nueva impartición</a
+            >
+          </div>
+        </div>
+
+        <div class="animate-in">
+          <div
+            th:if="${error}"
+            class="alert alert-danger"
+            th:text="${error}"
+          ></div>
+
+          <div th:if="${#lists.isEmpty(imparticiones)}" class="empty-state">
+            <p>No hay imparticiones registradas.</p>
+          </div>
+
+          <table class="table" th:unless="${#lists.isEmpty(imparticiones)}">
+            <thead>
+              <tr>
+                <th>Módulo</th>
+                <th>Grupo</th>
+                <th>Centro</th>
+                <th>Profesor</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="i : ${imparticiones}">
+                <td>
+                  <span th:text="${i.moduloCodigo}"></span>
+                  —
+                  <span th:text="${i.moduloNombre}"></span>
+                </td>
+                <td th:text="${i.grupoNombre}"></td>
+                <td th:text="${i.centroNombre}"></td>
+                <td th:text="${i.profesorNombreCompleto}"></td>
+                <td>
+                  <a
+                    th:href="@{/admin/imparticiones/{id}/editar(id=${i.id})}"
+                    class="btn btn-sm btn-secondary"
+                    >Editar</a
+                  >
+                  <form
+                    th:action="@{/admin/imparticiones/{id}/eliminar(id=${i.id})}"
+                    method="post"
+                    style="display: inline"
+                  >
+                    <button
+                      type="submit"
+                      class="btn btn-sm btn-danger"
+                      onclick="return confirm('¿Seguro que deseas eliminar esta impartición?')"
+                    >
+                      Eliminar
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+
+      <div th:replace="~{admin/fragments/layout :: colophon}"></div>
+    </div>
+  </body>
+</html>

@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PeriodoEvaluacionRepository extends JpaRepository<PeriodoEvaluacion, Integer> {
   List<PeriodoEvaluacion> findByImparticionId(Integer imparticionId);
+
+  boolean existsByImparticionId(Integer imparticionId);
 }

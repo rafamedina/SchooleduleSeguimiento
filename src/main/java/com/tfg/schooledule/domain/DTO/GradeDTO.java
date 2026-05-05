@@ -8,4 +8,5 @@ public record GradeDTO(
     BigDecimal valor,
     String comentario,
     LocalDate fecha,
-    String tipoActividad) {}
+    String tipoActividad,
+    boolean fueModificada) {}

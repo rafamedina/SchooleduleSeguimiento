@@ -1,6 +1,8 @@
 package com.tfg.schooledule.infrastructure.config;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
@@ -30,7 +32,6 @@ class SecurityConfigTest {
   @Test
   @WithMockUser(roles = "ADMIN")
   void testAdminPathIsAccessibleForAdmin() throws Exception {
-    // Assuming /admin/dashboard exists and returns 200 or something else than 403
     mockMvc.perform(get("/admin/dashboard")).andExpect(status().isOk());
   }
 
@@ -41,12 +42,47 @@ class SecurityConfigTest {
 
   @Test
   void testLoginPostRequiresCsrf() throws Exception {
-    // This should fail with 403 Forbidden because CSRF will be enabled
     mockMvc
-        .perform(
-            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/login")
-                .param("username", "test")
-                .param("password", "test"))
+        .perform(post("/login").param("username", "test").param("password", "test"))
         .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @WithMockUser(roles = "ALUMNO")
+  void responseContiensCspConFrameAncestors() throws Exception {
+    mockMvc
+        .perform(get("/alumno/dashboard"))
+        .andExpect(
+            header()
+                .string(
+                    "Content-Security-Policy",
+                    org.hamcrest.Matchers.containsString("frame-ancestors 'none'")));
+  }
+
+  @Test
+  @WithMockUser(roles = "ALUMNO")
+  void responseContieneReferrerPolicy() throws Exception {
+    mockMvc
+        .perform(get("/alumno/dashboard"))
+        .andExpect(header().string("Referrer-Policy", "strict-origin-when-cross-origin"));
+  }
+
+  @Test
+  @WithMockUser(roles = "ALUMNO")
+  void responseContieneXContentTypeOptions() throws Exception {
+    mockMvc
+        .perform(get("/alumno/dashboard"))
+        .andExpect(header().string("X-Content-Type-Options", "nosniff"));
+  }
+
+  @Test
+  void snapAdminDenyAll_sinAuth_retorna3xxORechazo() throws Exception {
+    mockMvc.perform(get("/snap-admin/")).andExpect(status().is3xxRedirection());
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void snapAdminDenyAll_conAdmin_retorna403() throws Exception {
+    mockMvc.perform(get("/snap-admin/")).andExpect(status().isForbidden());
   }
 }

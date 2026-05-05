@@ -5,4 +5,5 @@ public record TeacherStudentRowDTO(
     Integer alumnoId,
     String nombreCompleto,
     String email,
-    Boolean esRepetidor) {}
+    Boolean esRepetidor,
+    long cesSuspensas) {}

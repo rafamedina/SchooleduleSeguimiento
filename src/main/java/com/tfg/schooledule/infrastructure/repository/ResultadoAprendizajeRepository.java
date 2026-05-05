@@ -10,4 +10,8 @@ public interface ResultadoAprendizajeRepository
     extends JpaRepository<ResultadoAprendizaje, Integer> {
 
   List<ResultadoAprendizaje> findByModuloIdOrderByCodigoAsc(Integer moduloId);
+
+  boolean existsByModuloId(Integer moduloId);
+
+  int countByModuloId(Integer moduloId);
 }

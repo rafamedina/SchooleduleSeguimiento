@@ -29,6 +29,7 @@ public interface TeacherDashboardMapper {
       expression = "java(m.getAlumno().getNombre() + \" \" + m.getAlumno().getApellidos())")
   @Mapping(target = "email", source = "m.alumno.email")
   @Mapping(target = "esRepetidor", source = "m.esRepetidor")
+  @Mapping(target = "cesSuspensas", constant = "0L")
   TeacherStudentRowDTO toStudentRow(Matricula m);
 
   @Mapping(target = "criterioEvaluacionId", source = "ce.id")

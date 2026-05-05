@@ -2,7 +2,7 @@ package com.tfg.schooledule.infrastructure.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.tfg.schooledule.domain.dto.*;
@@ -33,6 +33,8 @@ class TeacherDashboardServiceTest {
   @Mock private ItemEvaluableRepository itemEvaluableRepo;
   @Mock private CalificacionRepository calificacionRepo;
   @Mock private CriterioEvaluacionRepository ceRepo;
+  @Mock private PeriodoEvaluacionRepository periodoRepo;
+  @Mock private ResultadoAprendizajeRepository raRepo;
   @Mock private TeacherDashboardMapper mapper;
   @Mock private EntityManager entityManager;
   @Mock private jakarta.persistence.Query nativeQuery;
@@ -315,7 +317,7 @@ class TeacherDashboardServiceTest {
 
     GradeUpsertRequest req =
         new GradeUpsertRequest(
-            1, List.of(new GradeUpsertRequest.Entry(1, new BigDecimal("9.00"), "Muy bien")));
+            1, List.of(new GradeUpsertRequest.Entry(1, 1, new BigDecimal("9.00"), "Muy bien")));
 
     when(matriculaRepo.findByIdAndImparticionProfesorId(1, 2)).thenReturn(Optional.of(matricula));
     when(itemEvaluableRepo.findByImparticionIdOrderByPeriodoEvaluacionIdAscFechaAsc(1))
@@ -383,7 +385,7 @@ class TeacherDashboardServiceTest {
 
     GradeUpsertRequest req =
         new GradeUpsertRequest(
-            1, List.of(new GradeUpsertRequest.Entry(1, new BigDecimal("7.00"), null)));
+            1, List.of(new GradeUpsertRequest.Entry(1, 1, new BigDecimal("7.00"), null)));
 
     when(matriculaRepo.findByIdAndImparticionProfesorId(1, 2)).thenReturn(Optional.of(matricula));
     when(itemEvaluableRepo.findByImparticionIdOrderByPeriodoEvaluacionIdAscFechaAsc(1))
@@ -434,9 +436,10 @@ class TeacherDashboardServiceTest {
             .tipo(TipoActividad.EXAMEN)
             .build();
 
+    // item 1 exists, but CE 99 does not belong to item 1's RA
     GradeUpsertRequest req =
         new GradeUpsertRequest(
-            1, List.of(new GradeUpsertRequest.Entry(99, new BigDecimal("5.00"), null)));
+            1, List.of(new GradeUpsertRequest.Entry(1, 99, new BigDecimal("5.00"), null)));
 
     when(matriculaRepo.findByIdAndImparticionProfesorId(1, 2)).thenReturn(Optional.of(matricula));
     when(itemEvaluableRepo.findByImparticionIdOrderByPeriodoEvaluacionIdAscFechaAsc(1))
@@ -448,5 +451,320 @@ class TeacherDashboardServiceTest {
 
     assertThatThrownBy(() -> service.upsertGrades(2, "juan@tfg.com", req))
         .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void validateCentroOwnership_noLanzaExcepcionCuandoProfesorTieneAcceso() {
+    when(imparticionRepo.existsByProfesorIdAndCentroId(2, 1)).thenReturn(true);
+    org.junit.jupiter.api.Assertions.assertDoesNotThrow(
+        () -> service.validateCentroOwnership(2, 1));
+  }
+
+  @Test
+  void validateCentroOwnership_lanzaAccessDeniedCuandoCentroNoPertenecealProfesor() {
+    when(imparticionRepo.existsByProfesorIdAndCentroId(2, 99)).thenReturn(false);
+    assertThatThrownBy(() -> service.validateCentroOwnership(2, 99))
+        .isInstanceOf(AccessDeniedException.class)
+        .hasMessageContaining("99");
+  }
+
+  @Test
+  void buildGradesDTO_itemRecuperacion_apareceSeparadoDelItemRegular() {
+    ResultadoAprendizaje ra =
+        ResultadoAprendizaje.builder().id(1).modulo(modulo).codigo("RA1").descripcion("d").build();
+    PeriodoEvaluacion periodo =
+        PeriodoEvaluacion.builder()
+            .id(1)
+            .imparticion(imparticion)
+            .nombre("P1")
+            .peso(BigDecimal.ONE)
+            .cerrado(false)
+            .build();
+    ItemEvaluable itemExamen =
+        ItemEvaluable.builder()
+            .id(1)
+            .imparticion(imparticion)
+            .periodoEvaluacion(periodo)
+            .resultadoAprendizaje(ra)
+            .nombre("Examen")
+            .tipo(TipoActividad.EXAMEN)
+            .build();
+    ItemEvaluable itemRecuperacion =
+        ItemEvaluable.builder()
+            .id(2)
+            .imparticion(imparticion)
+            .periodoEvaluacion(periodo)
+            .resultadoAprendizaje(ra)
+            .nombre("Recuperación")
+            .tipo(TipoActividad.RECUPERACION)
+            .build();
+    CriterioEvaluacion ce =
+        CriterioEvaluacion.builder()
+            .id(1)
+            .resultadoAprendizaje(ra)
+            .codigo("a")
+            .descripcion("x")
+            .build();
+
+    when(itemEvaluableRepo.findByImparticionIdOrderByPeriodoEvaluacionIdAscFechaAsc(1))
+        .thenReturn(List.of(itemExamen, itemRecuperacion));
+    when(ceRepo.findByResultadoAprendizajeIdInOrderByResultadoAprendizajeIdAscCodigoAsc(any()))
+        .thenReturn(List.of(ce));
+    when(calificacionRepo.findByMatriculaIdAndCriterioEvaluacionIdIn(eq(1), any()))
+        .thenReturn(List.of());
+    when(mapper.toCriterioGrade(eq(ce), isNull()))
+        .thenReturn(new TeacherCriterioGradeDTO(1, "a", "x", null, null, null));
+
+    TeacherStudentGradesDTO result = service.buildGradesDTO(matricula);
+
+    assertThat(result.periodos()).hasSize(1);
+    assertThat(result.periodos().get(0).items()).hasSize(2);
+    assertThat(result.periodos().get(0).items())
+        .extracting(TeacherGradeItemDTO::tipoActividad)
+        .containsExactlyInAnyOrder("EXAMEN", "RECUPERACION");
+  }
+
+  @Test
+  void crearItem_profesorPropietario_persiste() {
+    PeriodoEvaluacion periodo =
+        PeriodoEvaluacion.builder()
+            .id(1)
+            .imparticion(imparticion)
+            .nombre("P1")
+            .cerrado(false)
+            .build();
+    ResultadoAprendizaje ra =
+        ResultadoAprendizaje.builder().id(1).modulo(modulo).codigo("RA1").descripcion("d").build();
+
+    ItemEvaluableFormDTO dto = new ItemEvaluableFormDTO();
+    dto.setNombre("Recuperación RA1");
+    dto.setTipo(TipoActividad.RECUPERACION);
+    dto.setFecha(LocalDate.now());
+    dto.setPeriodoEvaluacionId(1);
+    dto.setResultadoAprendizajeId(1);
+
+    when(imparticionRepo.findById(1)).thenReturn(Optional.of(imparticion));
+    when(periodoRepo.findById(1)).thenReturn(Optional.of(periodo));
+    when(raRepo.findById(1)).thenReturn(Optional.of(ra));
+    when(itemEvaluableRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+    service.crearItem(1, 2, dto);
+
+    verify(itemEvaluableRepo).save(argThat(i -> i.getTipo() == TipoActividad.RECUPERACION));
+  }
+
+  @Test
+  void crearItem_profesorNoPropietario_lanzaAccessDeniedException() {
+    when(imparticionRepo.findById(1)).thenReturn(Optional.of(imparticion));
+
+    ItemEvaluableFormDTO dto = new ItemEvaluableFormDTO();
+    dto.setNombre("Test");
+    dto.setTipo(TipoActividad.EXAMEN);
+    dto.setFecha(LocalDate.now());
+    dto.setPeriodoEvaluacionId(1);
+    dto.setResultadoAprendizajeId(1);
+
+    assertThatThrownBy(() -> service.crearItem(1, 99, dto))
+        .isInstanceOf(AccessDeniedException.class);
+  }
+
+  @Test
+  void crearItem_periodoDeOtraImparticion_lanzaIllegalArgumentException() {
+    Imparticion otraImparticion =
+        Imparticion.builder()
+            .id(2)
+            .modulo(modulo)
+            .grupo(imparticion.getGrupo())
+            .profesor(profe)
+            .centro(centro)
+            .build();
+    PeriodoEvaluacion periodoAjeno =
+        PeriodoEvaluacion.builder()
+            .id(1)
+            .imparticion(otraImparticion)
+            .nombre("P1")
+            .cerrado(false)
+            .build();
+
+    when(imparticionRepo.findById(1)).thenReturn(Optional.of(imparticion));
+    when(periodoRepo.findById(1)).thenReturn(Optional.of(periodoAjeno));
+
+    ItemEvaluableFormDTO dto = new ItemEvaluableFormDTO();
+    dto.setNombre("Test");
+    dto.setTipo(TipoActividad.EXAMEN);
+    dto.setFecha(LocalDate.now());
+    dto.setPeriodoEvaluacionId(1);
+    dto.setResultadoAprendizajeId(1);
+
+    assertThatThrownBy(() -> service.crearItem(1, 2, dto))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void eliminarItem_profesorPropietario_elimina() {
+    ResultadoAprendizaje ra =
+        ResultadoAprendizaje.builder().id(1).modulo(modulo).codigo("RA1").descripcion("d").build();
+    PeriodoEvaluacion periodo =
+        PeriodoEvaluacion.builder().id(1).imparticion(imparticion).nombre("P1").build();
+
+    when(itemEvaluableRepo.existsByIdAndImparticionProfesorId(1, 2)).thenReturn(true);
+    when(itemEvaluableRepo.findById(1))
+        .thenReturn(
+            Optional.of(
+                ItemEvaluable.builder()
+                    .id(1)
+                    .imparticion(imparticion)
+                    .periodoEvaluacion(periodo)
+                    .resultadoAprendizaje(ra)
+                    .nombre("E")
+                    .tipo(TipoActividad.EXAMEN)
+                    .build()));
+
+    service.eliminarItem(1, 2);
+
+    verify(itemEvaluableRepo).deleteById(1);
+  }
+
+  @Test
+  void eliminarItem_profesorNoPropietario_lanzaAccessDeniedException() {
+    when(itemEvaluableRepo.existsByIdAndImparticionProfesorId(1, 99)).thenReturn(false);
+    assertThatThrownBy(() -> service.eliminarItem(1, 99)).isInstanceOf(AccessDeniedException.class);
+  }
+
+  @Test
+  void upsertGrades_itemRecuperacion_periodoCerrado_permiteGrabar() {
+    ResultadoAprendizaje ra =
+        ResultadoAprendizaje.builder().id(1).modulo(modulo).codigo("RA1").descripcion("d").build();
+    PeriodoEvaluacion periodoCerrado =
+        PeriodoEvaluacion.builder()
+            .id(1)
+            .imparticion(imparticion)
+            .nombre("P1")
+            .cerrado(true)
+            .build();
+    ItemEvaluable itemRecuperacion =
+        ItemEvaluable.builder()
+            .id(2)
+            .imparticion(imparticion)
+            .periodoEvaluacion(periodoCerrado)
+            .resultadoAprendizaje(ra)
+            .nombre("R")
+            .tipo(TipoActividad.RECUPERACION)
+            .build();
+    CriterioEvaluacion ce =
+        CriterioEvaluacion.builder()
+            .id(1)
+            .resultadoAprendizaje(ra)
+            .codigo("a")
+            .descripcion("x")
+            .build();
+
+    GradeUpsertRequest req =
+        new GradeUpsertRequest(
+            1, List.of(new GradeUpsertRequest.Entry(2, 1, new BigDecimal("7.00"), null)));
+
+    when(matriculaRepo.findByIdAndImparticionProfesorId(1, 2)).thenReturn(Optional.of(matricula));
+    when(itemEvaluableRepo.findByImparticionIdOrderByPeriodoEvaluacionIdAscFechaAsc(1))
+        .thenReturn(List.of(itemRecuperacion));
+    when(ceRepo.findById(1)).thenReturn(Optional.of(ce));
+    when(calificacionRepo.findByMatriculaIdAndCriterioEvaluacionId(1, 1))
+        .thenReturn(Optional.empty());
+    when(calificacionRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+    when(calificacionRepo.findByMatriculaIdAndCriterioEvaluacionIdIn(eq(1), any()))
+        .thenReturn(List.of());
+    when(ceRepo.findByResultadoAprendizajeIdInOrderByResultadoAprendizajeIdAscCodigoAsc(any()))
+        .thenReturn(List.of(ce));
+    when(mapper.toCriterioGrade(any(), any()))
+        .thenReturn(new TeacherCriterioGradeDTO(1, "a", "x", new BigDecimal("7.00"), null, 1));
+    when(entityManager.createNativeQuery(anyString())).thenReturn(nativeQuery);
+    when(nativeQuery.setParameter(anyString(), anyString())).thenReturn(nativeQuery);
+    when(nativeQuery.getSingleResult()).thenReturn("juan@tfg.com");
+
+    // No debe lanzar IllegalStateException aunque el periodo esté cerrado
+    org.junit.jupiter.api.Assertions.assertDoesNotThrow(
+        () -> service.upsertGrades(2, "juan@tfg.com", req));
+    verify(calificacionRepo).save(any(Calificacion.class));
+  }
+
+  @Test
+  void upsertGrades_itemNormal_periodoCerrado_lanzaIllegalStateException() {
+    ResultadoAprendizaje ra =
+        ResultadoAprendizaje.builder().id(1).modulo(modulo).codigo("RA1").descripcion("d").build();
+    PeriodoEvaluacion periodoCerrado =
+        PeriodoEvaluacion.builder()
+            .id(1)
+            .imparticion(imparticion)
+            .nombre("P1")
+            .cerrado(true)
+            .build();
+    ItemEvaluable itemNormal =
+        ItemEvaluable.builder()
+            .id(1)
+            .imparticion(imparticion)
+            .periodoEvaluacion(periodoCerrado)
+            .resultadoAprendizaje(ra)
+            .nombre("E")
+            .tipo(TipoActividad.EXAMEN)
+            .build();
+    CriterioEvaluacion ce =
+        CriterioEvaluacion.builder()
+            .id(1)
+            .resultadoAprendizaje(ra)
+            .codigo("a")
+            .descripcion("x")
+            .build();
+
+    GradeUpsertRequest req =
+        new GradeUpsertRequest(
+            1, List.of(new GradeUpsertRequest.Entry(1, 1, new BigDecimal("7.00"), null)));
+
+    when(matriculaRepo.findByIdAndImparticionProfesorId(1, 2)).thenReturn(Optional.of(matricula));
+    when(itemEvaluableRepo.findByImparticionIdOrderByPeriodoEvaluacionIdAscFechaAsc(1))
+        .thenReturn(List.of(itemNormal));
+    when(ceRepo.findById(1)).thenReturn(Optional.of(ce));
+    when(entityManager.createNativeQuery(anyString())).thenReturn(nativeQuery);
+    when(nativeQuery.setParameter(anyString(), anyString())).thenReturn(nativeQuery);
+    when(nativeQuery.getSingleResult()).thenReturn("juan@tfg.com");
+
+    assertThatThrownBy(() -> service.upsertGrades(2, "juan@tfg.com", req))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("cerrado");
+  }
+
+  @Test
+  void upsertGrades_itemIdNoPerteneceLaImparticion_lanzaAccessDeniedException() {
+    ResultadoAprendizaje raLocal =
+        ResultadoAprendizaje.builder().id(1).modulo(modulo).codigo("RA1").descripcion("d").build();
+    PeriodoEvaluacion periodo =
+        PeriodoEvaluacion.builder()
+            .id(1)
+            .imparticion(imparticion)
+            .nombre("P1")
+            .cerrado(false)
+            .build();
+    ItemEvaluable itemLocal =
+        ItemEvaluable.builder()
+            .id(1)
+            .imparticion(imparticion)
+            .periodoEvaluacion(periodo)
+            .resultadoAprendizaje(raLocal)
+            .nombre("E")
+            .tipo(TipoActividad.EXAMEN)
+            .build();
+
+    // entry references itemEvaluableId=99, but only item 1 exists
+    GradeUpsertRequest req =
+        new GradeUpsertRequest(
+            1, List.of(new GradeUpsertRequest.Entry(99, 1, new BigDecimal("5.00"), null)));
+
+    when(matriculaRepo.findByIdAndImparticionProfesorId(1, 2)).thenReturn(Optional.of(matricula));
+    when(itemEvaluableRepo.findByImparticionIdOrderByPeriodoEvaluacionIdAscFechaAsc(1))
+        .thenReturn(List.of(itemLocal));
+    when(entityManager.createNativeQuery(anyString())).thenReturn(nativeQuery);
+    when(nativeQuery.setParameter(anyString(), anyString())).thenReturn(nativeQuery);
+    when(nativeQuery.getSingleResult()).thenReturn("juan@tfg.com");
+
+    assertThatThrownBy(() -> service.upsertGrades(2, "juan@tfg.com", req))
+        .isInstanceOf(AccessDeniedException.class);
   }
 }

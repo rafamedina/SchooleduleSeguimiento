@@ -3,6 +3,7 @@ package com.tfg.schooledule.infrastructure.config;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -10,6 +11,7 @@ import com.tfg.schooledule.domain.entity.Rol;
 import com.tfg.schooledule.domain.entity.Usuario;
 import com.tfg.schooledule.infrastructure.repository.RolRepository;
 import com.tfg.schooledule.infrastructure.repository.UsuarioRepository;
+import jakarta.servlet.http.Cookie;
 import java.util.Collections;
 import java.util.HashSet;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -136,6 +139,26 @@ class AuthIntegrationTest {
         .andExpect(authenticated())
         .andExpect(status().is3xxRedirection())
         .andExpect(redirectedUrl("/profe/dashboard"));
+  }
+
+  @Test
+  void segundoLogin_mismoUsuario_primeraSessionExpira() throws Exception {
+    // First login — registers session1 in SessionRegistry (Spring Session JDBC)
+    MvcResult firstLogin =
+        mockMvc
+            .perform(formLogin().user("admin@tfg.com").password("1234"))
+            .andExpect(authenticated())
+            .andReturn();
+    Cookie session1Cookie = firstLogin.getResponse().getCookie("SESSION");
+
+    // Second login — ConcurrentSessionControlAuthenticationStrategy marks session1 as expired
+    mockMvc.perform(formLogin().user("admin@tfg.com").password("1234")).andExpect(authenticated());
+
+    // ConcurrentSessionFilter: request with expired session1 cookie → redirect to /login?expired
+    mockMvc
+        .perform(get("/admin/dashboard").cookie(session1Cookie))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrl("/login?expired"));
   }
 
   @Test

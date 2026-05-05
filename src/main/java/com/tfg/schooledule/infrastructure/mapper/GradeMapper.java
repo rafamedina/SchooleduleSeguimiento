@@ -16,6 +16,7 @@ public interface GradeMapper {
               + " + \" – \" + calificacion.getCriterioEvaluacion().getDescripcion())")
   @Mapping(target = "fecha", ignore = true)
   @Mapping(target = "tipoActividad", ignore = true)
+  @Mapping(target = "fueModificada", constant = "false")
   GradeDTO toDto(Calificacion calificacion);
 
   List<GradeDTO> toDtoList(List<Calificacion> calificaciones);

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments/layout :: head('Centros')}"></head>
+  <body>
+    <div class="admin-shell">
+      <div th:replace="~{admin/fragments/layout :: sidebar('centros')}"></div>
+
+      <main class="admin-content">
+        <div class="hero animate-in">
+          <div class="hero__left">
+            <nav class="breadcrumb">
+              <a th:href="@{/admin/dashboard}">Administración</a>
+              <span class="breadcrumb__sep">/</span>
+              <span>Centros</span>
+            </nav>
+            <h1 class="hero__title">Gestión de <em>Centros</em></h1>
+          </div>
+          <div class="hero__right">
+            <a th:href="@{/admin/centros/nuevo}" class="btn btn-primary"
+              >Nuevo centro</a
+            >
+          </div>
+        </div>
+
+        <div class="animate-in">
+          <div
+            th:if="${error}"
+            class="alert alert-danger"
+            th:text="${error}"
+          ></div>
+
+          <div th:if="${#lists.isEmpty(centros)}" class="empty-state">
+            <p>No hay centros registrados.</p>
+            <a th:href="@{/admin/centros/nuevo}" class="btn btn-primary"
+              >Crear el primero</a
+            >
+          </div>
+
+          <table class="table" th:unless="${#lists.isEmpty(centros)}">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Ubicación</th>
+                <th>Profesores</th>
+                <th>Grupos</th>
+                <th>Activo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="c : ${centros}">
+                <td th:text="${c.nombre}"></td>
+                <td th:text="${c.ubicacion}"></td>
+                <td th:text="${c.numProfesores}"></td>
+                <td th:text="${c.numGrupos}"></td>
+                <td th:text="${c.activo ? 'Sí' : 'No'}"></td>
+                <td>
+                  <a
+                    th:href="@{/admin/centros/{id}/editar(id=${c.id})}"
+                    class="btn btn-sm btn-secondary"
+                    >Editar</a
+                  >
+                  <form
+                    th:action="@{/admin/centros/{id}/toggle-activo(id=${c.id})}"
+                    method="post"
+                    style="display: inline"
+                  >
+                    <input
+                      type="hidden"
+                      th:name="${_csrf.parameterName}"
+                      th:value="${_csrf.token}"
+                    />
+                    <button
+                      type="submit"
+                      class="btn btn-sm"
+                      th:text="${c.activo ? 'Desactivar' : 'Activar'}"
+                    >
+                      Activar
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

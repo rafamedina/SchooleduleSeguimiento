@@ -36,6 +36,10 @@ public class Centro {
   @EqualsAndHashCode.Exclude
   private Set<Usuario> profesores = new java.util.HashSet<>();
 
+  @Column(nullable = false)
+  @Builder.Default
+  private Boolean activo = true;
+
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(columnDefinition = "jsonb")
   private Map<String, Object> configuracion;

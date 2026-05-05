@@ -92,6 +92,11 @@
                     >
                       8.50
                     </span>
+                    <span
+                      class="chip chip--info"
+                      th:if="${grade.fueModificada}"
+                      th:text="'Recuperada'"
+                    ></span>
                   </td>
                   <td class="ce-table__desc" th:text="${grade.comentario}">
                     —

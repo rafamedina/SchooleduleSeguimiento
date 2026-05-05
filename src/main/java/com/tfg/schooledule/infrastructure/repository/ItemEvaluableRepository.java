@@ -10,4 +10,6 @@ public interface ItemEvaluableRepository extends JpaRepository<ItemEvaluable, In
 
   List<ItemEvaluable> findByImparticionIdOrderByPeriodoEvaluacionIdAscFechaAsc(
       Integer imparticionId);
+
+  boolean existsByIdAndImparticionProfesorId(Integer id, Integer profesorId);
 }

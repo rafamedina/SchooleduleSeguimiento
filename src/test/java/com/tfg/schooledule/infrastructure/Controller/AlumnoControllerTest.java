@@ -13,6 +13,7 @@ import com.tfg.schooledule.domain.entity.Matricula;
 import com.tfg.schooledule.domain.entity.Modulo;
 import com.tfg.schooledule.domain.entity.PeriodoEvaluacion;
 import com.tfg.schooledule.domain.entity.Usuario;
+import com.tfg.schooledule.infrastructure.security.SecurityAuditLogger;
 import com.tfg.schooledule.infrastructure.service.UsuarioService;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +37,7 @@ public class AlumnoControllerTest {
   @Autowired private MockMvc mockMvc;
 
   @MockBean private UsuarioService usuarioService;
+  @MockBean private SecurityAuditLogger securityAuditLogger;
 
   private Usuario buildAlumno() {
     return Usuario.builder()
@@ -145,5 +147,33 @@ public class AlumnoControllerTest {
   @WithMockUser(username = "juan@tfg.com", roles = "PROFESOR")
   public void rolProfesor_accedeDashboardAlumno_retorna403() throws Exception {
     mockMvc.perform(get("/alumno/dashboard")).andExpect(status().isForbidden());
+  }
+
+  @Test
+  void dashboard_sinAutenticacion_redirige302() throws Exception {
+    mockMvc
+        .perform(get("/alumno/dashboard").header("Accept", "text/html"))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrlPattern("**/login"));
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void dashboard_conRolAdmin_retorna403() throws Exception {
+    mockMvc.perform(get("/alumno/dashboard")).andExpect(status().isForbidden());
+  }
+
+  @Test
+  void notas_sinAutenticacion_redirige302() throws Exception {
+    mockMvc
+        .perform(get("/alumno/notas").header("Accept", "text/html"))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrlPattern("**/login"));
+  }
+
+  @Test
+  @WithMockUser(roles = "PROFESOR")
+  void perfil_conRolProfesor_retorna403() throws Exception {
+    mockMvc.perform(get("/alumno/perfil")).andExpect(status().isForbidden());
   }
 }

@@ -115,7 +115,7 @@ function renderRaBlock(periodo, item) {
   const details = document.createElement("details");
   details.className = "ra-block";
   details.open = true;
-  details.dataset.raId = item.resultadoAprendizajeId;
+  details.dataset.raId = item.itemEvaluableId;
   details.dataset.periodoId = periodo.id;
 
   const mediaRaFmt = item.mediaRa != null ? formatNota(item.mediaRa) : "—";
@@ -128,9 +128,16 @@ function renderRaBlock(periodo, item) {
     <span class="ra-block__name" title="${escHtml(
       item.raDescripcion,
     )}">${escHtml(item.itemNombre)}</span>
-    <span class="ra-block__media" data-ra-media="${
-      item.resultadoAprendizajeId
-    }-${periodo.id}">${mediaRaFmt}</span>`;
+    <span class="ra-block__media" data-ra-media="${item.itemEvaluableId}-${
+      periodo.id
+    }">${mediaRaFmt}</span>`;
+
+  if (item.tipoActividad === "RECUPERACION") {
+    const badge = document.createElement("span");
+    badge.className = "chip chip--warn";
+    badge.textContent = "Recuperación";
+    summary.appendChild(badge);
+  }
 
   details.appendChild(summary);
 
@@ -165,7 +172,9 @@ function renderRaBlock(periodo, item) {
 function renderCeRow(periodo, item, ce) {
   const tr = document.createElement("tr");
   const valorStr = ce.valor != null ? ce.valor : "";
-  const ceKey = `${item.resultadoAprendizajeId}-${periodo.id}`;
+  const ceKey = `${item.itemEvaluableId}-${periodo.id}`;
+  const isRecuperacion = item.tipoActividad === "RECUPERACION";
+  const inputExtraClass = isRecuperacion ? " input--recuperacion" : "";
 
   tr.innerHTML = `
     <td class="ce-table__code">${escHtml(ce.codigo)}</td>
@@ -176,18 +185,30 @@ function renderCeRow(periodo, item, ce) {
           item.raCodigo,
         )} en ${escHtml(periodo.periodoNombre)}
       </label>
+      ${
+        isRecuperacion && ce.valor != null
+          ? `<small class="nota-ref">Nota actual: ${formatNota(
+              ce.valor,
+            )}</small>`
+          : ""
+      }
       <input
-        class="ce-nota-input grade-input"
+        class="ce-nota-input grade-input${inputExtraClass}"
         type="number"
         id="nota-ce-${ce.criterioEvaluacionId}"
         name="nota-ce-${ce.criterioEvaluacionId}"
         step="0.01" min="0" max="10"
         data-ce-id="${ce.criterioEvaluacionId}"
+        data-item-id="${item.itemEvaluableId}"
         data-ra-key="${ceKey}"
         data-periodo-id="${periodo.id}"
         data-calificacion-id="${ce.calificacionId ?? ""}"
         value="${valorStr}"
-        ${periodo.cerrado ? 'disabled aria-disabled="true"' : ""}
+        ${
+          periodo.cerrado && !isRecuperacion
+            ? 'disabled aria-disabled="true"'
+            : ""
+        }
         aria-label="Nota para criterio ${escHtml(ce.codigo)} de ${escHtml(
           item.raCodigo,
         )}"/>
@@ -204,7 +225,11 @@ function renderCeRow(periodo, item, ce) {
         data-ce-id="${ce.criterioEvaluacionId}"
         maxlength="1000"
         value="${escHtml(ce.comentario ?? "")}"
-        ${periodo.cerrado ? 'disabled aria-disabled="true"' : ""}
+        ${
+          periodo.cerrado && !isRecuperacion
+            ? 'disabled aria-disabled="true"'
+            : ""
+        }
         placeholder="Comentario opcional"/>
     </td>`;
 
@@ -295,11 +320,17 @@ async function saveGrades() {
     .querySelectorAll("input.grade-input:not([disabled])")
     .forEach((inp) => {
       const ceId = parseInt(inp.dataset.ceId, 10);
+      const itemId = parseInt(inp.dataset.itemId, 10);
       const valorRaw = inp.value.trim();
       const valor = valorRaw !== "" ? parseFloat(valorRaw) : null;
       const commentEl = document.getElementById(`comment-ce-${ceId}`);
       const comentario = commentEl ? commentEl.value.trim() || null : null;
-      entries.push({ criterioEvaluacionId: ceId, valor, comentario });
+      entries.push({
+        itemEvaluableId: itemId,
+        criterioEvaluacionId: ceId,
+        valor,
+        comentario,
+      });
     });
 
   const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;

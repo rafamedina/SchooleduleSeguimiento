@@ -3,6 +3,7 @@ package com.tfg.schooledule.infrastructure.service;
 import com.tfg.schooledule.domain.dto.*;
 import com.tfg.schooledule.domain.entity.*;
 import com.tfg.schooledule.domain.enums.EstadoMatricula;
+import com.tfg.schooledule.domain.enums.TipoActividad;
 import com.tfg.schooledule.infrastructure.mapper.TeacherDashboardMapper;
 import com.tfg.schooledule.infrastructure.repository.*;
 import jakarta.persistence.EntityManager;
@@ -23,6 +24,8 @@ public class TeacherDashboardService {
   private final ItemEvaluableRepository itemEvaluableRepo;
   private final CalificacionRepository calificacionRepo;
   private final CriterioEvaluacionRepository ceRepo;
+  private final PeriodoEvaluacionRepository periodoRepo;
+  private final ResultadoAprendizajeRepository raRepo;
   private final TeacherDashboardMapper mapper;
   private final EntityManager entityManager;
 
@@ -32,6 +35,8 @@ public class TeacherDashboardService {
       ItemEvaluableRepository itemEvaluableRepo,
       CalificacionRepository calificacionRepo,
       CriterioEvaluacionRepository ceRepo,
+      PeriodoEvaluacionRepository periodoRepo,
+      ResultadoAprendizajeRepository raRepo,
       TeacherDashboardMapper mapper,
       EntityManager entityManager) {
     this.imparticionRepo = imparticionRepo;
@@ -39,8 +44,16 @@ public class TeacherDashboardService {
     this.itemEvaluableRepo = itemEvaluableRepo;
     this.calificacionRepo = calificacionRepo;
     this.ceRepo = ceRepo;
+    this.periodoRepo = periodoRepo;
+    this.raRepo = raRepo;
     this.mapper = mapper;
     this.entityManager = entityManager;
+  }
+
+  public void validateCentroOwnership(Integer profesorId, Integer centroId) {
+    if (!imparticionRepo.existsByProfesorIdAndCentroId(profesorId, centroId)) {
+      throw new AccessDeniedException("El profesor no tiene acceso al centro " + centroId);
+    }
   }
 
   public List<TeacherCenterDTO> getCentersForTeacher(Usuario profesor) {
@@ -80,7 +93,18 @@ public class TeacherDashboardService {
     return matriculaRepo
         .findByImparticionIdAndEstado(imparticionId, EstadoMatricula.ACTIVA)
         .stream()
-        .map(mapper::toStudentRow)
+        .map(
+            m -> {
+              TeacherStudentRowDTO base = mapper.toStudentRow(m);
+              long suspensas = calificacionRepo.countCesSuspensasByMatriculaId(m.getId());
+              return new TeacherStudentRowDTO(
+                  base.matriculaId(),
+                  base.alumnoId(),
+                  base.nombreCompleto(),
+                  base.email(),
+                  base.esRepetidor(),
+                  suspensas);
+            })
         .collect(Collectors.toList());
   }
 
@@ -99,23 +123,21 @@ public class TeacherDashboardService {
         .setParameter("u", profesorEmail)
         .getSingleResult();
 
-    // RA ids válidos para esta impartición
+    // Ítems válidos para esta impartición, indexados por id
     List<ItemEvaluable> items =
         itemEvaluableRepo.findByImparticionIdOrderByPeriodoEvaluacionIdAscFechaAsc(
             matricula.getImparticion().getId());
-    Set<Integer> validRaIds =
-        items.stream().map(ie -> ie.getResultadoAprendizaje().getId()).collect(Collectors.toSet());
 
-    // Mapa raId → item (para verificar cerrado)
-    Map<Integer, ItemEvaluable> itemByRaId =
-        items.stream()
-            .collect(
-                Collectors.toMap(
-                    ie -> ie.getResultadoAprendizaje().getId(),
-                    ie -> ie,
-                    (a, b) -> a)); // en caso de duplicado (recuperación), usar el primero
+    Map<Integer, ItemEvaluable> itemById =
+        items.stream().collect(Collectors.toMap(ItemEvaluable::getId, ie -> ie));
 
     for (GradeUpsertRequest.Entry entry : req.entries()) {
+      ItemEvaluable item = itemById.get(entry.itemEvaluableId());
+      if (item == null) {
+        throw new AccessDeniedException(
+            "Ítem " + entry.itemEvaluableId() + " no pertenece a esta impartición");
+      }
+
       CriterioEvaluacion ce =
           ceRepo
               .findById(entry.criterioEvaluacionId())
@@ -124,14 +146,13 @@ public class TeacherDashboardService {
                       new IllegalArgumentException(
                           "Criterio de evaluación no encontrado: " + entry.criterioEvaluacionId()));
 
-      Integer raId = ce.getResultadoAprendizaje().getId();
-      if (!validRaIds.contains(raId)) {
+      if (!ce.getResultadoAprendizaje().getId().equals(item.getResultadoAprendizaje().getId())) {
         throw new IllegalArgumentException(
-            "El criterio " + entry.criterioEvaluacionId() + " no pertenece a esta impartición");
+            "El CE " + entry.criterioEvaluacionId() + " no pertenece al RA del ítem");
       }
 
-      ItemEvaluable item = itemByRaId.get(raId);
-      if (Boolean.TRUE.equals(item.getPeriodoEvaluacion().getCerrado())) {
+      if (item.getTipo() != TipoActividad.RECUPERACION
+          && Boolean.TRUE.equals(item.getPeriodoEvaluacion().getCerrado())) {
         throw new IllegalStateException(
             "El periodo '"
                 + item.getPeriodoEvaluacion().getNombre()
@@ -158,6 +179,72 @@ public class TeacherDashboardService {
     }
 
     return buildGradesDTO(matricula);
+  }
+
+  @Transactional
+  public void crearItem(Integer imparticionId, Integer profesorId, ItemEvaluableFormDTO dto) {
+    Imparticion imp =
+        imparticionRepo
+            .findById(imparticionId)
+            .filter(i -> i.getProfesor().getId().equals(profesorId))
+            .orElseThrow(
+                () ->
+                    new AccessDeniedException(
+                        "No tienes acceso a la impartición " + imparticionId));
+
+    PeriodoEvaluacion periodo =
+        periodoRepo
+            .findById(dto.getPeriodoEvaluacionId())
+            .filter(p -> p.getImparticion().getId().equals(imparticionId))
+            .orElseThrow(
+                () -> new IllegalArgumentException("El periodo no pertenece a esta impartición"));
+
+    ResultadoAprendizaje ra =
+        raRepo
+            .findById(dto.getResultadoAprendizajeId())
+            .filter(r -> r.getModulo().getId().equals(imp.getModulo().getId()))
+            .orElseThrow(
+                () ->
+                    new IllegalArgumentException(
+                        "El RA no pertenece al módulo de esta impartición"));
+
+    itemEvaluableRepo.save(
+        ItemEvaluable.builder()
+            .imparticion(imp)
+            .periodoEvaluacion(periodo)
+            .resultadoAprendizaje(ra)
+            .nombre(dto.getNombre())
+            .tipo(dto.getTipo())
+            .fecha(dto.getFecha())
+            .build());
+  }
+
+  @Transactional
+  public Integer eliminarItem(Integer itemId, Integer profesorId) {
+    if (!itemEvaluableRepo.existsByIdAndImparticionProfesorId(itemId, profesorId)) {
+      throw new AccessDeniedException("No tienes acceso al ítem " + itemId);
+    }
+    ItemEvaluable item =
+        itemEvaluableRepo
+            .findById(itemId)
+            .orElseThrow(
+                () ->
+                    new jakarta.persistence.EntityNotFoundException(
+                        "Ítem no encontrado: " + itemId));
+    Integer imparticionId = item.getImparticion().getId();
+    itemEvaluableRepo.deleteById(itemId);
+    return imparticionId;
+  }
+
+  public Integer getModuloIdByImparticion(Integer profesorId, Integer imparticionId) {
+    return imparticionRepo
+        .findById(imparticionId)
+        .filter(i -> i.getProfesor().getId().equals(profesorId))
+        .map(i -> i.getModulo().getId())
+        .orElseThrow(
+            () ->
+                new AccessDeniedException(
+                    "El profesor no tiene acceso a la impartición " + imparticionId));
   }
 
   public Integer getCentroIdByImparticion(Integer profesorId, Integer imparticionId) {

@@ -1,5 +1,7 @@
 package com.tfg.schooledule.infrastructure.controller;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -8,6 +10,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tfg.schooledule.domain.dto.*;
 import com.tfg.schooledule.domain.entity.Centro;
 import com.tfg.schooledule.domain.entity.Usuario;
+import com.tfg.schooledule.infrastructure.repository.ItemEvaluableRepository;
+import com.tfg.schooledule.infrastructure.repository.PeriodoEvaluacionRepository;
+import com.tfg.schooledule.infrastructure.repository.ResultadoAprendizajeRepository;
+import com.tfg.schooledule.infrastructure.security.SecurityAuditLogger;
 import com.tfg.schooledule.infrastructure.service.TeacherDashboardService;
 import com.tfg.schooledule.infrastructure.service.UsuarioService;
 import java.math.BigDecimal;
@@ -32,6 +38,10 @@ class ProfeControllerTest {
 
   @MockBean private UsuarioService usuarioService;
   @MockBean private TeacherDashboardService teacherService;
+  @MockBean private SecurityAuditLogger securityAuditLogger;
+  @MockBean private ItemEvaluableRepository itemEvaluableRepository;
+  @MockBean private PeriodoEvaluacionRepository periodoRepository;
+  @MockBean private ResultadoAprendizajeRepository raRepository;
 
   private Usuario buildProfe() {
     return Usuario.builder()
@@ -155,7 +165,7 @@ class ProfeControllerTest {
 
     GradeUpsertRequest req =
         new GradeUpsertRequest(
-            99, List.of(new GradeUpsertRequest.Entry(1, new BigDecimal("7.00"), null)));
+            99, List.of(new GradeUpsertRequest.Entry(1, 1, new BigDecimal("7.00"), null)));
 
     mockMvc
         .perform(
@@ -174,7 +184,7 @@ class ProfeControllerTest {
     Usuario profe = buildProfe();
     GradeUpsertRequest req =
         new GradeUpsertRequest(
-            1, List.of(new GradeUpsertRequest.Entry(1, new BigDecimal("9.00"), "Perfecto")));
+            1, List.of(new GradeUpsertRequest.Entry(1, 1, new BigDecimal("9.00"), "Perfecto")));
 
     TeacherStudentGradesDTO refreshed =
         new TeacherStudentGradesDTO(
@@ -230,7 +240,7 @@ class ProfeControllerTest {
   void alumnos_200_retornaVistaConRosterYLabel() throws Exception {
     Usuario profe = buildProfe();
     List<TeacherStudentRowDTO> roster =
-        List.of(new TeacherStudentRowDTO(1, 3, "Ana Lopez", "ana@t.com", false));
+        List.of(new TeacherStudentRowDTO(1, 3, "Ana Lopez", "ana@t.com", false, 0L));
     List<TeacherSubjectDTO> subjects =
         List.of(new TeacherSubjectDTO(1, "M1", "Modulo1", "DAW1-A", "2025/2026", 1L));
 
@@ -238,6 +248,11 @@ class ProfeControllerTest {
     when(teacherService.getRosterForImparticion(2, 1)).thenReturn(roster);
     when(teacherService.getCentroIdByImparticion(2, 1)).thenReturn(1);
     when(teacherService.getSubjectsForTeacherAndCenter(2, 1)).thenReturn(subjects);
+    when(teacherService.getModuloIdByImparticion(2, 1)).thenReturn(1);
+    when(itemEvaluableRepository.findByImparticionIdOrderByPeriodoEvaluacionIdAscFechaAsc(1))
+        .thenReturn(List.of());
+    when(periodoRepository.findByImparticionId(1)).thenReturn(List.of());
+    when(raRepository.findByModuloIdOrderByCodigoAsc(1)).thenReturn(List.of());
 
     mockMvc
         .perform(get("/profe/imparticion/1/alumnos"))
@@ -266,7 +281,7 @@ class ProfeControllerTest {
     Usuario profe = buildProfe();
     GradeUpsertRequest req =
         new GradeUpsertRequest(
-            1, List.of(new GradeUpsertRequest.Entry(1, new BigDecimal("7.50"), null)));
+            1, List.of(new GradeUpsertRequest.Entry(1, 1, new BigDecimal("7.50"), null)));
 
     when(usuarioService.buscarPorCorreo("juan@tfg.com")).thenReturn(Optional.of(profe));
     when(teacherService.upsertGrades(2, "juan@tfg.com", req))
@@ -306,5 +321,99 @@ class ProfeControllerTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error").value("validation"))
         .andExpect(jsonPath("$.details").isArray());
+  }
+
+  @Test
+  void crearItem_sinAutenticacion_bloqueaAcceso() throws Exception {
+    // Without authentication, Spring Security blocks access (redirect or 401 depending on config)
+    mockMvc
+        .perform(
+            post("/profe/imparticion/1/items")
+                .with(
+                    org.springframework.security.test.web.servlet.request
+                        .SecurityMockMvcRequestPostProcessors.csrf()))
+        .andExpect(
+            result -> {
+              int status = result.getResponse().getStatus();
+              assertTrue(status == 302 || status == 401, "Expected 302 or 401 but got " + status);
+            });
+  }
+
+  @Test
+  @WithMockUser(roles = "ALUMNO")
+  void crearItem_conRolAlumno_bloqueaAcceso() throws Exception {
+    // ALUMNO role cannot access /profe/** endpoints
+    mockMvc
+        .perform(
+            post("/profe/imparticion/1/items")
+                .with(
+                    org.springframework.security.test.web.servlet.request
+                        .SecurityMockMvcRequestPostProcessors.csrf()))
+        .andExpect(
+            result -> {
+              int status = result.getResponse().getStatus();
+              assertTrue(status == 302 || status == 403, "Expected 302 or 403 but got " + status);
+            });
+  }
+
+  @Test
+  @WithMockUser(username = "juan@tfg.com", roles = "PROFESOR")
+  void crearItem_profesorPropietario_redirigaAAlumnos() throws Exception {
+    Usuario profe = buildProfe();
+    when(usuarioService.buscarPorCorreo("juan@tfg.com")).thenReturn(Optional.of(profe));
+    doNothing().when(teacherService).crearItem(eq(1), eq(2), any());
+
+    mockMvc
+        .perform(
+            post("/profe/imparticion/1/items")
+                .param("nombre", "Recuperación RA1")
+                .param("tipo", "RECUPERACION")
+                .param("fecha", "2026-06-01")
+                .param("periodoEvaluacionId", "1")
+                .param("resultadoAprendizajeId", "1")
+                .with(
+                    org.springframework.security.test.web.servlet.request
+                        .SecurityMockMvcRequestPostProcessors.csrf()))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrl("/profe/imparticion/1/alumnos"));
+  }
+
+  @Test
+  @WithMockUser(username = "juan@tfg.com", roles = "PROFESOR")
+  void crearItem_nombreVacio_flashError() throws Exception {
+    Usuario profe = buildProfe();
+    when(usuarioService.buscarPorCorreo("juan@tfg.com")).thenReturn(Optional.of(profe));
+
+    mockMvc
+        .perform(
+            post("/profe/imparticion/1/items")
+                .param("nombre", "") // vacío → @NotBlank falla
+                .param("tipo", "EXAMEN")
+                .param("fecha", "2026-06-01")
+                .param("periodoEvaluacionId", "1")
+                .param("resultadoAprendizajeId", "1")
+                .with(
+                    org.springframework.security.test.web.servlet.request
+                        .SecurityMockMvcRequestPostProcessors.csrf()))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(flash().attributeExists("errorItem"));
+  }
+
+  @Test
+  @WithMockUser(username = "juan@tfg.com", roles = "PROFESOR")
+  void eliminarItem_profesorNoPropietario_flashError() throws Exception {
+    Usuario profe = buildProfe();
+    when(usuarioService.buscarPorCorreo("juan@tfg.com")).thenReturn(Optional.of(profe));
+    when(teacherService.eliminarItem(eq(1), eq(2)))
+        .thenThrow(new AccessDeniedException("forbidden"));
+
+    mockMvc
+        .perform(
+            post("/profe/items/1/eliminar")
+                .with(
+                    org.springframework.security.test.web.servlet.request
+                        .SecurityMockMvcRequestPostProcessors.csrf()))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(flash().attributeExists("errorItem"));
   }
 }

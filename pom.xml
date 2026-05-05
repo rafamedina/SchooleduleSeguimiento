@@ -66,13 +66,13 @@
             <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
         <dependency>
-            <groupId>tech.ailef</groupId>
-            <artifactId>snap-admin</artifactId>
-            <version>0.2.1</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j-core</artifactId>
+            <version>8.10.1</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.session</groupId>
@@ -129,6 +129,13 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <!-- API Documentation -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.6.0</version>
         </dependency>
     </dependencies>
 

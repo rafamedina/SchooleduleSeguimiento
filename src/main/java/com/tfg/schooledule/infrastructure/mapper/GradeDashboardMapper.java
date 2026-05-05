@@ -3,6 +3,7 @@ package com.tfg.schooledule.infrastructure.mapper;
 import com.tfg.schooledule.domain.dto.GradeDTO;
 import com.tfg.schooledule.domain.dto.GradeDashboardDTO;
 import com.tfg.schooledule.domain.entity.Calificacion;
+import com.tfg.schooledule.infrastructure.repository.AuditoriaNotaRepository;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class GradeDashboardMapper {
 
   @Autowired protected GradeMapper gradeMapper;
+  @Autowired protected AuditoriaNotaRepository auditoriaRepo;
 
   public GradeDashboardDTO toDto(List<Calificacion> califs, String periodoNombre) {
     if (califs == null || califs.isEmpty()) {
@@ -24,7 +26,19 @@ public abstract class GradeDashboardMapper {
             .collect(
                 Collectors.groupingBy(
                     c -> c.getMatricula().getImparticion().getModulo().getNombre(),
-                    Collectors.mapping(gradeMapper::toDto, Collectors.toList())));
+                    Collectors.mapping(
+                        c -> {
+                          GradeDTO base = gradeMapper.toDto(c);
+                          boolean modificada = auditoriaRepo.countByCalificacionId(c.getId()) > 1;
+                          return new GradeDTO(
+                              base.itemNombre(),
+                              base.valor(),
+                              base.comentario(),
+                              base.fecha(),
+                              base.tipoActividad(),
+                              modificada);
+                        },
+                        Collectors.toList())));
     return new GradeDashboardDTO(periodoNombre, gradesByModulo);
   }
 }

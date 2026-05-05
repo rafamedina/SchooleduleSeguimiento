@@ -1,9 +1,11 @@
 package com.tfg.schooledule.infrastructure.mapper;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import com.tfg.schooledule.domain.dto.GradeDashboardDTO;
 import com.tfg.schooledule.domain.entity.*;
+import com.tfg.schooledule.infrastructure.repository.AuditoriaNotaRepository;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -18,9 +20,12 @@ class GradeDashboardMapperTest {
   @BeforeEach
   void setUp() throws Exception {
     GradeMapper gradeMapper = Mappers.getMapper(GradeMapper.class);
+    AuditoriaNotaRepository auditoriaRepo = mock(AuditoriaNotaRepository.class);
+    when(auditoriaRepo.countByCalificacionId(any())).thenReturn(0L);
     mapper = new GradeDashboardMapperImpl();
     GradeDashboardMapperImpl impl = (GradeDashboardMapperImpl) mapper;
     impl.gradeMapper = gradeMapper;
+    impl.auditoriaRepo = auditoriaRepo;
   }
 
   @Test

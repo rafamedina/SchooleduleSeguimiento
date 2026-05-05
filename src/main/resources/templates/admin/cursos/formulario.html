@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head
+    th:replace="~{admin/fragments/layout :: head(${form.id != null} ? 'Editar curso' : 'Nuevo curso')}"
+  ></head>
+  <body>
+    <div class="admin-shell">
+      <div th:replace="~{admin/fragments/layout :: sidebar('cursos')}"></div>
+
+      <main class="admin-content">
+        <div class="hero animate-in">
+          <div class="hero__left">
+            <nav class="breadcrumb">
+              <a th:href="@{/admin/dashboard}">Administración</a>
+              <span class="breadcrumb__sep">/</span>
+              <a th:href="@{/admin/cursos}">Cursos Académicos</a>
+              <span class="breadcrumb__sep">/</span>
+              <span th:text="${form.id != null} ? 'Editar' : 'Nuevo'"
+                >Nuevo</span
+              >
+            </nav>
+            <h1 class="hero__title">
+              <span th:text="${form.id != null} ? 'Editar' : 'Nuevo'"
+                >Nuevo</span
+              >
+              <em>Curso Académico</em>
+            </h1>
+          </div>
+        </div>
+
+        <div class="animate-in">
+          <div
+            th:if="${error}"
+            class="alert alert-danger"
+            th:text="${error}"
+          ></div>
+
+          <form
+            th:action="${form.id != null} ? @{/admin/cursos/{id}/editar(id=${form.id})} : @{/admin/cursos/nuevo}"
+            th:object="${form}"
+            method="post"
+          >
+            <div class="form-group">
+              <label for="nombre">Nombre</label>
+              <input
+                type="text"
+                id="nombre"
+                th:field="*{nombre}"
+                class="form-control"
+                th:classappend="${#fields.hasErrors('nombre')} ? 'is-invalid' : ''"
+                placeholder="Ej: 2024/2025"
+              />
+              <div
+                class="invalid-feedback"
+                th:if="${#fields.hasErrors('nombre')}"
+                th:errors="*{nombre}"
+              ></div>
+            </div>
+
+            <div class="form-group">
+              <label for="fechaInicio">Fecha de inicio</label>
+              <input
+                type="date"
+                id="fechaInicio"
+                th:field="*{fechaInicio}"
+                class="form-control"
+                th:classappend="${#fields.hasErrors('fechaInicio')} ? 'is-invalid' : ''"
+                min="2000-01-01"
+                max="2100-12-31"
+              />
+              <div
+                class="invalid-feedback"
+                th:if="${#fields.hasErrors('fechaInicio')}"
+                th:errors="*{fechaInicio}"
+              ></div>
+            </div>
+
+            <div class="form-group">
+              <label for="fechaFin">Fecha de fin</label>
+              <input
+                type="date"
+                id="fechaFin"
+                th:field="*{fechaFin}"
+                class="form-control"
+                th:classappend="${#fields.hasErrors('fechaFin')} ? 'is-invalid' : ''"
+                min="2000-01-01"
+                max="2100-12-31"
+              />
+              <div
+                class="invalid-feedback"
+                th:if="${#fields.hasErrors('fechaFin')}"
+                th:errors="*{fechaFin}"
+              ></div>
+              <div
+                class="invalid-feedback"
+                style="display: block"
+                th:if="${#fields.hasErrors('fechaFinValida')}"
+                th:errors="*{fechaFinValida}"
+              ></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a th:href="@{/admin/cursos}" class="btn btn-secondary">Cancelar</a>
+          </form>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments/layout :: head('Alumnos')}"></head>
+  <body>
+    <div class="admin-shell">
+      <div th:replace="~{admin/fragments/layout :: sidebar('alumnos')}"></div>
+
+      <main class="admin-content">
+        <div class="hero animate-in">
+          <div class="hero__left">
+            <nav class="breadcrumb">
+              <a th:href="@{/admin/dashboard}">Administración</a>
+              <span class="breadcrumb__sep">/</span>
+              <span>Alumnos</span>
+            </nav>
+            <h1 class="hero__title">Gestión de <em>Alumnos</em></h1>
+          </div>
+        </div>
+
+        <div class="animate-in">
+          <div th:if="${#lists.isEmpty(alumnos)}" class="empty-state">
+            <p>No hay alumnos registrados.</p>
+          </div>
+
+          <table class="table" th:unless="${#lists.isEmpty(alumnos)}">
+            <thead>
+              <tr>
+                <th>Apellidos</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Matrículas</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="a : ${alumnos}">
+                <td th:text="${a.apellidos}"></td>
+                <td th:text="${a.nombre}"></td>
+                <td th:text="${a.email}"></td>
+                <td th:text="${a.numMatriculas}"></td>
+                <td>
+                  <a
+                    th:href="@{/admin/alumnos/{id}/matriculas(id=${a.id})}"
+                    class="btn btn-sm btn-secondary"
+                    >Ver matrículas</a
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
