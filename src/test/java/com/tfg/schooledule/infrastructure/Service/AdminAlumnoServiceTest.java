@@ -37,7 +37,7 @@ class AdminAlumnoServiceTest {
   @InjectMocks private AdminAlumnoService adminAlumnoService;
 
   private Usuario alumnoConRol() {
-    Rol rol = Rol.builder().id(1).nombre("ALUMNO").build();
+    Rol rol = Rol.builder().id(1).nombre("ROLE_ALUMNO").build();
     return Usuario.builder()
         .id(1)
         .nombre("Juan")
