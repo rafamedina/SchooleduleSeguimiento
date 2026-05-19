@@ -5,9 +5,12 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.tfg.schooledule.domain.dto.AdminGrupoFormDTO;
 import com.tfg.schooledule.infrastructure.repository.CentroRepository;
 import com.tfg.schooledule.infrastructure.repository.CursoAcademicoRepository;
+import com.tfg.schooledule.infrastructure.repository.UsuarioRepository;
 import com.tfg.schooledule.infrastructure.security.SecurityAuditLogger;
+import com.tfg.schooledule.infrastructure.service.AdminCursoActivoService;
 import com.tfg.schooledule.infrastructure.service.AdminGrupoService;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -31,6 +34,8 @@ class AdminGrupoControllerTest {
   @MockBean private AdminGrupoService adminGrupoService;
   @MockBean private CentroRepository centroRepository;
   @MockBean private CursoAcademicoRepository cursoAcademicoRepository;
+  @MockBean private UsuarioRepository usuarioRepository;
+  @MockBean private AdminCursoActivoService adminCursoActivoService;
   @MockBean private SecurityAuditLogger securityAuditLogger;
 
   @Test
@@ -50,7 +55,7 @@ class AdminGrupoControllerTest {
   @Test
   @WithMockUser(roles = "ADMIN")
   void lista_conAdmin_200_retornaVista() throws Exception {
-    when(adminGrupoService.listarTodos()).thenReturn(Collections.emptyList());
+    when(adminGrupoService.listarFiltrado(any())).thenReturn(Collections.emptyList());
 
     mockMvc
         .perform(get("/admin/grupos"))
@@ -121,5 +126,48 @@ class AdminGrupoControllerTest {
         .perform(post("/admin/grupos/1/eliminar").with(csrf()))
         .andExpect(status().is3xxRedirection())
         .andExpect(redirectedUrl("/admin/grupos"));
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void nuevo_conAdmin_200_retornaFormulario() throws Exception {
+    when(centroRepository.findAllByOrderByNombreAsc()).thenReturn(Collections.emptyList());
+    when(cursoAcademicoRepository.findAllByOrderByNombreAsc()).thenReturn(Collections.emptyList());
+
+    mockMvc
+        .perform(get("/admin/grupos/nuevo"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("admin/grupos/formulario"))
+        .andExpect(model().attributeExists("form"));
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void editar_conAdmin_200_retornaFormularioPreRellenado() throws Exception {
+    when(adminGrupoService.obtenerParaEditar(1)).thenReturn(new AdminGrupoFormDTO());
+    when(centroRepository.findAllByOrderByNombreAsc()).thenReturn(Collections.emptyList());
+    when(cursoAcademicoRepository.findAllByOrderByNombreAsc()).thenReturn(Collections.emptyList());
+
+    mockMvc
+        .perform(get("/admin/grupos/1/editar"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("admin/grupos/formulario"))
+        .andExpect(model().attributeExists("form"));
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void actualizar_datosValidos_redirigeLista() throws Exception {
+    mockMvc
+        .perform(
+            post("/admin/grupos/1/editar")
+                .param("nombre", "1DAW-B")
+                .param("centroId", "1")
+                .param("cursoAcademicoId", "1")
+                .with(csrf()))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrl("/admin/grupos"));
+
+    verify(adminGrupoService).actualizar(eq(1), any());
   }
 }

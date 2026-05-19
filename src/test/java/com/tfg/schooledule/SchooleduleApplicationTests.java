@@ -7,5 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class SchooleduleApplicationTests {
 
   @Test
-  void contextLoads() {}
+  void contextLoads() {
+    // Spring context load — assertions are implicit (test fails if context fails to start)
+  }
 }

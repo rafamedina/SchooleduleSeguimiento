@@ -5,4 +5,5 @@ public record AdminGrupoListDTO(
     String nombre,
     String centroNombre,
     String cursoAcademicoNombre,
-    int numImparticiones) {}
+    int numImparticiones,
+    String tutorNombre) {}

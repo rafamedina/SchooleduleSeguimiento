@@ -14,8 +14,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Mapper(componentModel = "spring")
 public abstract class GradeDashboardMapper {
 
-  @Autowired protected GradeMapper gradeMapper;
-  @Autowired protected AuditoriaNotaRepository auditoriaRepo;
+  protected GradeMapper gradeMapper;
+  protected AuditoriaNotaRepository auditoriaRepo;
+
+  @Autowired
+  public void setGradeMapper(GradeMapper gradeMapper) {
+    this.gradeMapper = gradeMapper;
+  }
+
+  @Autowired
+  public void setAuditoriaRepo(AuditoriaNotaRepository auditoriaRepo) {
+    this.auditoriaRepo = auditoriaRepo;
+  }
 
   public GradeDashboardDTO toDto(List<Calificacion> califs, String periodoNombre) {
     if (califs == null || califs.isEmpty()) {

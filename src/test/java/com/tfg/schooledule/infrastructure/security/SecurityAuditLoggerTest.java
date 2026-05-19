@@ -24,8 +24,7 @@ class SecurityAuditLoggerTest {
   @Test
   void sanitize_reemplazaSaltosDeLinea() {
     String resultado = logger.sanitize("hacker@evil.com\nINFO fakeEntry");
-    assertThat(resultado).doesNotContain("\n");
-    assertThat(resultado).contains("_");
+    assertThat(resultado).doesNotContain("\n").contains("_");
   }
 
   @Test

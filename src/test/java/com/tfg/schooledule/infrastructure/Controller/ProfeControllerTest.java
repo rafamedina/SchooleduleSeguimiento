@@ -10,10 +10,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tfg.schooledule.domain.dto.*;
 import com.tfg.schooledule.domain.entity.Centro;
 import com.tfg.schooledule.domain.entity.Usuario;
+import com.tfg.schooledule.infrastructure.repository.CursoAcademicoRepository;
 import com.tfg.schooledule.infrastructure.repository.ItemEvaluableRepository;
 import com.tfg.schooledule.infrastructure.repository.PeriodoEvaluacionRepository;
 import com.tfg.schooledule.infrastructure.repository.ResultadoAprendizajeRepository;
 import com.tfg.schooledule.infrastructure.security.SecurityAuditLogger;
+import com.tfg.schooledule.infrastructure.service.AdminCursoActivoService;
 import com.tfg.schooledule.infrastructure.service.TeacherDashboardService;
 import com.tfg.schooledule.infrastructure.service.UsuarioService;
 import java.math.BigDecimal;
@@ -42,6 +44,8 @@ class ProfeControllerTest {
   @MockBean private ItemEvaluableRepository itemEvaluableRepository;
   @MockBean private PeriodoEvaluacionRepository periodoRepository;
   @MockBean private ResultadoAprendizajeRepository raRepository;
+  @MockBean private CursoAcademicoRepository cursoAcademicoRepository;
+  @MockBean private AdminCursoActivoService adminCursoActivoService;
 
   private Usuario buildProfe() {
     return Usuario.builder()
@@ -75,9 +79,11 @@ class ProfeControllerTest {
         "EXAMEN",
         LocalDate.now(),
         List.of(
-            new TeacherCriterioGradeDTO(1, "a", "CE-a", mediaRa, null, mediaRa != null ? 1 : null),
-            new TeacherCriterioGradeDTO(2, "b", "CE-b", null, null, null)),
-        mediaRa);
+            new TeacherCriterioGradeDTO(
+                1, "a", "CE-a", mediaRa, null, mediaRa != null ? 1 : null, BigDecimal.ZERO),
+            new TeacherCriterioGradeDTO(2, "b", "CE-b", null, null, null, BigDecimal.ZERO)),
+        mediaRa,
+        null);
   }
 
   @Test
@@ -404,8 +410,7 @@ class ProfeControllerTest {
   void eliminarItem_profesorNoPropietario_flashError() throws Exception {
     Usuario profe = buildProfe();
     when(usuarioService.buscarPorCorreo("juan@tfg.com")).thenReturn(Optional.of(profe));
-    when(teacherService.eliminarItem(eq(1), eq(2)))
-        .thenThrow(new AccessDeniedException("forbidden"));
+    when(teacherService.eliminarItem(1, 2)).thenThrow(new AccessDeniedException("forbidden"));
 
     mockMvc
         .perform(

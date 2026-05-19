@@ -23,6 +23,31 @@
         </div>
 
         <div class="animate-in">
+          <form method="get" action="/admin/grupos" class="filter-bar">
+            <select name="centroId">
+              <option value="">Todos los centros</option>
+              <option
+                th:each="c : ${centros}"
+                th:value="${c.id}"
+                th:text="${c.nombre}"
+                th:selected="${filtro != null and filtro.centroId() != null and filtro.centroId() == c.id}"
+              ></option>
+            </select>
+            <select name="cursoAcademicoId">
+              <option value="">Todos los años</option>
+              <option
+                th:each="cu : ${cursos}"
+                th:value="${cu.id}"
+                th:text="${cu.nombre}"
+                th:selected="${filtro != null and filtro.cursoAcademicoId() != null and filtro.cursoAcademicoId() == cu.id}"
+              ></option>
+            </select>
+            <button type="submit" class="btn btn-secondary btn-sm">
+              Filtrar
+            </button>
+            <a th:href="@{/admin/grupos}" class="btn btn-sm">Limpiar</a>
+          </form>
+
           <div
             th:if="${error}"
             class="alert alert-danger"
@@ -42,6 +67,7 @@
                 <th>Nombre</th>
                 <th>Centro</th>
                 <th>Curso Académico</th>
+                <th>Tutor</th>
                 <th>Imparticiones</th>
                 <th>Acciones</th>
               </tr>
@@ -51,6 +77,9 @@
                 <td th:text="${g.nombre}"></td>
                 <td th:text="${g.centroNombre}"></td>
                 <td th:text="${g.cursoAcademicoNombre}"></td>
+                <td
+                  th:text="${g.tutorNombre != null ? g.tutorNombre : '—'}"
+                ></td>
                 <td th:text="${g.numImparticiones}"></td>
                 <td>
                   <a

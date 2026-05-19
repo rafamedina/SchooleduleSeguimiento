@@ -19,4 +19,6 @@ public record TeacherCriterioGradeDTO(
     @Schema(
             description = "ID de la entidad Calificacion en BD (null si no existe aún)",
             example = "101")
-        Integer calificacionId) {}
+        Integer calificacionId,
+    @Schema(description = "Peso del criterio definido por el centro", example = "20.00")
+        BigDecimal peso) {}

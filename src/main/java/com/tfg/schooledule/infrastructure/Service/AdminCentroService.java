@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AdminCentroService {
 
+  private static final String ERR_CENTRO = "Centro no encontrado: ";
+
   private final CentroRepository centroRepository;
   private final GrupoRepository grupoRepository;
   private final AdminCentroMapper adminCentroMapper;
@@ -27,19 +29,27 @@ public class AdminCentroService {
     this.adminCentroMapper = adminCentroMapper;
   }
 
+  private AdminCentroListDTO toListDTO(Centro c) {
+    return new AdminCentroListDTO(
+        c.getId(),
+        c.getNombre(),
+        c.getUbicacion(),
+        c.getActivo(),
+        c.getProfesores().size(),
+        (int) grupoRepository.countByCentroId(c.getId()));
+  }
+
   @Transactional(readOnly = true)
   public List<AdminCentroListDTO> listarTodos() {
-    return centroRepository.findAllByOrderByNombreAsc().stream()
-        .map(
-            c ->
-                new AdminCentroListDTO(
-                    c.getId(),
-                    c.getNombre(),
-                    c.getUbicacion(),
-                    c.getActivo(),
-                    c.getProfesores().size(),
-                    (int) grupoRepository.countByCentroId(c.getId())))
-        .toList();
+    return centroRepository.findAllByOrderByNombreAsc().stream().map(this::toListDTO).toList();
+  }
+
+  @Transactional(readOnly = true)
+  public List<AdminCentroListDTO> listarFiltrado(String nombre) {
+    if (nombre == null || nombre.isBlank()) {
+      return centroRepository.findAllByOrderByNombreAsc().stream().map(this::toListDTO).toList();
+    }
+    return centroRepository.findByNombreContaining(nombre).stream().map(this::toListDTO).toList();
   }
 
   @Transactional(readOnly = true)
@@ -47,7 +57,7 @@ public class AdminCentroService {
     Centro centro =
         centroRepository
             .findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Centro no encontrado: " + id));
+            .orElseThrow(() -> new EntityNotFoundException(ERR_CENTRO + id));
     return adminCentroMapper.toFormDTO(centro);
   }
 
@@ -66,7 +76,7 @@ public class AdminCentroService {
     Centro centro =
         centroRepository
             .findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Centro no encontrado: " + id));
+            .orElseThrow(() -> new EntityNotFoundException(ERR_CENTRO + id));
     if (centroRepository.existsByNombreAndIdNot(dto.getNombre(), id)) {
       throw new IllegalArgumentException(
           "Ya existe un centro con el nombre '" + dto.getNombre() + "'");
@@ -80,7 +90,7 @@ public class AdminCentroService {
     Centro centro =
         centroRepository
             .findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Centro no encontrado: " + id));
+            .orElseThrow(() -> new EntityNotFoundException(ERR_CENTRO + id));
     if (Boolean.TRUE.equals(centro.getActivo()) && grupoRepository.existsByCentroId(id)) {
       throw new IllegalStateException(
           "No se puede desactivar el centro porque tiene grupos asignados");

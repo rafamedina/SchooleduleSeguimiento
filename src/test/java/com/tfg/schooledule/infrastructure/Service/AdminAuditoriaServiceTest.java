@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -118,9 +119,35 @@ class AdminAuditoriaServiceTest {
     assertThat(dto.id()).isEqualTo(10);
     assertThat(dto.alumnoEmail()).isEqualTo("juan@test.com");
     assertThat(dto.moduloNombre()).isEqualTo("Programación");
+    assertThat(dto.centroId()).isEqualTo(1);
+    assertThat(dto.centroNombre()).isEqualTo("Centro Test");
     assertThat(dto.valorAnterior()).isEqualByComparingTo(new BigDecimal("5.00"));
     assertThat(dto.valorNuevo()).isEqualByComparingTo(new BigDecimal("7.50"));
     assertThat(dto.usuarioResponsable()).isEqualTo("ana@test.com");
     assertThat(dto.motivo()).isEqualTo("Corrección de examen");
+  }
+
+  @Test
+  void buscar_conCentroIds_delegaAlRepositorioFiltrado() {
+    var centroIds = Set.of(1);
+    when(auditoriaNotaRepository.findAllByCentroIds(centroIds)).thenReturn(List.of());
+
+    adminAuditoriaService.buscar(null, null, null, null, centroIds);
+
+    verify(auditoriaNotaRepository).findAllByCentroIds(centroIds);
+    verify(auditoriaNotaRepository, never()).findAllWithDetails();
+  }
+
+  @Test
+  void buscar_conCentroIds_retornaSoloRegistrosDeEsosCentros() {
+    AuditoriaNota entidad = buildAuditoriaNota();
+    var centroIds = Set.of(1);
+    when(auditoriaNotaRepository.findAllByCentroIds(centroIds)).thenReturn(List.of(entidad));
+
+    List<AdminAuditoriaListDTO> resultado =
+        adminAuditoriaService.buscar(null, null, null, null, centroIds);
+
+    assertThat(resultado).hasSize(1);
+    assertThat(resultado.get(0).centroId()).isEqualTo(1);
   }
 }

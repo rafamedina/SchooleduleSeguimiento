@@ -1,13 +1,15 @@
 package com.tfg.schooledule.infrastructure.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import com.tfg.schooledule.domain.dto.AdminModuloFormDTO;
 import com.tfg.schooledule.domain.entity.Modulo;
-import com.tfg.schooledule.infrastructure.mapper.AdminModuloMapper;
+import com.tfg.schooledule.infrastructure.repository.CriterioEvaluacionRepository;
 import com.tfg.schooledule.infrastructure.repository.ImparticionRepository;
 import com.tfg.schooledule.infrastructure.repository.ModuloRepository;
 import com.tfg.schooledule.infrastructure.repository.ResultadoAprendizajeRepository;
@@ -24,37 +26,40 @@ class AdminModuloServiceTest {
   @Mock private ModuloRepository moduloRepository;
   @Mock private ImparticionRepository imparticionRepository;
   @Mock private ResultadoAprendizajeRepository raRepository;
-  @Mock private AdminModuloMapper adminModuloMapper;
+  @Mock private CriterioEvaluacionRepository ceRepository;
+  @Mock private ModuloImportService moduloImportService;
 
   @InjectMocks private AdminModuloService adminModuloService;
 
-  private AdminModuloFormDTO buildForm(String codigo, String nombre) {
-    AdminModuloFormDTO form = new AdminModuloFormDTO();
-    form.setCodigo(codigo);
-    form.setNombre(nombre);
-    return form;
-  }
+  // ── importarModulo ────────────────────────────────────────────────────────
 
   @Test
-  void crear_moduloValido_persisteEntidad() {
-    AdminModuloFormDTO form = buildForm("DAW01", "Desarrollo Web en Entorno Cliente");
+  void importarModulo_codigoNuevo_creaModuloYLlamaAImportService() {
+    when(moduloRepository.findByCodigo("DAW01")).thenReturn(Optional.empty());
+    Modulo guardado = Modulo.builder().id(10).codigo("DAW01").nombre("Desarrollo Web").build();
+    when(moduloRepository.save(any())).thenReturn(guardado);
+    when(moduloImportService.importar(any(), any(), any())).thenReturn(5);
 
-    when(moduloRepository.existsByCodigo("DAW01")).thenReturn(false);
+    int result = adminModuloService.importarModulo("DAW01", "Desarrollo Web", 1, new byte[] {1});
 
-    adminModuloService.crear(form);
-
+    assertThat(result).isEqualTo(5);
     verify(moduloRepository).save(argThat(m -> "DAW01".equals(m.getCodigo())));
+    verify(moduloImportService).importar(any(), any(), any());
   }
 
   @Test
-  void crear_codigoExistente_lanzaIllegalArgumentException() {
-    AdminModuloFormDTO form = buildForm("DAW01", "Duplicado");
+  void importarModulo_codigoExistente_reutilizaModuloSinCrear() {
+    Modulo existente = Modulo.builder().id(7).codigo("DAW01").nombre("Existente").build();
+    when(moduloRepository.findByCodigo("DAW01")).thenReturn(Optional.of(existente));
+    when(moduloImportService.importar(any(), any(), any())).thenReturn(3);
 
-    when(moduloRepository.existsByCodigo("DAW01")).thenReturn(true);
+    adminModuloService.importarModulo("DAW01", "Nuevo Nombre Ignorado", 2, new byte[] {1});
 
-    assertThrows(IllegalArgumentException.class, () -> adminModuloService.crear(form));
     verify(moduloRepository, never()).save(any());
+    verify(moduloImportService).importar(any(), any(), any());
   }
+
+  // ── toggleActivo ──────────────────────────────────────────────────────────
 
   @Test
   void toggleActivo_conImparticiones_lanzaIllegalStateException() {

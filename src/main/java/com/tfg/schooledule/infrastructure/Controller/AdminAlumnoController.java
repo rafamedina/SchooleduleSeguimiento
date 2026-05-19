@@ -1,7 +1,11 @@
 package com.tfg.schooledule.infrastructure.controller;
 
 import com.tfg.schooledule.domain.dto.AdminMatriculaFormDTO;
+import com.tfg.schooledule.domain.dto.AlumnoFiltroDTO;
 import com.tfg.schooledule.domain.enums.EstadoMatricula;
+import com.tfg.schooledule.infrastructure.repository.CentroRepository;
+import com.tfg.schooledule.infrastructure.repository.CursoAcademicoRepository;
+import com.tfg.schooledule.infrastructure.repository.GrupoRepository;
 import com.tfg.schooledule.infrastructure.repository.ImparticionRepository;
 import com.tfg.schooledule.infrastructure.service.AdminAlumnoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,21 +23,38 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Tag(name = "Admin - Alumnos")
 @Controller
 @RequestMapping("/admin/alumnos")
 @PreAuthorize("hasRole('ADMIN')")
+@SuppressWarnings("java:S1075")
 public class AdminAlumnoController {
+
+  private static final String ATTR_ALUMNO = "alumno";
+  private static final String VIEW_MATRICULA_FORM = "admin/alumnos/matricula-formulario";
+  private static final String REDIRECT_ALUMNOS = "redirect:/admin/alumnos/";
+  private static final String PATH_MATRICULAS = "/matriculas";
 
   private final AdminAlumnoService adminAlumnoService;
   private final ImparticionRepository imparticionRepository;
+  private final CentroRepository centroRepository;
+  private final GrupoRepository grupoRepository;
+  private final CursoAcademicoRepository cursoAcademicoRepository;
 
   public AdminAlumnoController(
-      AdminAlumnoService adminAlumnoService, ImparticionRepository imparticionRepository) {
+      AdminAlumnoService adminAlumnoService,
+      ImparticionRepository imparticionRepository,
+      CentroRepository centroRepository,
+      GrupoRepository grupoRepository,
+      CursoAcademicoRepository cursoAcademicoRepository) {
     this.adminAlumnoService = adminAlumnoService;
     this.imparticionRepository = imparticionRepository;
+    this.centroRepository = centroRepository;
+    this.grupoRepository = grupoRepository;
+    this.cursoAcademicoRepository = cursoAcademicoRepository;
   }
 
   @Operation(
@@ -46,8 +67,17 @@ public class AdminAlumnoController {
       description = "Vista HTML: admin/alumnos/lista. Modelo: alumnos (List<AdminAlumnoListDTO>)")
   @ApiResponse(responseCode = "403", description = "Acceso denegado — requiere ROLE_ADMIN")
   @GetMapping
-  public String lista(Model model) {
-    model.addAttribute("alumnos", adminAlumnoService.listarAlumnos());
+  public String lista(
+      @RequestParam(required = false) Integer centroId,
+      @RequestParam(required = false) Integer grupoId,
+      @RequestParam(required = false) Integer cursoAcademicoId,
+      Model model) {
+    AlumnoFiltroDTO filtro = new AlumnoFiltroDTO(centroId, grupoId, cursoAcademicoId);
+    model.addAttribute("alumnos", adminAlumnoService.listarFiltrado(filtro));
+    model.addAttribute("centros", centroRepository.findAllByOrderByNombreAsc());
+    model.addAttribute("grupos", grupoRepository.findAllByOrderByCentroNombreAscNombreAsc());
+    model.addAttribute("cursos", cursoAcademicoRepository.findAllByOrderByNombreAsc());
+    model.addAttribute("filtro", filtro);
     return "admin/alumnos/lista";
   }
 
@@ -70,7 +100,7 @@ public class AdminAlumnoController {
           @Positive
           Integer alumnoId,
       Model model) {
-    model.addAttribute("alumno", adminAlumnoService.obtenerAlumno(alumnoId));
+    model.addAttribute(ATTR_ALUMNO, adminAlumnoService.obtenerAlumno(alumnoId));
     model.addAttribute("matriculas", adminAlumnoService.listarMatriculas(alumnoId));
     return "admin/alumnos/matriculas";
   }
@@ -93,10 +123,10 @@ public class AdminAlumnoController {
           @Positive
           Integer alumnoId,
       Model model) {
-    model.addAttribute("alumno", adminAlumnoService.obtenerAlumno(alumnoId));
+    model.addAttribute(ATTR_ALUMNO, adminAlumnoService.obtenerAlumno(alumnoId));
     model.addAttribute("form", new AdminMatriculaFormDTO());
     cargarImparticionesYEstados(model);
-    return "admin/alumnos/matricula-formulario";
+    return VIEW_MATRICULA_FORM;
   }
 
   @Operation(
@@ -121,19 +151,19 @@ public class AdminAlumnoController {
       BindingResult bindingResult,
       Model model) {
     if (bindingResult.hasErrors()) {
-      model.addAttribute("alumno", adminAlumnoService.obtenerAlumno(alumnoId));
+      model.addAttribute(ATTR_ALUMNO, adminAlumnoService.obtenerAlumno(alumnoId));
       cargarImparticionesYEstados(model);
-      return "admin/alumnos/matricula-formulario";
+      return VIEW_MATRICULA_FORM;
     }
     try {
       adminAlumnoService.crearMatricula(alumnoId, form);
     } catch (IllegalArgumentException ex) {
-      model.addAttribute("alumno", adminAlumnoService.obtenerAlumno(alumnoId));
+      model.addAttribute(ATTR_ALUMNO, adminAlumnoService.obtenerAlumno(alumnoId));
       model.addAttribute("error", ex.getMessage());
       cargarImparticionesYEstados(model);
-      return "admin/alumnos/matricula-formulario";
+      return VIEW_MATRICULA_FORM;
     }
-    return "redirect:/admin/alumnos/" + alumnoId + "/matriculas";
+    return REDIRECT_ALUMNOS + alumnoId + PATH_MATRICULAS;
   }
 
   @Operation(
@@ -159,10 +189,10 @@ public class AdminAlumnoController {
           @Positive
           Integer id,
       Model model) {
-    model.addAttribute("alumno", adminAlumnoService.obtenerAlumno(alumnoId));
+    model.addAttribute(ATTR_ALUMNO, adminAlumnoService.obtenerAlumno(alumnoId));
     model.addAttribute("form", adminAlumnoService.obtenerMatriculaParaEditar(id));
     cargarImparticionesYEstados(model);
-    return "admin/alumnos/matricula-formulario";
+    return VIEW_MATRICULA_FORM;
   }
 
   @Operation(
@@ -189,12 +219,12 @@ public class AdminAlumnoController {
       BindingResult bindingResult,
       Model model) {
     if (bindingResult.hasErrors()) {
-      model.addAttribute("alumno", adminAlumnoService.obtenerAlumno(alumnoId));
+      model.addAttribute(ATTR_ALUMNO, adminAlumnoService.obtenerAlumno(alumnoId));
       cargarImparticionesYEstados(model);
-      return "admin/alumnos/matricula-formulario";
+      return VIEW_MATRICULA_FORM;
     }
     adminAlumnoService.actualizarMatricula(id, form);
-    return "redirect:/admin/alumnos/" + alumnoId + "/matriculas";
+    return REDIRECT_ALUMNOS + alumnoId + PATH_MATRICULAS;
   }
 
   @Operation(
@@ -225,7 +255,7 @@ public class AdminAlumnoController {
     } catch (IllegalStateException ex) {
       redirectAttributes.addFlashAttribute("error", ex.getMessage());
     }
-    return "redirect:/admin/alumnos/" + alumnoId + "/matriculas";
+    return REDIRECT_ALUMNOS + alumnoId + PATH_MATRICULAS;
   }
 
   private void cargarImparticionesYEstados(Model model) {

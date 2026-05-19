@@ -24,6 +24,8 @@ public interface CursoAcademicoRepository extends JpaRepository<CursoAcademico, 
 
   boolean existsByNombreAndIdNot(String nombre, Integer id);
 
+  Optional<CursoAcademico> findByNombreIgnoreCase(String nombre);
+
   @Modifying(clearAutomatically = true)
   @Query("UPDATE CursoAcademico c SET c.activo = false WHERE c.id <> :id")
   int desactivarTodosExcepto(@Param("id") Integer id);

@@ -9,9 +9,8 @@ public class PasswordConstraintValidator implements ConstraintValidator<ValidPas
   public boolean isValid(String value, ConstraintValidatorContext context) {
     if (value == null || value.isBlank()) return true;
     if (value.length() < 8) return false;
-    if (!value.matches(".*[A-Z].*")) return false;
-    if (!value.matches(".*[a-z].*")) return false;
-    if (!value.matches(".*[0-9].*")) return false;
-    return true;
+    if (value.chars().noneMatch(Character::isUpperCase)) return false;
+    if (value.chars().noneMatch(Character::isLowerCase)) return false;
+    return value.chars().anyMatch(Character::isDigit);
   }
 }

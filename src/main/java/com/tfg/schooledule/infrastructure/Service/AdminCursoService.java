@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AdminCursoService {
 
+  private static final String ERR_CURSO = "Curso académico no encontrado: ";
+
   private final CursoAcademicoRepository cursoAcademicoRepository;
   private final GrupoRepository grupoRepository;
   private final AdminCursoMapper adminCursoMapper;
@@ -47,7 +49,7 @@ public class AdminCursoService {
     CursoAcademico curso =
         cursoAcademicoRepository
             .findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Curso académico no encontrado: " + id));
+            .orElseThrow(() -> new EntityNotFoundException(ERR_CURSO + id));
     return adminCursoMapper.toFormDTO(curso);
   }
 
@@ -71,7 +73,7 @@ public class AdminCursoService {
     CursoAcademico curso =
         cursoAcademicoRepository
             .findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Curso académico no encontrado: " + id));
+            .orElseThrow(() -> new EntityNotFoundException(ERR_CURSO + id));
     if (cursoAcademicoRepository.existsByNombreAndIdNot(dto.getNombre(), id)) {
       throw new IllegalArgumentException(
           "Ya existe un curso académico con el nombre '" + dto.getNombre() + "'");
@@ -85,7 +87,7 @@ public class AdminCursoService {
     CursoAcademico curso =
         cursoAcademicoRepository
             .findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Curso académico no encontrado: " + id));
+            .orElseThrow(() -> new EntityNotFoundException(ERR_CURSO + id));
     cursoAcademicoRepository.desactivarTodosExcepto(id);
     curso.setActivo(true);
     cursoAcademicoRepository.save(curso);
@@ -96,7 +98,7 @@ public class AdminCursoService {
     CursoAcademico curso =
         cursoAcademicoRepository
             .findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Curso académico no encontrado: " + id));
+            .orElseThrow(() -> new EntityNotFoundException(ERR_CURSO + id));
     curso.setActivo(false);
     cursoAcademicoRepository.save(curso);
   }

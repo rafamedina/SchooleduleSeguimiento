@@ -21,4 +21,6 @@ public record TeacherGradeItemDTO(
     @Schema(
             description = "Media calculada de los criterios del ítem (0.00-10.00)",
             example = "8.00")
-        BigDecimal mediaRa) {}
+        BigDecimal mediaRa,
+    @Schema(description = "Peso del RA en el periodo, definido por el centro", example = "25.00")
+        BigDecimal raPeso) {}

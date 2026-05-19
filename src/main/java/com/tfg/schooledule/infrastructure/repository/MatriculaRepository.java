@@ -39,4 +39,14 @@ public interface MatriculaRepository extends JpaRepository<Matricula, Integer> {
 
   @Query(value = "SELECT COUNT(*) FROM matriculas WHERE estado = 'ACTIVA'", nativeQuery = true)
   long countMatriculasActivas();
+
+  @Query("SELECT m FROM Matricula m JOIN m.imparticion i JOIN i.centro c WHERE c.id IN :centroIds")
+  List<Matricula> findByCentroIds(@Param("centroIds") java.util.Collection<Integer> centroIds);
+
+  boolean existsByIdAndImparticionCentroIdIn(Integer id, java.util.Collection<Integer> centroIds);
+
+  @Query(
+      "SELECT COUNT(DISTINCT m.alumno.id) FROM Matricula m JOIN m.imparticion i JOIN i.centro c"
+          + " WHERE c.id IN :centroIds AND m.estado = 'ACTIVA'")
+  long countAlumnosActivosByCentroIds(@Param("centroIds") java.util.Collection<Integer> centroIds);
 }

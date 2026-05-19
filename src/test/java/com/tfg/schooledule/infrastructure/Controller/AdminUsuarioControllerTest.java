@@ -8,8 +8,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.tfg.schooledule.domain.dto.AdminUsuarioFormDTO;
 import com.tfg.schooledule.domain.dto.AdminUsuarioListDTO;
 import com.tfg.schooledule.infrastructure.repository.CentroRepository;
+import com.tfg.schooledule.infrastructure.repository.CursoAcademicoRepository;
 import com.tfg.schooledule.infrastructure.repository.RolRepository;
 import com.tfg.schooledule.infrastructure.security.SecurityAuditLogger;
+import com.tfg.schooledule.infrastructure.service.AdminCursoActivoService;
 import com.tfg.schooledule.infrastructure.service.AdminUsuarioService;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +37,8 @@ class AdminUsuarioControllerTest {
   @MockBean private AdminUsuarioService adminUsuarioService;
   @MockBean private RolRepository rolRepository;
   @MockBean private CentroRepository centroRepository;
+  @MockBean private CursoAcademicoRepository cursoAcademicoRepository;
+  @MockBean private AdminCursoActivoService adminCursoActivoService;
   @MockBean private SecurityAuditLogger securityAuditLogger;
 
   @Test
@@ -54,7 +58,7 @@ class AdminUsuarioControllerTest {
   @Test
   @WithMockUser(roles = "ADMIN")
   void lista_conAdmin_200_retornaVista() throws Exception {
-    when(adminUsuarioService.listarTodos()).thenReturn(Collections.emptyList());
+    when(adminUsuarioService.listarFiltrado(any())).thenReturn(Collections.emptyList());
 
     mockMvc
         .perform(get("/admin/usuarios"))
@@ -69,7 +73,7 @@ class AdminUsuarioControllerTest {
     AdminUsuarioListDTO dto =
         new AdminUsuarioListDTO(
             1, "admin", "Admin", "Test", "admin@tfg.com", true, Set.of(), Set.of());
-    when(adminUsuarioService.listarTodos()).thenReturn(List.of(dto));
+    when(adminUsuarioService.listarFiltrado(any())).thenReturn(List.of(dto));
 
     mockMvc
         .perform(get("/admin/usuarios"))

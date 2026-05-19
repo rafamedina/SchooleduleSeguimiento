@@ -32,4 +32,8 @@ public class AdminGrupoFormDTO {
   @NotNull
   @Positive
   private Integer cursoAcademicoId;
+
+  @Schema(description = "ID del usuario tutor del grupo (opcional)", example = "3")
+  @Positive
+  private Integer tutorId;
 }

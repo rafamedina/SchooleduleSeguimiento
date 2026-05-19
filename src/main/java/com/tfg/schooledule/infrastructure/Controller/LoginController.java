@@ -13,6 +13,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class LoginController {
 
+  @GetMapping("/")
+  public String raiz() {
+    return "redirect:/login";
+  }
+
   @Operation(
       summary = "Formulario de login",
       description =

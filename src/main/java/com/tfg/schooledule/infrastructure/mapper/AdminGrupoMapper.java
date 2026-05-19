@@ -10,5 +10,6 @@ public interface AdminGrupoMapper {
 
   @Mapping(target = "centroId", source = "centro.id")
   @Mapping(target = "cursoAcademicoId", source = "cursoAcademico.id")
+  @Mapping(target = "tutorId", source = "tutor.id")
   AdminGrupoFormDTO toFormDTO(Grupo grupo);
 }

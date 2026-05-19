@@ -16,23 +16,47 @@
             <h1 class="hero__title">Gestión de <em>Módulos</em></h1>
           </div>
           <div class="hero__right">
-            <a th:href="@{/admin/modulos/nuevo}" class="btn btn-primary"
-              >Nuevo módulo</a
+            <a
+              th:href="@{/admin/modulos/plantilla-excel}"
+              class="btn btn-secondary btn-sm"
+              style="margin-right: 0.5rem"
+              >Plantilla Excel</a
+            >
+            <a th:href="@{/admin/modulos/importar}" class="btn btn-primary"
+              >Importar módulo</a
             >
           </div>
         </div>
 
         <div class="animate-in">
+          <form method="get" action="/admin/modulos" class="filter-bar">
+            <input
+              type="text"
+              name="nombre"
+              placeholder="Buscar por nombre…"
+              th:value="${nombre}"
+            />
+            <button type="submit" class="btn btn-secondary btn-sm">
+              Buscar
+            </button>
+            <a th:href="@{/admin/modulos}" class="btn btn-sm">Limpiar</a>
+          </form>
+
           <div
             th:if="${error}"
             class="alert alert-danger"
             th:text="${error}"
           ></div>
+          <div
+            th:if="${exito}"
+            class="alert alert-success"
+            th:text="${exito}"
+          ></div>
 
           <div th:if="${#lists.isEmpty(modulos)}" class="empty-state">
             <p>No hay módulos registrados.</p>
-            <a th:href="@{/admin/modulos/nuevo}" class="btn btn-primary"
-              >Crear el primero</a
+            <a th:href="@{/admin/modulos/importar}" class="btn btn-primary"
+              >Importar el primero</a
             >
           </div>
 
@@ -41,8 +65,9 @@
               <tr>
                 <th>Código</th>
                 <th>Nombre</th>
+                <th>Cursos con RAs</th>
                 <th>Imparticiones</th>
-                <th>Resultados Aprendizaje</th>
+                <th>RAs</th>
                 <th>Activo</th>
                 <th>Acciones</th>
               </tr>
@@ -51,10 +76,29 @@
               <tr th:each="m : ${modulos}">
                 <td th:text="${m.codigo}"></td>
                 <td th:text="${m.nombre}"></td>
+                <td>
+                  <span
+                    th:if="${#lists.isEmpty(m.cursosConRas)}"
+                    style="color: var(--ink-soft)"
+                    >—</span
+                  >
+                  <span
+                    th:each="c, i : ${m.cursosConRas}"
+                    th:text="${c + (i.last ? '' : ', ')}"
+                    style="font-size: 0.85rem"
+                  ></span>
+                </td>
                 <td th:text="${m.numImparticiones}"></td>
                 <td th:text="${m.numResultadosAprendizaje}"></td>
                 <td th:text="${m.activo ? 'Sí' : 'No'}"></td>
                 <td>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-secondary"
+                    th:attr="data-modulo-id=${m.id},data-action='ver-resumen'"
+                  >
+                    Ver resumen
+                  </button>
                   <a
                     th:href="@{/admin/modulos/{id}/editar(id=${m.id})}"
                     class="btn btn-sm btn-secondary"
@@ -85,5 +129,30 @@
         </div>
       </main>
     </div>
+    <dialog
+      id="moduloResumenModal"
+      aria-labelledby="resumenModalTitle"
+      aria-modal="true"
+    >
+      <div class="resumen-modal-header">
+        <div>
+          <h2 class="resumen-modal-title" id="resumenModalTitle">Resumen</h2>
+          <p class="resumen-modal-meta" id="resumenModalMeta"></p>
+        </div>
+        <button
+          type="button"
+          class="resumen-modal-close"
+          aria-label="Cerrar"
+          id="resumenModalClose"
+        >
+          &times;
+        </button>
+      </div>
+      <div class="resumen-modal-body" id="resumenModalBody">
+        <p>Cargando…</p>
+      </div>
+    </dialog>
+
+    <script th:src="@{/js/admin-modulos.js}" defer></script>
   </body>
 </html>

@@ -23,6 +23,19 @@
         </div>
 
         <div class="animate-in">
+          <form method="get" action="/admin/centros" class="filter-bar">
+            <input
+              type="text"
+              name="nombre"
+              placeholder="Buscar por nombre…"
+              th:value="${nombre}"
+            />
+            <button type="submit" class="btn btn-secondary btn-sm">
+              Buscar
+            </button>
+            <a th:href="@{/admin/centros}" class="btn btn-sm">Limpiar</a>
+          </form>
+
           <div
             th:if="${error}"
             class="alert alert-danger"

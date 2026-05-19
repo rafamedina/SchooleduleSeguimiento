@@ -36,6 +36,15 @@
           </a>
         </li>
         <li>
+          <a
+            th:href="@{/tutor/grupos}"
+            th:classappend="${active == 'tutor'} ? 'active' : ''"
+            aria-current="${active == 'tutor'} ? 'page' : false"
+          >
+            Mis Grupos
+          </a>
+        </li>
+        <li>
           <form th:action="@{/logout}" method="post" style="margin: 0">
             <input
               type="hidden"

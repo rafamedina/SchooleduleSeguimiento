@@ -9,11 +9,13 @@ import com.tfg.schooledule.domain.dto.AdminGrupoFormDTO;
 import com.tfg.schooledule.domain.entity.Centro;
 import com.tfg.schooledule.domain.entity.CursoAcademico;
 import com.tfg.schooledule.domain.entity.Grupo;
+import com.tfg.schooledule.domain.entity.Usuario;
 import com.tfg.schooledule.infrastructure.mapper.AdminGrupoMapper;
 import com.tfg.schooledule.infrastructure.repository.CentroRepository;
 import com.tfg.schooledule.infrastructure.repository.CursoAcademicoRepository;
 import com.tfg.schooledule.infrastructure.repository.GrupoRepository;
 import com.tfg.schooledule.infrastructure.repository.ImparticionRepository;
+import com.tfg.schooledule.infrastructure.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -29,6 +31,7 @@ class AdminGrupoServiceTest {
   @Mock private ImparticionRepository imparticionRepository;
   @Mock private CentroRepository centroRepository;
   @Mock private CursoAcademicoRepository cursoAcademicoRepository;
+  @Mock private UsuarioRepository usuarioRepository;
   @Mock private AdminGrupoMapper adminGrupoMapper;
 
   @InjectMocks private AdminGrupoService adminGrupoService;
@@ -117,5 +120,84 @@ class AdminGrupoServiceTest {
 
     assertThrows(IllegalArgumentException.class, () -> adminGrupoService.actualizar(1, form));
     verify(grupoRepository, never()).save(any());
+  }
+
+  // 7.6.1
+  @Test
+  void crear_conTutor_asignaTutor() {
+    AdminGrupoFormDTO form = buildForm("1DAW-A", 1, 1);
+    form.setTutorId(10);
+    Centro centro = Centro.builder().id(1).nombre("Centro Test").build();
+    CursoAcademico curso = CursoAcademico.builder().id(1).nombre("2024/2025").build();
+    Usuario tutor = Usuario.builder().id(10).nombre("Ana").apellidos("García").build();
+
+    when(centroRepository.findById(1)).thenReturn(Optional.of(centro));
+    when(cursoAcademicoRepository.findById(1)).thenReturn(Optional.of(curso));
+    when(grupoRepository.existsByNombreAndCentroIdAndCursoAcademicoId("1DAW-A", 1, 1))
+        .thenReturn(false);
+    when(usuarioRepository.findById(10)).thenReturn(Optional.of(tutor));
+
+    adminGrupoService.crear(form);
+
+    verify(grupoRepository).save(argThat(g -> g.getTutor() != null && g.getTutor().getId() == 10));
+  }
+
+  // 7.6.2
+  @Test
+  void crear_sinTutor_tutorEsNull() {
+    AdminGrupoFormDTO form = buildForm("1DAW-A", 1, 1);
+    Centro centro = Centro.builder().id(1).nombre("Centro Test").build();
+    CursoAcademico curso = CursoAcademico.builder().id(1).nombre("2024/2025").build();
+
+    when(centroRepository.findById(1)).thenReturn(Optional.of(centro));
+    when(cursoAcademicoRepository.findById(1)).thenReturn(Optional.of(curso));
+    when(grupoRepository.existsByNombreAndCentroIdAndCursoAcademicoId("1DAW-A", 1, 1))
+        .thenReturn(false);
+
+    adminGrupoService.crear(form);
+
+    verify(grupoRepository).save(argThat(g -> g.getTutor() == null));
+  }
+
+  // 7.6.3
+  @Test
+  void actualizar_cambioTutor_actualizaTutor() {
+    AdminGrupoFormDTO form = buildForm("1DAW-A", 1, 1);
+    form.setTutorId(20);
+    Grupo grupo = Grupo.builder().id(1).nombre("1DAW-A").build();
+    Centro centro = Centro.builder().id(1).nombre("Centro Test").build();
+    CursoAcademico curso = CursoAcademico.builder().id(1).nombre("2024/2025").build();
+    Usuario nuevoTutor = Usuario.builder().id(20).nombre("Luis").apellidos("Pérez").build();
+
+    when(grupoRepository.findById(1)).thenReturn(Optional.of(grupo));
+    when(centroRepository.findById(1)).thenReturn(Optional.of(centro));
+    when(cursoAcademicoRepository.findById(1)).thenReturn(Optional.of(curso));
+    when(grupoRepository.existsByNombreAndCentroIdAndCursoAcademicoIdAndIdNot("1DAW-A", 1, 1, 1))
+        .thenReturn(false);
+    when(usuarioRepository.findById(20)).thenReturn(Optional.of(nuevoTutor));
+
+    adminGrupoService.actualizar(1, form);
+
+    verify(grupoRepository).save(argThat(g -> g.getTutor() != null && g.getTutor().getId() == 20));
+  }
+
+  // 7.6.4
+  @Test
+  void actualizar_quitarTutor_poneTutorNull() {
+    AdminGrupoFormDTO form = buildForm("1DAW-A", 1, 1);
+    Usuario tutorActual = Usuario.builder().id(10).nombre("Ana").apellidos("García").build();
+    Grupo grupo = Grupo.builder().id(1).nombre("1DAW-A").tutor(tutorActual).build();
+    Centro centro = Centro.builder().id(1).nombre("Centro Test").build();
+    CursoAcademico curso = CursoAcademico.builder().id(1).nombre("2024/2025").build();
+
+    when(grupoRepository.findById(1)).thenReturn(Optional.of(grupo));
+    when(centroRepository.findById(1)).thenReturn(Optional.of(centro));
+    when(cursoAcademicoRepository.findById(1)).thenReturn(Optional.of(curso));
+    when(grupoRepository.existsByNombreAndCentroIdAndCursoAcademicoIdAndIdNot("1DAW-A", 1, 1, 1))
+        .thenReturn(false);
+
+    adminGrupoService.actualizar(1, form);
+
+    verify(grupoRepository).save(argThat(g -> g.getTutor() == null));
   }
 }

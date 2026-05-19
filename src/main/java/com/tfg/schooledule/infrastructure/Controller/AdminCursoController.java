@@ -25,6 +25,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminCursoController {
 
+  private static final String VIEW_FORM = "admin/cursos/formulario";
+  private static final String ATTR_ERROR = "error";
+  private static final String REDIRECT_CURSOS = "redirect:/admin/cursos";
+
   private final AdminCursoService adminCursoService;
 
   public AdminCursoController(AdminCursoService adminCursoService) {
@@ -56,7 +60,7 @@ public class AdminCursoController {
   @GetMapping("/nuevo")
   public String nuevo(Model model) {
     model.addAttribute("form", new AdminCursoFormDTO());
-    return "admin/cursos/formulario";
+    return VIEW_FORM;
   }
 
   @Operation(
@@ -75,15 +79,15 @@ public class AdminCursoController {
       BindingResult bindingResult,
       Model model) {
     if (bindingResult.hasErrors()) {
-      return "admin/cursos/formulario";
+      return VIEW_FORM;
     }
     try {
       adminCursoService.crear(form);
     } catch (IllegalArgumentException ex) {
-      model.addAttribute("error", ex.getMessage());
-      return "admin/cursos/formulario";
+      model.addAttribute(ATTR_ERROR, ex.getMessage());
+      return VIEW_FORM;
     }
-    return "redirect:/admin/cursos";
+    return REDIRECT_CURSOS;
   }
 
   @Operation(
@@ -103,7 +107,7 @@ public class AdminCursoController {
           Integer id,
       Model model) {
     model.addAttribute("form", adminCursoService.obtenerParaEditar(id));
-    return "admin/cursos/formulario";
+    return VIEW_FORM;
   }
 
   @Operation(
@@ -127,15 +131,15 @@ public class AdminCursoController {
       BindingResult bindingResult,
       Model model) {
     if (bindingResult.hasErrors()) {
-      return "admin/cursos/formulario";
+      return VIEW_FORM;
     }
     try {
       adminCursoService.actualizar(id, form);
     } catch (IllegalArgumentException ex) {
-      model.addAttribute("error", ex.getMessage());
-      return "admin/cursos/formulario";
+      model.addAttribute(ATTR_ERROR, ex.getMessage());
+      return VIEW_FORM;
     }
-    return "redirect:/admin/cursos";
+    return REDIRECT_CURSOS;
   }
 
   @Operation(
@@ -157,9 +161,9 @@ public class AdminCursoController {
     try {
       adminCursoService.activar(id);
     } catch (Exception ex) {
-      redirectAttributes.addFlashAttribute("error", ex.getMessage());
+      redirectAttributes.addFlashAttribute(ATTR_ERROR, ex.getMessage());
     }
-    return "redirect:/admin/cursos";
+    return REDIRECT_CURSOS;
   }
 
   @Operation(
@@ -181,8 +185,8 @@ public class AdminCursoController {
     try {
       adminCursoService.cerrar(id);
     } catch (Exception ex) {
-      redirectAttributes.addFlashAttribute("error", ex.getMessage());
+      redirectAttributes.addFlashAttribute(ATTR_ERROR, ex.getMessage());
     }
-    return "redirect:/admin/cursos";
+    return REDIRECT_CURSOS;
   }
 }

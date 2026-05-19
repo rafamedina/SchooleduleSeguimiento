@@ -38,6 +38,10 @@ public class Usuario {
   @Builder.Default
   private Boolean activo = true;
 
+  @Column(name = "must_change_password", nullable = false)
+  @Builder.Default
+  private Boolean mustChangePassword = false;
+
   @CreationTimestamp
   @Column(name = "fecha_registro", updatable = false)
   private LocalDateTime fechaRegistro;

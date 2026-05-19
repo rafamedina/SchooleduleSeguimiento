@@ -18,7 +18,7 @@ class GradeDashboardMapperTest {
   private GradeDashboardMapper mapper;
 
   @BeforeEach
-  void setUp() throws Exception {
+  void setUp() {
     GradeMapper gradeMapper = Mappers.getMapper(GradeMapper.class);
     AuditoriaNotaRepository auditoriaRepo = mock(AuditoriaNotaRepository.class);
     when(auditoriaRepo.countByCalificacionId(any())).thenReturn(0L);

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Tag(name = "Admin - Centros")
@@ -24,6 +25,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/admin/centros")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminCentroController {
+
+  private static final String VIEW_FORM = "admin/centros/formulario";
+  private static final String ATTR_ERROR = "error";
+  private static final String REDIRECT_CENTROS = "redirect:/admin/centros";
 
   private final AdminCentroService adminCentroService;
 
@@ -41,8 +46,9 @@ public class AdminCentroController {
       description = "Vista HTML: admin/centros/lista. Modelo: centros (List<AdminCentroListDTO>)")
   @ApiResponse(responseCode = "403", description = "Acceso denegado — requiere ROLE_ADMIN")
   @GetMapping
-  public String lista(Model model) {
-    model.addAttribute("centros", adminCentroService.listarTodos());
+  public String lista(@RequestParam(required = false) String nombre, Model model) {
+    model.addAttribute("centros", adminCentroService.listarFiltrado(nombre));
+    model.addAttribute("nombre", nombre);
     return "admin/centros/lista";
   }
 
@@ -56,7 +62,7 @@ public class AdminCentroController {
   @GetMapping("/nuevo")
   public String nuevo(Model model) {
     model.addAttribute("form", new AdminCentroFormDTO());
-    return "admin/centros/formulario";
+    return VIEW_FORM;
   }
 
   @Operation(
@@ -78,15 +84,15 @@ public class AdminCentroController {
       BindingResult bindingResult,
       Model model) {
     if (bindingResult.hasErrors()) {
-      return "admin/centros/formulario";
+      return VIEW_FORM;
     }
     try {
       adminCentroService.crear(form);
     } catch (IllegalArgumentException ex) {
-      model.addAttribute("error", ex.getMessage());
-      return "admin/centros/formulario";
+      model.addAttribute(ATTR_ERROR, ex.getMessage());
+      return VIEW_FORM;
     }
-    return "redirect:/admin/centros";
+    return REDIRECT_CENTROS;
   }
 
   @Operation(
@@ -107,7 +113,7 @@ public class AdminCentroController {
           Integer id,
       Model model) {
     model.addAttribute("form", adminCentroService.obtenerParaEditar(id));
-    return "admin/centros/formulario";
+    return VIEW_FORM;
   }
 
   @Operation(
@@ -131,15 +137,15 @@ public class AdminCentroController {
       BindingResult bindingResult,
       Model model) {
     if (bindingResult.hasErrors()) {
-      return "admin/centros/formulario";
+      return VIEW_FORM;
     }
     try {
       adminCentroService.actualizar(id, form);
     } catch (IllegalArgumentException ex) {
-      model.addAttribute("error", ex.getMessage());
-      return "admin/centros/formulario";
+      model.addAttribute(ATTR_ERROR, ex.getMessage());
+      return VIEW_FORM;
     }
-    return "redirect:/admin/centros";
+    return REDIRECT_CENTROS;
   }
 
   @Operation(
@@ -163,8 +169,8 @@ public class AdminCentroController {
     try {
       adminCentroService.toggleActivo(id);
     } catch (IllegalStateException ex) {
-      redirectAttributes.addFlashAttribute("error", ex.getMessage());
+      redirectAttributes.addFlashAttribute(ATTR_ERROR, ex.getMessage());
     }
-    return "redirect:/admin/centros";
+    return REDIRECT_CENTROS;
   }
 }

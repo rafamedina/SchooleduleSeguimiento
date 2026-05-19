@@ -5,11 +5,14 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.tfg.schooledule.domain.dto.AdminImparticionFormDTO;
 import com.tfg.schooledule.infrastructure.repository.CentroRepository;
+import com.tfg.schooledule.infrastructure.repository.CursoAcademicoRepository;
 import com.tfg.schooledule.infrastructure.repository.GrupoRepository;
 import com.tfg.schooledule.infrastructure.repository.ModuloRepository;
 import com.tfg.schooledule.infrastructure.repository.UsuarioRepository;
 import com.tfg.schooledule.infrastructure.security.SecurityAuditLogger;
+import com.tfg.schooledule.infrastructure.service.AdminCursoActivoService;
 import com.tfg.schooledule.infrastructure.service.AdminImparticionService;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -35,6 +38,8 @@ class AdminImparticionControllerTest {
   @MockBean private GrupoRepository grupoRepository;
   @MockBean private UsuarioRepository usuarioRepository;
   @MockBean private CentroRepository centroRepository;
+  @MockBean private CursoAcademicoRepository cursoAcademicoRepository;
+  @MockBean private AdminCursoActivoService adminCursoActivoService;
   @MockBean private SecurityAuditLogger securityAuditLogger;
 
   @Test
@@ -60,7 +65,7 @@ class AdminImparticionControllerTest {
   @Test
   @WithMockUser(roles = "ADMIN")
   void lista_conAdmin_200_retornaVista() throws Exception {
-    when(adminImparticionService.listarTodas()).thenReturn(Collections.emptyList());
+    when(adminImparticionService.listarFiltrado(any())).thenReturn(Collections.emptyList());
 
     mockMvc
         .perform(get("/admin/imparticiones"))
@@ -106,6 +111,58 @@ class AdminImparticionControllerTest {
         .andExpect(redirectedUrl("/admin/imparticiones"));
 
     verify(adminImparticionService).crear(any());
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void nuevo_conAdmin_200_retornaFormulario() throws Exception {
+    when(moduloRepository.findByActivoTrueOrderByNombreAsc()).thenReturn(Collections.emptyList());
+    when(grupoRepository.findAllByOrderByCentroNombreAscNombreAsc())
+        .thenReturn(Collections.emptyList());
+    when(usuarioRepository.findAllProfesoresOrdenados()).thenReturn(Collections.emptyList());
+    when(centroRepository.findAllByActivoTrueOrderByNombreAsc())
+        .thenReturn(Collections.emptyList());
+
+    mockMvc
+        .perform(get("/admin/imparticiones/nuevo"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("admin/imparticiones/formulario"))
+        .andExpect(model().attributeExists("form"));
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void editar_conAdmin_200_retornaFormularioPreRellenado() throws Exception {
+    when(adminImparticionService.obtenerParaEditar(1)).thenReturn(new AdminImparticionFormDTO());
+    when(moduloRepository.findByActivoTrueOrderByNombreAsc()).thenReturn(Collections.emptyList());
+    when(grupoRepository.findAllByOrderByCentroNombreAscNombreAsc())
+        .thenReturn(Collections.emptyList());
+    when(usuarioRepository.findAllProfesoresOrdenados()).thenReturn(Collections.emptyList());
+    when(centroRepository.findAllByActivoTrueOrderByNombreAsc())
+        .thenReturn(Collections.emptyList());
+
+    mockMvc
+        .perform(get("/admin/imparticiones/1/editar"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("admin/imparticiones/formulario"))
+        .andExpect(model().attributeExists("form"));
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void actualizar_datosValidos_redirigeLista() throws Exception {
+    mockMvc
+        .perform(
+            post("/admin/imparticiones/1/editar")
+                .param("moduloId", "1")
+                .param("grupoId", "1")
+                .param("profesorId", "2")
+                .param("centroId", "1")
+                .with(csrf()))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrl("/admin/imparticiones"));
+
+    verify(adminImparticionService).actualizar(eq(1), any());
   }
 
   @Test

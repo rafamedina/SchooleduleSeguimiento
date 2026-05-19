@@ -9,6 +9,10 @@
     <title th:text="${title} + ' — Schooledule'">Schooledule</title>
     <meta th:name="_csrf" th:content="${_csrf.token}" />
     <meta th:name="_csrf_header" th:content="${_csrf.headerName}" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/driver.js@1.3.5/dist/driver.css"
+    />
     <link rel="stylesheet" th:href="@{/css/admin.css}" />
   </head>
 
@@ -76,6 +80,11 @@
           th:href="@{/admin/auditoria}"
           th:classappend="${active == 'auditoria'} ? 'active' : ''"
           >Auditoría</a
+        >
+      </li>
+      <li class="sidebar-nav__tour">
+        <a href="/admin/dashboard?tour=1" class="btn-tour-trigger"
+          >Tour guiado</a
         >
       </li>
     </ul>

@@ -28,4 +28,8 @@ public class Grupo {
   @ManyToOne(optional = false)
   @JoinColumn(name = "curso_academico_id", nullable = false)
   private CursoAcademico cursoAcademico;
+
+  @ManyToOne
+  @JoinColumn(name = "tutor_id")
+  private Usuario tutor;
 }

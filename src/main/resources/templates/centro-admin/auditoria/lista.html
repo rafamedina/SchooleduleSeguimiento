@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head
+    th:replace="~{centro-admin/fragments/layout :: head('Auditoría de Notas')}"
+  ></head>
+  <body>
+    <div class="admin-shell">
+      <div
+        th:replace="~{centro-admin/fragments/layout :: sidebar('auditoria')}"
+      ></div>
+
+      <main class="admin-content">
+        <div class="hero animate-in">
+          <div class="hero__left">
+            <nav class="breadcrumb">
+              <a th:href="@{/centro-admin/dashboard}">Mi Centro</a>
+              <span class="breadcrumb__sep">/</span>
+              <span>Auditoría</span>
+            </nav>
+            <h1 class="hero__title">Auditoría de <em>Notas</em></h1>
+          </div>
+        </div>
+
+        <div class="animate-in">
+          <form
+            method="get"
+            th:action="@{/centro-admin/auditoria}"
+            class="filter-form"
+          >
+            <div class="filter-row">
+              <div class="form-group">
+                <label for="alumnoEmail">Email alumno</label>
+                <input
+                  type="text"
+                  id="alumnoEmail"
+                  name="alumnoEmail"
+                  class="form-control"
+                  placeholder="Ej: alumno@email.com"
+                  th:value="${alumnoEmail}"
+                />
+              </div>
+              <div class="form-group">
+                <label for="moduloNombre">Módulo</label>
+                <input
+                  type="text"
+                  id="moduloNombre"
+                  name="moduloNombre"
+                  class="form-control"
+                  placeholder="Ej: Programación"
+                  th:value="${moduloNombre}"
+                />
+              </div>
+              <div class="form-group">
+                <label for="fechaDesde">Desde</label>
+                <input
+                  type="date"
+                  id="fechaDesde"
+                  name="fechaDesde"
+                  class="form-control"
+                  th:value="${fechaDesde}"
+                />
+              </div>
+              <div class="form-group">
+                <label for="fechaHasta">Hasta</label>
+                <input
+                  type="date"
+                  id="fechaHasta"
+                  name="fechaHasta"
+                  class="form-control"
+                  th:value="${fechaHasta}"
+                />
+              </div>
+              <div class="form-group form-group--actions">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+                <a
+                  th:href="@{/centro-admin/auditoria}"
+                  class="btn btn-secondary"
+                  >Limpiar</a
+                >
+              </div>
+            </div>
+          </form>
+
+          <div class="table-toolbar" style="margin-bottom: 1rem">
+            <a
+              th:href="@{/centro-admin/auditoria/exportar(
+                alumnoEmail=${alumnoEmail},
+                moduloNombre=${moduloNombre},
+                fechaDesde=${fechaDesde},
+                fechaHasta=${fechaHasta})}"
+              class="btn btn-secondary"
+              >Exportar Excel</a
+            >
+          </div>
+
+          <div th:if="${#lists.isEmpty(registros)}" class="empty-state">
+            <p>No hay registros de auditoría para los filtros aplicados.</p>
+          </div>
+
+          <table class="table" th:unless="${#lists.isEmpty(registros)}">
+            <thead>
+              <tr>
+                <th>Alumno</th>
+                <th>Módulo</th>
+                <th>Centro</th>
+                <th>Valor anterior</th>
+                <th>Valor nuevo</th>
+                <th>Responsable</th>
+                <th>Fecha</th>
+                <th>Motivo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="r : ${registros}">
+                <td th:text="${r.alumnoEmail}"></td>
+                <td th:text="${r.moduloNombre}"></td>
+                <td th:text="${r.centroNombre}"></td>
+                <td th:text="${r.valorAnterior} ?: '—'"></td>
+                <td th:text="${r.valorNuevo} ?: '—'"></td>
+                <td th:text="${r.usuarioResponsable}"></td>
+                <td
+                  th:text="${#temporals.format(r.fechaCambio, 'dd/MM/yyyy HH:mm')}"
+                ></td>
+                <td th:text="${r.motivo} ?: '—'"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+
+      <div th:replace="~{centro-admin/fragments/layout :: colophon}"></div>
+    </div>
+  </body>
+</html>

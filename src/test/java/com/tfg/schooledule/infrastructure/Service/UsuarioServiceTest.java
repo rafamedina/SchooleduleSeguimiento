@@ -25,7 +25,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
-public class UsuarioServiceTest {
+class UsuarioServiceTest {
 
   @Mock private UsuarioRepository usuarioRepository;
   @Mock private MatriculaRepository matriculaRepository;
@@ -39,7 +39,7 @@ public class UsuarioServiceTest {
   @InjectMocks private UsuarioService usuarioService;
 
   @Test
-  public void testGetAlumnoProfile_Success() {
+  void testGetAlumnoProfile_Success() {
     Integer usuarioId = 1;
     Usuario usuario = Usuario.builder().id(usuarioId).username("testuser").build();
     Centro centro = Centro.builder().nombre("Centro Test").build();
@@ -76,18 +76,18 @@ public class UsuarioServiceTest {
   }
 
   @Test
-  public void testGetAlumnoProfile_UserNotFound() {
+  void testGetAlumnoProfile_UserNotFound() {
     Integer usuarioId = 99;
     when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.empty());
 
     Exception exception =
         assertThrows(RuntimeException.class, () -> usuarioService.getAlumnoProfile(usuarioId));
 
-    assertEquals("Usuario no encontrado", exception.getMessage());
+    assertEquals("Usuario no encontrado: " + usuarioId, exception.getMessage());
   }
 
   @Test
-  public void testGetAlumnoProfile_MatriculaNotFound() {
+  void testGetAlumnoProfile_MatriculaNotFound() {
     Integer usuarioId = 1;
     Usuario usuario = Usuario.builder().id(usuarioId).build();
     when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
@@ -98,11 +98,11 @@ public class UsuarioServiceTest {
     Exception exception =
         assertThrows(RuntimeException.class, () -> usuarioService.getAlumnoProfile(usuarioId));
 
-    assertEquals("Matricula no encontrada", exception.getMessage());
+    assertEquals("Matrícula no encontrada para alumno: " + usuarioId, exception.getMessage());
   }
 
   @Test
-  public void testGetStudentGrades_Success() {
+  void testGetStudentGrades_Success() {
     Integer usuarioId = 1;
     Integer periodoId = 1;
     Integer imparticionId = 10;
@@ -139,7 +139,7 @@ public class UsuarioServiceTest {
   }
 
   @Test
-  public void testGetStudentGrades_Empty() {
+  void testGetStudentGrades_Empty() {
     Integer usuarioId = 1;
     Integer periodoId = 1;
     Integer imparticionId = 10;
@@ -163,7 +163,7 @@ public class UsuarioServiceTest {
   }
 
   @Test
-  public void testGetStudentGrades_IDOR_periodoNoPertenecealAlumno_lanzaAccessDeniedException() {
+  void testGetStudentGrades_IDOR_periodoNoPertenecealAlumno_lanzaAccessDeniedException() {
     Integer usuarioId = 1;
     Integer periodoId = 99;
     Integer imparticionId = 10;
@@ -180,7 +180,7 @@ public class UsuarioServiceTest {
   }
 
   @Test
-  public void testGetStudentGrades_IDOR_sinMatriculas_lanzaAccessDeniedException() {
+  void testGetStudentGrades_IDOR_sinMatriculas_lanzaAccessDeniedException() {
     Integer usuarioId = 1;
     Integer periodoId = 1;
 
@@ -191,7 +191,7 @@ public class UsuarioServiceTest {
   }
 
   @Test
-  public void testComprobarPassword_Success() {
+  void testComprobarPassword_Success() {
     String email = "test@tfg.com";
     String pass = "1234";
     Usuario user = Usuario.builder().email(email).passwordHash("hashed").build();
@@ -203,7 +203,7 @@ public class UsuarioServiceTest {
   }
 
   @Test
-  public void testComprobarPassword_UserNotFound() {
+  void testComprobarPassword_UserNotFound() {
     String email = "missing@tfg.com";
     when(usuarioRepository.findUsuarioByEmail(email)).thenReturn(Optional.empty());
 
@@ -211,7 +211,7 @@ public class UsuarioServiceTest {
   }
 
   @Test
-  public void testComprobarPassword_WrongPassword() {
+  void testComprobarPassword_WrongPassword() {
     String email = "test@tfg.com";
     Usuario user = Usuario.builder().email(email).passwordHash("hashed").build();
 
@@ -222,7 +222,7 @@ public class UsuarioServiceTest {
   }
 
   @Test
-  public void testBuscarPorCorreo() {
+  void testBuscarPorCorreo() {
     String email = "test@tfg.com";
     Usuario user = Usuario.builder().email(email).build();
     when(usuarioRepository.findUsuarioByEmail(email)).thenReturn(Optional.of(user));
@@ -233,7 +233,7 @@ public class UsuarioServiceTest {
   }
 
   @Test
-  public void testBuscarPorNombreUsuario() {
+  void testBuscarPorNombreUsuario() {
     String username = "admin";
     Usuario user = Usuario.builder().username(username).build();
     when(usuarioRepository.findByUsername(username)).thenReturn(Optional.of(user));
@@ -244,7 +244,7 @@ public class UsuarioServiceTest {
   }
 
   @Test
-  public void testGetStudentPeriods() {
+  void testGetStudentPeriods() {
     Integer usuarioId = 1;
     Integer imparticionId = 10;
     Imparticion imp = Imparticion.builder().id(imparticionId).build();
@@ -262,7 +262,7 @@ public class UsuarioServiceTest {
   }
 
   @Test
-  public void testGetAsignaturasAlumno_devuelveListaDelRepositorio() {
+  void testGetAsignaturasAlumno_devuelveListaDelRepositorio() {
     Integer usuarioId = 1;
     List<Matricula> matriculas = List.of(new Matricula(), new Matricula());
     when(matriculaRepository.findActivasByAlumnoId(usuarioId)).thenReturn(matriculas);
@@ -274,7 +274,7 @@ public class UsuarioServiceTest {
   }
 
   @Test
-  public void testGetAsignaturasAlumno_listaVaciaCuandoSinMatriculas() {
+  void testGetAsignaturasAlumno_listaVaciaCuandoSinMatriculas() {
     Integer usuarioId = 1;
     when(matriculaRepository.findActivasByAlumnoId(usuarioId)).thenReturn(Collections.emptyList());
 
@@ -285,7 +285,7 @@ public class UsuarioServiceTest {
   }
 
   @Test
-  public void testGetStudentGrades_delegaEnGradeDashboardMapper() {
+  void testGetStudentGrades_delegaEnGradeDashboardMapper() {
     Integer usuarioId = 1;
     Integer periodoId = 1;
     Integer imparticionId = 10;
@@ -312,7 +312,7 @@ public class UsuarioServiceTest {
   }
 
   @Test
-  public void testGetStudentGrades_retornaDTOConFueModificadaPropagada() {
+  void testGetStudentGrades_retornaDTOConFueModificadaPropagada() {
     // GradeDashboardMapper.toDto() is responsible for setting fueModificada.
     // This test verifies that UsuarioService correctly propagates the DTO returned by the mapper,
     // including any fueModificada=true values.

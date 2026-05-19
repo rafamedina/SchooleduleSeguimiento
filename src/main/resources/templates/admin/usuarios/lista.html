@@ -16,6 +16,12 @@
             <h1 class="hero__title">Gestión de <em>Usuarios</em></h1>
           </div>
           <div class="hero__right">
+            <a
+              th:href="@{/admin/usuarios/importar}"
+              class="btn btn-secondary"
+              style="margin-right: 0.5rem"
+              >Importar usuarios</a
+            >
             <a th:href="@{/admin/usuarios/nuevo}" class="btn btn-primary"
               >Nuevo usuario</a
             >
@@ -29,6 +35,22 @@
         ></div>
 
         <div class="animate-in">
+          <form method="get" action="/admin/usuarios" class="filter-bar">
+            <select name="rolNombre">
+              <option value="">Todos los roles</option>
+              <option
+                th:each="r : ${roles}"
+                th:value="${r}"
+                th:text="${r}"
+                th:selected="${rolNombre != null and rolNombre == r}"
+              ></option>
+            </select>
+            <button type="submit" class="btn btn-secondary btn-sm">
+              Filtrar
+            </button>
+            <a th:href="@{/admin/usuarios}" class="btn btn-sm">Limpiar</a>
+          </form>
+
           <div th:if="${#lists.isEmpty(usuarios)}" class="empty-state">
             <p>No hay usuarios registrados.</p>
             <a th:href="@{/admin/usuarios/nuevo}" class="btn btn-primary"

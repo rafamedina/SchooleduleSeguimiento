@@ -74,8 +74,6 @@ class AdminCursoServiceTest {
 
   @Test
   void activar_cursoYaActivo_sigueActivandoCorrectamente() {
-    CursoAcademico anteriorActivo =
-        CursoAcademico.builder().id(2).nombre("2023/2024").activo(true).build();
     CursoAcademico nuevo = CursoAcademico.builder().id(3).nombre("2024/2025").activo(false).build();
 
     when(cursoAcademicoRepository.findById(3)).thenReturn(Optional.of(nuevo));

@@ -101,6 +101,20 @@
               ></div>
             </div>
 
+            <div class="form-group">
+              <label for="tutorId"
+                >Tutor del grupo <small>(opcional)</small></label
+              >
+              <select id="tutorId" th:field="*{tutorId}" class="form-control">
+                <option value="">-- Sin tutor --</option>
+                <option
+                  th:each="p : ${profesores}"
+                  th:value="${p.id}"
+                  th:text="${p.apellidos + ', ' + p.nombre}"
+                ></option>
+              </select>
+            </div>
+
             <button type="submit" class="btn btn-primary">Guardar</button>
             <a th:href="@{/admin/grupos}" class="btn btn-secondary">Cancelar</a>
           </form>

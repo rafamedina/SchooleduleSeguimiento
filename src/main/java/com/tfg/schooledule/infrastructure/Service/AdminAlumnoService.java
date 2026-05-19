@@ -3,6 +3,7 @@ package com.tfg.schooledule.infrastructure.service;
 import com.tfg.schooledule.domain.dto.AdminAlumnoListDTO;
 import com.tfg.schooledule.domain.dto.AdminMatriculaFormDTO;
 import com.tfg.schooledule.domain.dto.AdminMatriculaListDTO;
+import com.tfg.schooledule.domain.dto.AlumnoFiltroDTO;
 import com.tfg.schooledule.domain.entity.Imparticion;
 import com.tfg.schooledule.domain.entity.Matricula;
 import com.tfg.schooledule.domain.entity.Usuario;
@@ -19,20 +20,47 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AdminAlumnoService {
 
+  private static final String ERR_MATRICULA = "Matrícula no encontrada: ";
+
   private final UsuarioRepository usuarioRepository;
   private final MatriculaRepository matriculaRepository;
   private final ImparticionRepository imparticionRepository;
   private final CalificacionRepository calificacionRepository;
+  private final AdminCursoActivoService cursoActivoService;
 
   public AdminAlumnoService(
       UsuarioRepository usuarioRepository,
       MatriculaRepository matriculaRepository,
       ImparticionRepository imparticionRepository,
-      CalificacionRepository calificacionRepository) {
+      CalificacionRepository calificacionRepository,
+      AdminCursoActivoService cursoActivoService) {
     this.usuarioRepository = usuarioRepository;
     this.matriculaRepository = matriculaRepository;
     this.imparticionRepository = imparticionRepository;
     this.calificacionRepository = calificacionRepository;
+    this.cursoActivoService = cursoActivoService;
+  }
+
+  private AdminAlumnoListDTO toListDTO(Usuario u) {
+    return new AdminAlumnoListDTO(
+        u.getId(),
+        u.getNombre(),
+        u.getApellidos(),
+        u.getEmail(),
+        matriculaRepository.findByAlumnoId(u.getId()).size());
+  }
+
+  @Transactional(readOnly = true)
+  public List<AdminAlumnoListDTO> listarFiltrado(AlumnoFiltroDTO filtro) {
+    Integer cursoId =
+        filtro.cursoAcademicoId() != null
+            ? filtro.cursoAcademicoId()
+            : cursoActivoService.getCursoActivoId();
+    return usuarioRepository
+        .findAlumnosByFiltro(filtro.centroId(), filtro.grupoId(), cursoId)
+        .stream()
+        .map(this::toListDTO)
+        .toList();
   }
 
   @Transactional(readOnly = true)
@@ -51,6 +79,10 @@ public class AdminAlumnoService {
 
   @Transactional(readOnly = true)
   public Usuario obtenerAlumno(Integer alumnoId) {
+    return findAlumno(alumnoId);
+  }
+
+  private Usuario findAlumno(Integer alumnoId) {
     return usuarioRepository
         .findById(alumnoId)
         .filter(u -> u.getRoles().stream().anyMatch(r -> "ROLE_ALUMNO".equals(r.getNombre())))
@@ -77,7 +109,7 @@ public class AdminAlumnoService {
     Matricula m =
         matriculaRepository
             .findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Matrícula no encontrada: " + id));
+            .orElseThrow(() -> new EntityNotFoundException(ERR_MATRICULA + id));
     AdminMatriculaFormDTO dto = new AdminMatriculaFormDTO();
     dto.setId(m.getId());
     dto.setImparticionId(m.getImparticion().getId());
@@ -88,7 +120,7 @@ public class AdminAlumnoService {
 
   @Transactional
   public void crearMatricula(Integer alumnoId, AdminMatriculaFormDTO dto) {
-    Usuario alumno = obtenerAlumno(alumnoId);
+    Usuario alumno = findAlumno(alumnoId);
     Imparticion imparticion =
         imparticionRepository
             .findById(dto.getImparticionId())
@@ -115,7 +147,7 @@ public class AdminAlumnoService {
     Matricula matricula =
         matriculaRepository
             .findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Matrícula no encontrada: " + id));
+            .orElseThrow(() -> new EntityNotFoundException(ERR_MATRICULA + id));
     matricula.setEstado(dto.getEstado());
     matricula.setEsRepetidor(Boolean.TRUE.equals(dto.getEsRepetidor()));
     matriculaRepository.save(matricula);
@@ -124,7 +156,7 @@ public class AdminAlumnoService {
   @Transactional
   public void eliminarMatricula(Integer id) {
     if (!matriculaRepository.existsById(id)) {
-      throw new EntityNotFoundException("Matrícula no encontrada: " + id);
+      throw new EntityNotFoundException(ERR_MATRICULA + id);
     }
     if (calificacionRepository.existsByMatriculaId(id)) {
       throw new IllegalStateException(

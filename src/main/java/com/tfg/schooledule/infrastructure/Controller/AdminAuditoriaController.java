@@ -1,11 +1,15 @@
 package com.tfg.schooledule.infrastructure.controller;
 
 import com.tfg.schooledule.infrastructure.service.AdminAuditoriaService;
+import com.tfg.schooledule.infrastructure.service.AuditoriaExcelExportService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -20,10 +24,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminAuditoriaController {
 
-  private final AdminAuditoriaService adminAuditoriaService;
+  private static final String EXCEL_CONTENT_TYPE =
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
-  public AdminAuditoriaController(AdminAuditoriaService adminAuditoriaService) {
+  private final AdminAuditoriaService adminAuditoriaService;
+  private final AuditoriaExcelExportService excelExportService;
+
+  public AdminAuditoriaController(
+      AdminAuditoriaService adminAuditoriaService, AuditoriaExcelExportService excelExportService) {
     this.adminAuditoriaService = adminAuditoriaService;
+    this.excelExportService = excelExportService;
   }
 
   @Operation(
@@ -70,5 +80,23 @@ public class AdminAuditoriaController {
     model.addAttribute("fechaDesde", fechaDesde);
     model.addAttribute("fechaHasta", fechaHasta);
     return "admin/auditoria/lista";
+  }
+
+  @GetMapping("/exportar")
+  public void exportarExcel(
+      @RequestParam(required = false) String alumnoEmail,
+      @RequestParam(required = false) String moduloNombre,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate fechaDesde,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate fechaHasta,
+      HttpServletResponse response)
+      throws IOException {
+    var registros = adminAuditoriaService.buscar(alumnoEmail, moduloNombre, fechaDesde, fechaHasta);
+    String filename =
+        "auditoria_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + ".xlsx";
+    response.setContentType(EXCEL_CONTENT_TYPE);
+    response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+    response.getOutputStream().write(excelExportService.exportar(registros));
   }
 }

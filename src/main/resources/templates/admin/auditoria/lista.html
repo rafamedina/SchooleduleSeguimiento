@@ -77,6 +77,18 @@
             </div>
           </form>
 
+          <div class="table-toolbar" style="margin-bottom: 1rem">
+            <a
+              th:href="@{/admin/auditoria/exportar(
+                alumnoEmail=${alumnoEmail},
+                moduloNombre=${moduloNombre},
+                fechaDesde=${fechaDesde},
+                fechaHasta=${fechaHasta})}"
+              class="btn btn-secondary"
+              >Exportar Excel</a
+            >
+          </div>
+
           <div th:if="${#lists.isEmpty(registros)}" class="empty-state">
             <p>No hay registros de auditoría para los filtros aplicados.</p>
           </div>

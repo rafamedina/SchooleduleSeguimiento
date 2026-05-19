@@ -87,7 +87,7 @@ class TeacherDashboardServiceTest {
 
   @Test
   void getCentersForTeacher_devuelveSoloCentrosVinculados() {
-    when(mapper.toCenterDto(eq(centro), eq(1L)))
+    when(mapper.toCenterDto(centro, 1L))
         .thenReturn(new TeacherCenterDTO(1, "IES Central", "Madrid", 1L));
     when(imparticionRepo.findByProfesorIdAndCentroId(2, 1)).thenReturn(List.of(imparticion));
 
@@ -103,7 +103,7 @@ class TeacherDashboardServiceTest {
     when(imparticionRepo.findByProfesorIdAndCentroId(2, 1)).thenReturn(List.of(imparticion));
     when(matriculaRepo.findByImparticionIdAndEstado(1, EstadoMatricula.ACTIVA))
         .thenReturn(List.of(matricula));
-    when(mapper.toSubjectDto(eq(imparticion), eq(1L)))
+    when(mapper.toSubjectDto(imparticion, 1L))
         .thenReturn(new TeacherSubjectDTO(1, "M1", "Modulo1", "DAW1-A", "2025/2026", 1L));
 
     List<TeacherSubjectDTO> result = service.getSubjectsForTeacherAndCenter(2, 1);
@@ -180,19 +180,21 @@ class TeacherDashboardServiceTest {
     when(calificacionRepo.findByMatriculaIdAndCriterioEvaluacionIdIn(eq(1), any()))
         .thenReturn(List.of(calA));
 
-    when(mapper.toCriterioGrade(eq(ceA), eq(calA)))
-        .thenReturn(new TeacherCriterioGradeDTO(1, "a", "CE-a", new BigDecimal("8.00"), null, 1));
+    when(mapper.toCriterioGrade(ceA, calA))
+        .thenReturn(
+            new TeacherCriterioGradeDTO(
+                1, "a", "CE-a", new BigDecimal("8.00"), null, 1, BigDecimal.ZERO));
     when(mapper.toCriterioGrade(eq(ceB), isNull()))
-        .thenReturn(new TeacherCriterioGradeDTO(2, "b", "CE-b", null, null, null));
+        .thenReturn(new TeacherCriterioGradeDTO(2, "b", "CE-b", null, null, null, BigDecimal.ZERO));
 
     TeacherStudentGradesDTO result = service.getStudentGrades(2, 1);
 
     assertThat(result.periodos()).hasSize(1);
     TeacherGradeItemDTO itemDto = result.periodos().get(0).items().get(0);
     assertThat(itemDto.criterios()).hasSize(2);
-    // mediaRa: solo ceA tiene nota → 8.00
+    // mediaRa: solo ceA tiene nota, peso=0 → fallback simple → 8.00
     assertThat(itemDto.mediaRa()).isEqualByComparingTo("8.00");
-    // mediaPeriodo = media de los mediaRa del periodo = 8.00
+    // mediaPeriodo = único item con nota → 8.00
     assertThat(result.periodos().get(0).media()).isEqualByComparingTo("8.00");
     // mediaGlobal = único periodo con nota
     assertThat(result.mediaGlobal()).isEqualByComparingTo("8.00");
@@ -273,16 +275,22 @@ class TeacherDashboardServiceTest {
     when(calificacionRepo.findByMatriculaIdAndCriterioEvaluacionIdIn(eq(1), any()))
         .thenReturn(List.of(calA, calB, calC));
 
-    when(mapper.toCriterioGrade(eq(ceA), eq(calA)))
-        .thenReturn(new TeacherCriterioGradeDTO(1, "a", "x", new BigDecimal("6.00"), null, 1));
-    when(mapper.toCriterioGrade(eq(ceB), eq(calB)))
-        .thenReturn(new TeacherCriterioGradeDTO(2, "b", "y", new BigDecimal("8.00"), null, 2));
-    when(mapper.toCriterioGrade(eq(ceC), eq(calC)))
-        .thenReturn(new TeacherCriterioGradeDTO(3, "c", "z", new BigDecimal("7.00"), null, 3));
+    when(mapper.toCriterioGrade(ceA, calA))
+        .thenReturn(
+            new TeacherCriterioGradeDTO(
+                1, "a", "x", new BigDecimal("6.00"), null, 1, BigDecimal.ZERO));
+    when(mapper.toCriterioGrade(ceB, calB))
+        .thenReturn(
+            new TeacherCriterioGradeDTO(
+                2, "b", "y", new BigDecimal("8.00"), null, 2, BigDecimal.ZERO));
+    when(mapper.toCriterioGrade(ceC, calC))
+        .thenReturn(
+            new TeacherCriterioGradeDTO(
+                3, "c", "z", new BigDecimal("7.00"), null, 3, BigDecimal.ZERO));
 
     TeacherStudentGradesDTO result = service.getStudentGrades(2, 1);
 
-    // media = (6 + 8 + 7) / 3 = 7.00
+    // todos los pesos son 0 → fallback simple: (6 + 8 + 7) / 3 = 7.00
     assertThat(result.periodos().get(0).items().get(0).mediaRa()).isEqualByComparingTo("7.00");
   }
 
@@ -341,7 +349,8 @@ class TeacherDashboardServiceTest {
         .thenReturn(List.of(ce));
     when(mapper.toCriterioGrade(any(), any()))
         .thenReturn(
-            new TeacherCriterioGradeDTO(1, "a", "x", new BigDecimal("9.00"), "Muy bien", 1));
+            new TeacherCriterioGradeDTO(
+                1, "a", "x", new BigDecimal("9.00"), "Muy bien", 1, BigDecimal.ZERO));
 
     when(entityManager.createNativeQuery(anyString())).thenReturn(nativeQuery);
     when(nativeQuery.setParameter(anyString(), anyString())).thenReturn(nativeQuery);
@@ -513,7 +522,7 @@ class TeacherDashboardServiceTest {
     when(calificacionRepo.findByMatriculaIdAndCriterioEvaluacionIdIn(eq(1), any()))
         .thenReturn(List.of());
     when(mapper.toCriterioGrade(eq(ce), isNull()))
-        .thenReturn(new TeacherCriterioGradeDTO(1, "a", "x", null, null, null));
+        .thenReturn(new TeacherCriterioGradeDTO(1, "a", "x", null, null, null, BigDecimal.ZERO));
 
     TeacherStudentGradesDTO result = service.buildGradesDTO(matricula);
 
@@ -675,7 +684,9 @@ class TeacherDashboardServiceTest {
     when(ceRepo.findByResultadoAprendizajeIdInOrderByResultadoAprendizajeIdAscCodigoAsc(any()))
         .thenReturn(List.of(ce));
     when(mapper.toCriterioGrade(any(), any()))
-        .thenReturn(new TeacherCriterioGradeDTO(1, "a", "x", new BigDecimal("7.00"), null, 1));
+        .thenReturn(
+            new TeacherCriterioGradeDTO(
+                1, "a", "x", new BigDecimal("7.00"), null, 1, BigDecimal.ZERO));
     when(entityManager.createNativeQuery(anyString())).thenReturn(nativeQuery);
     when(nativeQuery.setParameter(anyString(), anyString())).thenReturn(nativeQuery);
     when(nativeQuery.getSingleResult()).thenReturn("juan@tfg.com");
@@ -766,5 +777,182 @@ class TeacherDashboardServiceTest {
 
     assertThatThrownBy(() -> service.upsertGrades(2, "juan@tfg.com", req))
         .isInstanceOf(AccessDeniedException.class);
+  }
+
+  @Test
+  void getStudentGrades_mediaRa_usaMediaPonderadaPorPesoCe() {
+    when(matriculaRepo.findByIdAndImparticionProfesorId(1, 2)).thenReturn(Optional.of(matricula));
+
+    ResultadoAprendizaje ra =
+        ResultadoAprendizaje.builder().id(1).modulo(modulo).codigo("RA1").descripcion("d").build();
+    PeriodoEvaluacion periodo =
+        PeriodoEvaluacion.builder()
+            .id(1)
+            .imparticion(imparticion)
+            .nombre("P1")
+            .peso(BigDecimal.ONE)
+            .cerrado(false)
+            .build();
+    ItemEvaluable item =
+        ItemEvaluable.builder()
+            .id(1)
+            .imparticion(imparticion)
+            .periodoEvaluacion(periodo)
+            .resultadoAprendizaje(ra)
+            .nombre("E")
+            .tipo(TipoActividad.EXAMEN)
+            .build();
+
+    CriterioEvaluacion ceA =
+        CriterioEvaluacion.builder()
+            .id(1)
+            .resultadoAprendizaje(ra)
+            .codigo("a")
+            .descripcion("x")
+            .build();
+    CriterioEvaluacion ceB =
+        CriterioEvaluacion.builder()
+            .id(2)
+            .resultadoAprendizaje(ra)
+            .codigo("b")
+            .descripcion("y")
+            .build();
+
+    Calificacion calA =
+        Calificacion.builder()
+            .id(1)
+            .matricula(matricula)
+            .criterioEvaluacion(ceA)
+            .valor(new BigDecimal("4.00"))
+            .build();
+    Calificacion calB =
+        Calificacion.builder()
+            .id(2)
+            .matricula(matricula)
+            .criterioEvaluacion(ceB)
+            .valor(new BigDecimal("10.00"))
+            .build();
+
+    when(itemEvaluableRepo.findByImparticionIdOrderByPeriodoEvaluacionIdAscFechaAsc(1))
+        .thenReturn(List.of(item));
+    when(ceRepo.findByResultadoAprendizajeIdInOrderByResultadoAprendizajeIdAscCodigoAsc(List.of(1)))
+        .thenReturn(List.of(ceA, ceB));
+    when(calificacionRepo.findByMatriculaIdAndCriterioEvaluacionIdIn(eq(1), any()))
+        .thenReturn(List.of(calA, calB));
+
+    // ceA peso=25, ceB peso=75 → media = (4*25 + 10*75) / (25+75) = 850/100 = 8.50
+    when(mapper.toCriterioGrade(ceA, calA))
+        .thenReturn(
+            new TeacherCriterioGradeDTO(
+                1, "a", "x", new BigDecimal("4.00"), null, 1, new BigDecimal("25.00")));
+    when(mapper.toCriterioGrade(ceB, calB))
+        .thenReturn(
+            new TeacherCriterioGradeDTO(
+                2, "b", "y", new BigDecimal("10.00"), null, 2, new BigDecimal("75.00")));
+
+    TeacherStudentGradesDTO result = service.getStudentGrades(2, 1);
+
+    assertThat(result.periodos().get(0).items().get(0).mediaRa()).isEqualByComparingTo("8.50");
+  }
+
+  @Test
+  void getStudentGrades_mediaPeriodo_usaMediaPonderadaPorPesoRa() {
+    when(matriculaRepo.findByIdAndImparticionProfesorId(1, 2)).thenReturn(Optional.of(matricula));
+
+    ResultadoAprendizaje ra1 =
+        ResultadoAprendizaje.builder()
+            .id(1)
+            .modulo(modulo)
+            .codigo("RA1")
+            .descripcion("d1")
+            .pesoSugerido(new BigDecimal("30.00"))
+            .build();
+    ResultadoAprendizaje ra2 =
+        ResultadoAprendizaje.builder()
+            .id(2)
+            .modulo(modulo)
+            .codigo("RA2")
+            .descripcion("d2")
+            .pesoSugerido(new BigDecimal("70.00"))
+            .build();
+    PeriodoEvaluacion periodo =
+        PeriodoEvaluacion.builder()
+            .id(1)
+            .imparticion(imparticion)
+            .nombre("P1")
+            .peso(BigDecimal.ONE)
+            .cerrado(false)
+            .build();
+    ItemEvaluable item1 =
+        ItemEvaluable.builder()
+            .id(1)
+            .imparticion(imparticion)
+            .periodoEvaluacion(periodo)
+            .resultadoAprendizaje(ra1)
+            .nombre("E1")
+            .tipo(TipoActividad.EXAMEN)
+            .build();
+    ItemEvaluable item2 =
+        ItemEvaluable.builder()
+            .id(2)
+            .imparticion(imparticion)
+            .periodoEvaluacion(periodo)
+            .resultadoAprendizaje(ra2)
+            .nombre("E2")
+            .tipo(TipoActividad.EXAMEN)
+            .build();
+
+    CriterioEvaluacion ce1 =
+        CriterioEvaluacion.builder()
+            .id(1)
+            .resultadoAprendizaje(ra1)
+            .codigo("a")
+            .descripcion("x")
+            .build();
+    CriterioEvaluacion ce2 =
+        CriterioEvaluacion.builder()
+            .id(2)
+            .resultadoAprendizaje(ra2)
+            .codigo("b")
+            .descripcion("y")
+            .build();
+
+    Calificacion cal1 =
+        Calificacion.builder()
+            .id(1)
+            .matricula(matricula)
+            .criterioEvaluacion(ce1)
+            .valor(new BigDecimal("4.00"))
+            .build();
+    Calificacion cal2 =
+        Calificacion.builder()
+            .id(2)
+            .matricula(matricula)
+            .criterioEvaluacion(ce2)
+            .valor(new BigDecimal("8.00"))
+            .build();
+
+    when(itemEvaluableRepo.findByImparticionIdOrderByPeriodoEvaluacionIdAscFechaAsc(1))
+        .thenReturn(List.of(item1, item2));
+    when(ceRepo.findByResultadoAprendizajeIdInOrderByResultadoAprendizajeIdAscCodigoAsc(any()))
+        .thenReturn(List.of(ce1, ce2));
+    when(calificacionRepo.findByMatriculaIdAndCriterioEvaluacionIdIn(eq(1), any()))
+        .thenReturn(List.of(cal1, cal2));
+
+    // item1: ce1 peso=0 → mediaRa1 = 4.00 (fallback), raPeso=30
+    // item2: ce2 peso=0 → mediaRa2 = 8.00 (fallback), raPeso=70
+    // mediaPeriodo = (4*30 + 8*70) / (30+70) = (120+560)/100 = 6.80
+    when(mapper.toCriterioGrade(ce1, cal1))
+        .thenReturn(
+            new TeacherCriterioGradeDTO(
+                1, "a", "x", new BigDecimal("4.00"), null, 1, BigDecimal.ZERO));
+    when(mapper.toCriterioGrade(ce2, cal2))
+        .thenReturn(
+            new TeacherCriterioGradeDTO(
+                2, "b", "y", new BigDecimal("8.00"), null, 2, BigDecimal.ZERO));
+
+    TeacherStudentGradesDTO result = service.getStudentGrades(2, 1);
+
+    assertThat(result.periodos().get(0).media()).isEqualByComparingTo("6.80");
   }
 }

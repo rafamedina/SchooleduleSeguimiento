@@ -332,6 +332,136 @@
   font-size: 0.9375rem;
 }
 
+/* ── Sidebar — selector de año lectivo ───────────────────────────────────── */
+.sidebar-year {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(247, 242, 234, 0.15);
+  margin-top: auto;
+}
+
+.sidebar-year__label {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(247, 242, 234, 0.45);
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-year__form {
+  display: block;
+}
+
+.sidebar-year__select {
+  width: 100%;
+  padding: 0.45rem 1.75rem 0.45rem 0.625rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--paper);
+  background: rgba(247, 242, 234, 0.08)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(247,242,234,0.5)'/%3E%3C/svg%3E")
+    no-repeat right 0.625rem center;
+  border: 1px solid rgba(247, 242, 234, 0.2);
+  border-radius: 3px;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+  transition:
+    border-color var(--transition-base),
+    background-color var(--transition-base);
+}
+
+.sidebar-year__select:hover {
+  border-color: rgba(247, 242, 234, 0.45);
+  background-color: rgba(247, 242, 234, 0.12);
+}
+
+.sidebar-year__select:focus {
+  border-color: var(--hot);
+  box-shadow: 0 0 0 2px rgba(194, 78, 61, 0.3);
+}
+
+.sidebar-year__select option {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ── Filter Bar ──────────────────────────────────────────────────────────── */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.125rem;
+  background: var(--paper-alt);
+  border: 1px solid var(--rule-heavy);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  margin-bottom: 1.5rem;
+}
+
+.filter-bar input[type="text"],
+.filter-bar input[type="search"] {
+  padding: 0.4rem 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--rule-heavy);
+  border-radius: 3px;
+  outline: none;
+  min-width: 200px;
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.filter-bar input[type="text"]::placeholder,
+.filter-bar input[type="search"]::placeholder {
+  color: var(--ink-muted);
+  font-style: italic;
+  font-size: 0.8125rem;
+}
+
+.filter-bar input[type="text"]:focus,
+.filter-bar input[type="search"]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(46, 58, 92, 0.1);
+}
+
+.filter-bar select {
+  padding: 0.4rem 2rem 0.4rem 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--ink);
+  background: #fff
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a8e9a'/%3E%3C/svg%3E")
+    no-repeat right 0.625rem center;
+  border: 1px solid var(--rule-heavy);
+  border-radius: 3px;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+  min-width: 160px;
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.filter-bar select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(46, 58, 92, 0.1);
+}
+
+.filter-bar .filter-bar__sep {
+  width: 1px;
+  height: 1.5rem;
+  background: var(--rule-heavy);
+  margin: 0 0.25rem;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .admin-shell {
@@ -345,4 +475,228 @@
   .admin-content {
     padding: 2rem 1.25rem;
   }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.625rem;
+  }
+
+  .filter-bar input[type="text"],
+  .filter-bar input[type="search"],
+  .filter-bar select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .filter-bar .filter-bar__sep {
+    display: none;
+  }
+}
+
+/* ── Modal de resumen de módulo ──────────────────────────────────────────── */
+dialog#moduloResumenModal {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(680px, 96vw);
+  max-height: 86vh;
+  border: none;
+  border-radius: 16px;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(27, 31, 42, 0.22);
+  background: var(--paper);
+}
+
+dialog#moduloResumenModal::backdrop {
+  background: rgba(27, 31, 42, 0.55);
+  backdrop-filter: blur(6px);
+}
+
+dialog#moduloResumenModal:not([open]) {
+  display: none;
+}
+
+.resumen-modal-header {
+  padding: 1.5rem 2rem 1.25rem;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.resumen-modal-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  color: var(--ink);
+  margin: 0;
+}
+
+.resumen-modal-meta {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  margin-top: 0.25rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.resumen-modal-meta strong {
+  color: var(--ink);
+}
+
+.resumen-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--ink-muted);
+  padding: 0.25rem;
+  flex-shrink: 0;
+  transition: color var(--transition-base);
+}
+
+.resumen-modal-close:hover {
+  color: var(--hot);
+}
+
+.resumen-modal-body {
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+  flex: 1;
+}
+
+.resumen-curso {
+  margin-bottom: 1.5rem;
+}
+
+.resumen-curso__title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.375rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.resumen-ra {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  margin-bottom: 0.625rem;
+  overflow: hidden;
+}
+
+.resumen-ra__header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  background: var(--surface);
+}
+
+.resumen-ra__code {
+  font-weight: 700;
+  font-size: 0.8125rem;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.resumen-ra__desc {
+  font-size: 0.8125rem;
+  color: var(--ink);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resumen-ra__peso {
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  flex-shrink: 0;
+}
+
+.resumen-ces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+}
+
+.resumen-ce-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(var(--accent-rgb, 70, 100, 180), 0.08);
+  border-radius: 4px;
+  padding: 0.1875rem 0.5rem;
+  font-size: 0.6875rem;
+  color: var(--ink-soft);
+}
+
+.resumen-ce-chip__code {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.resumen-empty {
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+@media (max-width: 600px) {
+  dialog#moduloResumenModal {
+    max-height: 100dvh;
+    border-radius: 0;
+    width: 100vw;
+  }
+}
+
+/* ── Tour guiado — botón sidebar ─────────────────────────────────────────── */
+.sidebar-nav__tour {
+  padding: 0.75rem 1.5rem 0;
+  border-top: 1px solid rgba(247, 242, 234, 0.1);
+  margin-top: 0.5rem;
+}
+
+.btn-tour-trigger {
+  display: block;
+  padding: 0.5rem 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(247, 242, 234, 0.5);
+  text-decoration: none;
+  transition: color var(--transition-base);
+}
+
+.btn-tour-trigger:hover {
+  color: var(--paper);
+}
+
+/* ── Driver.js popover — tema Schooledule ────────────────────────────────── */
+.driver-popover {
+  --dp-bg-color: var(--ink);
+  --dp-title-color: var(--paper);
+  --dp-description-color: rgba(247, 242, 234, 0.75);
+  --dp-btn-prev-color: rgba(247, 242, 234, 0.6);
+  --dp-btn-next-color: #fff;
+  --dp-btn-next-bg-color: var(--hot);
+  --dp-btn-next-border-color: var(--hot);
+  --dp-progress-color: var(--hot);
+  border-radius: 6px;
+  max-width: 320px;
 }

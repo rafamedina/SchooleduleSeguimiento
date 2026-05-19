@@ -1,6 +1,8 @@
 package com.tfg.schooledule.domain.entity;
 
+import com.tfg.schooledule.domain.enums.InstrumentoEvaluacion;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,4 +29,17 @@ public class CriterioEvaluacion {
 
   @Column(nullable = false, columnDefinition = "TEXT")
   private String descripcion;
+
+  @Column(nullable = false, precision = 5, scale = 2)
+  @Builder.Default
+  private BigDecimal peso = BigDecimal.ZERO;
+
+  @Enumerated(EnumType.STRING)
+  @Column(length = 50)
+  private InstrumentoEvaluacion instrumento;
+
+  @Column(name = "unidad_didactica", length = 20)
+  private String unidadDidactica;
+
+  @Column private Short trimestre;
 }

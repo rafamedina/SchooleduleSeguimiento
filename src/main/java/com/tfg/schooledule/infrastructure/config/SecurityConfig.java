@@ -1,8 +1,6 @@
 package com.tfg.schooledule.infrastructure.config;
 
-import com.tfg.schooledule.infrastructure.security.CustomUserDetailsService;
 import com.tfg.schooledule.infrastructure.security.LoginRateLimitFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -24,15 +22,15 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  @Autowired private CustomLoginSuccessHandler successHandler;
+  private static final String LOGIN_URL = "/login";
 
-  private final CustomUserDetailsService userDetailsService;
   private final LoginRateLimitFilter loginRateLimitFilter;
+  private final CustomLoginSuccessHandler successHandler;
 
   public SecurityConfig(
-      CustomUserDetailsService userDetailsService, LoginRateLimitFilter loginRateLimitFilter) {
-    this.userDetailsService = userDetailsService;
+      LoginRateLimitFilter loginRateLimitFilter, CustomLoginSuccessHandler successHandler) {
     this.loginRateLimitFilter = loginRateLimitFilter;
+    this.successHandler = successHandler;
   }
 
   @Bean
@@ -40,7 +38,7 @@ public class SecurityConfig {
   public SecurityFilterChain swaggerFilterChain(HttpSecurity http) throws Exception {
     http.securityMatcher("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**")
         .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-        .csrf(csrf -> csrf.disable())
+        .csrf(csrf -> csrf.disable()) // NOSONAR: Swagger UI is stateless; CSRF not applicable
         .headers(
             headers ->
                 headers
@@ -64,21 +62,30 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers("/snap-admin/**")
                     .denyAll()
+                    .requestMatchers("/centro-admin/**")
+                    .hasRole("ADMIN_CENTRO")
                     .requestMatchers("/admin/**")
                     .hasRole("ADMIN")
-                    .requestMatchers("/profe/**")
+                    .requestMatchers("/profe/**", "/tutor/**")
                     .hasRole("PROFESOR")
                     .requestMatchers("/alumno/**")
                     .hasRole("ALUMNO")
                     .requestMatchers(
-                        "/", "/login", "/register", "/css/**", "/js/**", "/images/**", "/error")
+                        "/",
+                        LOGIN_URL,
+                        "/register",
+                        "/change-password",
+                        "/css/**",
+                        "/js/**",
+                        "/images/**",
+                        "/error")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
         .formLogin(
             form ->
-                form.loginPage("/login")
-                    .loginProcessingUrl("/login")
+                form.loginPage(LOGIN_URL)
+                    .loginProcessingUrl(LOGIN_URL)
                     .successHandler(successHandler)
                     .permitAll())
         .logout(
@@ -101,8 +108,8 @@ public class SecurityConfig {
                         csp ->
                             csp.policyDirectives(
                                 "default-src 'self'; "
-                                    + "script-src 'self'; "
-                                    + "style-src 'self' 'unsafe-inline'; "
+                                    + "script-src 'self' https://cdn.jsdelivr.net; "
+                                    + "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
                                     + "img-src 'self' data:; "
                                     + "font-src 'self'; "
                                     + "frame-ancestors 'none'; "

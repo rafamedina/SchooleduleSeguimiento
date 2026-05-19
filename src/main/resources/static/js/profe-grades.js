@@ -130,7 +130,7 @@ function renderRaBlock(periodo, item) {
     )}">${escHtml(item.itemNombre)}</span>
     <span class="ra-block__media" data-ra-media="${item.itemEvaluableId}-${
       periodo.id
-    }">${mediaRaFmt}</span>`;
+    }" data-ra-peso="${item.raPeso ?? 0}">${mediaRaFmt}</span>`;
 
   if (item.tipoActividad === "RECUPERACION") {
     const badge = document.createElement("span");
@@ -203,6 +203,7 @@ function renderCeRow(periodo, item, ce) {
         data-ra-key="${ceKey}"
         data-periodo-id="${periodo.id}"
         data-calificacion-id="${ce.calificacionId ?? ""}"
+        data-peso="${ce.peso ?? 0}"
         value="${valorStr}"
         ${
           periodo.cerrado && !isRecuperacion
@@ -245,37 +246,57 @@ function renderCeRow(periodo, item, ce) {
  * El servidor es la fuente autoritativa; esto es solo retroalimentación visual.
  */
 function recomputeClientMedias(raKey, periodoId) {
-  // 1. mediaRa = media de los CE inputs del RA
+  // 1. mediaRa = media ponderada de los CE inputs del RA (fallback: simple si todos peso=0)
   const raInputs = document.querySelectorAll(
     `input.grade-input[data-ra-key="${raKey}"]`,
   );
-  const raValues = [];
+  let sumaPonderadaCe = 0;
+  let sumaPesosCe = 0;
+  let sumaSimpleCe = 0;
+  let countCe = 0;
   raInputs.forEach((inp) => {
     const v = parseFloat(inp.value);
-    if (!isNaN(v) && inp.value.trim() !== "") raValues.push(v);
+    if (!isNaN(v) && inp.value.trim() !== "") {
+      const p = parseFloat(inp.dataset.peso) || 0;
+      sumaPonderadaCe += v * p;
+      sumaPesosCe += p;
+      sumaSimpleCe += v;
+      countCe++;
+    }
   });
-  const mediaRa =
-    raValues.length > 0
-      ? raValues.reduce((a, b) => a + b, 0) / raValues.length
-      : null;
+  let mediaRa = null;
+  if (countCe > 0) {
+    mediaRa =
+      sumaPesosCe > 0 ? sumaPonderadaCe / sumaPesosCe : sumaSimpleCe / countCe;
+  }
 
   const raMediaEl = document.querySelector(`[data-ra-media="${raKey}"]`);
   if (raMediaEl)
     raMediaEl.textContent = mediaRa != null ? formatNota(mediaRa) : "—";
 
-  // 2. mediaPeriodo = media de todos los mediaRa del periodo
+  // 2. mediaPeriodo = media ponderada de todos los mediaRa del periodo (fallback: simple si todos raPeso=0)
   const allRaMediaEls = document.querySelectorAll(
     `section[data-periodo-id="${periodoId}"] [data-ra-media]`,
   );
-  const periodoValues = [];
+  let sumaPonderadaRa = 0;
+  let sumaPesosRa = 0;
+  let sumaSimpleRa = 0;
+  let countRa = 0;
   allRaMediaEls.forEach((el) => {
     const v = parseFloat(el.textContent);
-    if (!isNaN(v)) periodoValues.push(v);
+    if (!isNaN(v)) {
+      const p = parseFloat(el.dataset.raPeso) || 0;
+      sumaPonderadaRa += v * p;
+      sumaPesosRa += p;
+      sumaSimpleRa += v;
+      countRa++;
+    }
   });
-  const mediaPeriodo =
-    periodoValues.length > 0
-      ? periodoValues.reduce((a, b) => a + b, 0) / periodoValues.length
-      : null;
+  let mediaPeriodo = null;
+  if (countRa > 0) {
+    mediaPeriodo =
+      sumaPesosRa > 0 ? sumaPonderadaRa / sumaPesosRa : sumaSimpleRa / countRa;
+  }
 
   const periodoMediaEl = document.querySelector(
     `[data-periodo-media="${periodoId}"]`,

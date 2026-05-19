@@ -10,14 +10,19 @@ public class SecurityAuditLogger {
   private static final Logger log = LoggerFactory.getLogger(SecurityAuditLogger.class);
 
   public void logLoginFailure(String email, String ipAddress) {
-    log.warn("[SECURITY] event=login_failure user={} ip={}", sanitize(email), sanitize(ipAddress));
+    if (log.isWarnEnabled()) {
+      log.warn(
+          "[SECURITY] event=login_failure user={} ip={}", sanitize(email), sanitize(ipAddress));
+    }
   }
 
   public void logAccessDenied(String principal, String resource) {
-    log.warn(
-        "[SECURITY] event=access_denied user={} resource={}",
-        sanitize(principal),
-        sanitize(resource));
+    if (log.isWarnEnabled()) {
+      log.warn(
+          "[SECURITY] event=access_denied user={} resource={}",
+          sanitize(principal),
+          sanitize(resource));
+    }
   }
 
   String sanitize(String value) {

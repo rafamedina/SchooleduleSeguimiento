@@ -104,9 +104,9 @@ class MatriculaRepositoryTest {
 
     List<Matricula> result = matriculaRepository.findActivasByAlumnoId(alumno.getId());
 
-    assertThat(result).hasSize(2);
-    assertThat(result).allMatch(m -> m.getEstado() == EstadoMatricula.ACTIVA);
     assertThat(result)
+        .hasSize(2)
+        .allMatch(m -> m.getEstado() == EstadoMatricula.ACTIVA)
         .allMatch(
             m ->
                 m.getImparticion() != null

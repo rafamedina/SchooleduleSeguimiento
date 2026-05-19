@@ -6,6 +6,7 @@ import com.tfg.schooledule.infrastructure.repository.AuditoriaNotaRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,13 +23,40 @@ public class AdminAuditoriaService {
   @Transactional(readOnly = true)
   public List<AdminAuditoriaListDTO> buscar(
       String alumnoEmail, String moduloNombre, LocalDate fechaDesde, LocalDate fechaHasta) {
+    return applyFilters(
+        auditoriaNotaRepository.findAllWithDetails().stream(),
+        alumnoEmail,
+        moduloNombre,
+        fechaDesde,
+        fechaHasta);
+  }
+
+  @Transactional(readOnly = true)
+  public List<AdminAuditoriaListDTO> buscar(
+      String alumnoEmail,
+      String moduloNombre,
+      LocalDate fechaDesde,
+      LocalDate fechaHasta,
+      Set<Integer> centroIds) {
+    return applyFilters(
+        auditoriaNotaRepository.findAllByCentroIds(centroIds).stream(),
+        alumnoEmail,
+        moduloNombre,
+        fechaDesde,
+        fechaHasta);
+  }
+
+  private List<AdminAuditoriaListDTO> applyFilters(
+      Stream<AuditoriaNota> stream,
+      String alumnoEmail,
+      String moduloNombre,
+      LocalDate fechaDesde,
+      LocalDate fechaHasta) {
 
     String emailFilter = (alumnoEmail != null) ? alumnoEmail.trim().toLowerCase() : "";
     String moduloFilter = (moduloNombre != null) ? moduloNombre.trim().toLowerCase() : "";
     LocalDateTime dtDesde = fechaDesde != null ? fechaDesde.atStartOfDay() : null;
     LocalDateTime dtHasta = fechaHasta != null ? fechaHasta.atTime(23, 59, 59) : null;
-
-    Stream<AuditoriaNota> stream = auditoriaNotaRepository.findAllWithDetails().stream();
 
     if (!emailFilter.isEmpty()) {
       stream =
@@ -64,10 +92,13 @@ public class AdminAuditoriaService {
   }
 
   private AdminAuditoriaListDTO toDTO(AuditoriaNota a) {
+    var centro = a.getCalificacion().getMatricula().getImparticion().getCentro();
     return new AdminAuditoriaListDTO(
         a.getId(),
         a.getCalificacion().getMatricula().getAlumno().getEmail(),
         a.getCalificacion().getMatricula().getImparticion().getModulo().getNombre(),
+        centro.getId(),
+        centro.getNombre(),
         a.getValorAnterior(),
         a.getValorNuevo(),
         a.getUsuarioResponsable(),

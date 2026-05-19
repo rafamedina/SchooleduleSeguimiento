@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head
+    th:replace="~{admin/fragments/layout :: head('Importar módulo')}"
+  ></head>
+  <body>
+    <div class="admin-shell">
+      <div th:replace="~{admin/fragments/layout :: sidebar('modulos')}"></div>
+
+      <main class="admin-content">
+        <div class="hero animate-in">
+          <div class="hero__left">
+            <nav class="breadcrumb">
+              <a th:href="@{/admin/dashboard}">Administración</a>
+              <span class="breadcrumb__sep">/</span>
+              <a th:href="@{/admin/modulos}">Módulos</a>
+              <span class="breadcrumb__sep">/</span>
+              <span>Importar módulo</span>
+            </nav>
+            <h1 class="hero__title">Importar <em>Módulo</em></h1>
+          </div>
+          <div class="hero__right">
+            <a
+              th:href="@{/admin/modulos/plantilla-excel}"
+              class="btn btn-secondary"
+              >Descargar plantilla Excel</a
+            >
+          </div>
+        </div>
+
+        <div class="animate-in">
+          <!-- Errores de validación del archivo (lista de filas) -->
+          <div th:if="${errores}" class="alert alert-danger">
+            <strong>Se encontraron errores en el archivo:</strong>
+            <ul style="margin: 0.5rem 0 0; padding-left: 1.25rem">
+              <li
+                th:each="e : ${errores}"
+                th:text="${e.fila > 0 ? 'Fila ' + e.fila + ' [' + e.campo + ']: ' + e.mensaje : e.mensaje}"
+              ></li>
+            </ul>
+          </div>
+
+          <!-- Error simple -->
+          <div
+            th:if="${error}"
+            class="alert alert-danger"
+            th:text="${error}"
+          ></div>
+
+          <!-- Instrucciones -->
+          <div
+            class="stat-card"
+            style="margin-bottom: 2rem; border-top-color: var(--accent)"
+          >
+            <p style="margin: 0 0 0.75rem; font-weight: 600">
+              Instrucciones de la plantilla
+            </p>
+            <ul
+              style="
+                margin: 0;
+                padding-left: 1.25rem;
+                font-size: 0.875rem;
+                color: var(--ink-soft);
+                line-height: 1.7;
+              "
+            >
+              <li>
+                Descarga la plantilla con el botón superior y rellena una fila
+                por cada Criterio de Evaluación.
+              </li>
+              <li>
+                Columnas obligatorias: <strong>ra_codigo</strong>,
+                <strong>ra_descripcion</strong>, <strong>ra_peso</strong>,
+                <strong>ce_codigo</strong>, <strong>ce_descripcion</strong>,
+                <strong>ce_peso</strong>.
+              </li>
+              <li>
+                Columnas opcionales: <strong>instrumento</strong>,
+                <strong>unidad_didactica</strong>, <strong>trimestre</strong>
+                (1 o 2).
+              </li>
+              <li>
+                Valores válidos para <strong>instrumento</strong>:
+                PRUEBA_OBJETIVA, ACTIVIDAD_EVALUABLE, TRABAJO_PROYECTO,
+                EXPOSICION_ORAL, OBSERVACION_ACTITUD.
+              </li>
+              <li>Máximo 15 RAs distintos y 100 CEs por archivo.</li>
+              <li>
+                Si el código del módulo ya existe en el sistema se reutilizará;
+                si es nuevo, se creará automáticamente.
+              </li>
+              <li>
+                Si ya existen RAs para el módulo y curso seleccionados, debes
+                eliminarlos antes de reimportar.
+              </li>
+            </ul>
+          </div>
+
+          <!-- Formulario -->
+          <form
+            th:action="@{/admin/modulos/importar}"
+            th:object="${form}"
+            method="post"
+            enctype="multipart/form-data"
+            style="max-width: 560px"
+          >
+            <input
+              type="hidden"
+              th:name="${_csrf.parameterName}"
+              th:value="${_csrf.token}"
+            />
+
+            <div class="form-group">
+              <label for="codigo">Código del módulo</label>
+              <input
+                type="text"
+                id="codigo"
+                th:field="*{codigo}"
+                class="form-control"
+                th:classappend="${#fields.hasErrors('codigo')} ? 'is-invalid' : ''"
+                placeholder="Ej: DAW-PROG"
+                style="text-transform: uppercase"
+              />
+              <div
+                class="invalid-feedback"
+                th:if="${#fields.hasErrors('codigo')}"
+                th:errors="*{codigo}"
+              ></div>
+            </div>
+
+            <div class="form-group">
+              <label for="nombre">Nombre del módulo</label>
+              <input
+                type="text"
+                id="nombre"
+                th:field="*{nombre}"
+                class="form-control"
+                th:classappend="${#fields.hasErrors('nombre')} ? 'is-invalid' : ''"
+                placeholder="Ej: Programación"
+              />
+              <div
+                class="invalid-feedback"
+                th:if="${#fields.hasErrors('nombre')}"
+                th:errors="*{nombre}"
+              ></div>
+            </div>
+
+            <div class="form-group">
+              <label for="cursoAcademicoId">Curso académico</label>
+              <select
+                id="cursoAcademicoId"
+                th:field="*{cursoAcademicoId}"
+                class="form-control"
+                th:classappend="${#fields.hasErrors('cursoAcademicoId')} ? 'is-invalid' : ''"
+                required
+              >
+                <option value="">— Selecciona un curso —</option>
+                <option
+                  th:each="c : ${cursosDisponibles}"
+                  th:value="${c.id}"
+                  th:text="${c.nombre}"
+                ></option>
+              </select>
+              <div
+                class="invalid-feedback"
+                th:if="${#fields.hasErrors('cursoAcademicoId')}"
+                th:errors="*{cursoAcademicoId}"
+              ></div>
+            </div>
+
+            <div class="form-group">
+              <label for="archivo">Archivo Excel (.xlsx)</label>
+              <input
+                type="file"
+                id="archivo"
+                name="archivo"
+                accept=".xlsx"
+                class="form-control"
+                required
+              />
+              <span class="form-text">Tamaño máximo: 2 MB.</span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Importar módulo
+            </button>
+            <a
+              th:href="@{/admin/modulos}"
+              class="btn btn-secondary"
+              style="margin-left: 0.5rem"
+              >Cancelar</a
+            >
+          </form>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

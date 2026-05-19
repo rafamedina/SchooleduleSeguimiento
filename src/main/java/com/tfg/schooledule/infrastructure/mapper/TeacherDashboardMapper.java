@@ -42,5 +42,6 @@ public interface TeacherDashboardMapper {
   @Mapping(
       target = "calificacionId",
       expression = "java(existing != null ? existing.getId() : null)")
+  @Mapping(target = "peso", source = "ce.peso")
   TeacherCriterioGradeDTO toCriterioGrade(CriterioEvaluacion ce, Calificacion existing);
 }
