@@ -157,7 +157,7 @@ jobs:
                 echo "❌ **Build Failed**: Detectados errores en la ejecución."
                 echo "#### 🔍 Maven Errors"
                 # Extraemos líneas que contienen 'Error: ' ignorando mayúsculas
-                grep -i -m 20 "Error: " maven_build.log | sed 's/.*Error: //I' | sed 's/^/- /'
+                grep -i -m 20 "Error: " maven_build.log | sed -E 's/.*[Ee][Rr][Rr][Oo][Rr]: //' | sed 's/^/- /' || true
               fi
             fi
 
