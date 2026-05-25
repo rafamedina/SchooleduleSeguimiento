@@ -13,15 +13,15 @@
         <div class="hero animate-in">
           <div class="hero__left">
             <nav class="breadcrumb">
-              <span>Admin de Centro</span>
+              <a th:href="@{/centro-admin/dashboard}">Admin de Centro</a>
+              <span class="breadcrumb__sep">/</span>
+              <span>Dashboard</span>
             </nav>
             <h1 class="hero__title">Panel de <em>Centro</em></h1>
-          </div>
-        </div>
-
-        <div class="animate-in">
-          <div th:if="${centros != null and !centros.isEmpty()}">
-            <p style="color: var(--ink-muted); margin-bottom: 1.5rem">
+            <p
+              class="hero__body"
+              th:if="${centros != null and !centros.isEmpty()}"
+            >
               Gestionas
               <strong th:text="${stats.numCentros}">1</strong>
               centro(s):
@@ -31,99 +31,36 @@
               ></span>
             </p>
           </div>
-
-          <div
-            class="stats-grid"
-            style="
-              display: grid;
-              grid-template-columns: repeat(3, 1fr);
-              gap: 1rem;
-              margin-bottom: 2rem;
-            "
-          >
-            <div
-              class="stat-card"
-              style="
-                background: var(--surface);
-                border: 1px solid var(--border);
-                border-radius: 8px;
-                padding: 1.25rem;
-              "
-            >
-              <div
-                class="stat-card__value"
-                th:text="${stats.numGrupos}"
-                style="font-size: 2rem; font-weight: 700"
-              >
-                0
-              </div>
-              <div class="stat-card__label" style="color: var(--ink-muted)">
-                Grupos
-              </div>
-            </div>
-            <div
-              class="stat-card"
-              style="
-                background: var(--surface);
-                border: 1px solid var(--border);
-                border-radius: 8px;
-                padding: 1.25rem;
-              "
-            >
-              <div
-                class="stat-card__value"
-                th:text="${stats.numImparticiones}"
-                style="font-size: 2rem; font-weight: 700"
-              >
-                0
-              </div>
-              <div class="stat-card__label" style="color: var(--ink-muted)">
-                Imparticiones
-              </div>
-            </div>
-            <div
-              class="stat-card"
-              style="
-                background: var(--surface);
-                border: 1px solid var(--border);
-                border-radius: 8px;
-                padding: 1.25rem;
-              "
-            >
-              <div
-                class="stat-card__value"
-                th:text="${stats.numAlumnos}"
-                style="font-size: 2rem; font-weight: 700"
-              >
-                0
-              </div>
-              <div class="stat-card__label" style="color: var(--ink-muted)">
-                Alumnos activos
-              </div>
-            </div>
+          <div class="hero__right">
+            <p class="hero__body">
+              Panel de gestión de tu centro educativo. Administra grupos,
+              imparticiones, alumnos y usuarios dentro de tu ámbito.
+            </p>
           </div>
+        </div>
 
-          <div
-            class="quick-links"
-            style="display: flex; gap: 0.75rem; flex-wrap: wrap"
-          >
-            <a th:href="@{/centro-admin/grupos}" class="btn btn-secondary"
-              >Gestionar Grupos</a
+        <div class="stat-grid animate-in">
+          <div class="stat-card">
+            <span class="stat-card__num" th:text="${stats.numCentros}">0</span>
+            <span class="stat-card__label">Centros asignados</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__num" th:text="${stats.numGrupos}">0</span>
+            <span class="stat-card__label">Grupos</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__num" th:text="${stats.numImparticiones}"
+              >0</span
             >
-            <a
-              th:href="@{/centro-admin/imparticiones}"
-              class="btn btn-secondary"
-              >Gestionar Imparticiones</a
-            >
-            <a th:href="@{/centro-admin/alumnos}" class="btn btn-secondary"
-              >Gestionar Alumnos</a
-            >
-            <a th:href="@{/centro-admin/usuarios}" class="btn btn-secondary"
-              >Gestionar Usuarios</a
-            >
+            <span class="stat-card__label">Imparticiones</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__num" th:text="${stats.numAlumnos}">0</span>
+            <span class="stat-card__label">Alumnos activos</span>
           </div>
         </div>
       </main>
     </div>
+    <div th:replace="~{centro-admin/fragments/layout :: colophon}"></div>
   </body>
 </html>

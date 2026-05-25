@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img">
+  <title>Schooledule</title>
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,900&amp;display=swap');
+    </style>
+    <clipPath id="fav-clip">
+      <rect x="0" y="0" width="32" height="32" rx="6"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="32" height="32" rx="6" fill="#2e3a5c"/>
+  <!-- Coral left accent -->
+  <rect x="0" y="0" width="3" height="32" fill="#c24e3d" clip-path="url(#fav-clip)"/>
+  <!-- Letter S -->
+  <text
+    x="17" y="17"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    font-family="Fraunces, Georgia, serif"
+    font-weight="900"
+    font-style="italic"
+    font-size="19"
+    fill="#f7f2ea"
+    letter-spacing="-0.5">S</text>
+</svg>

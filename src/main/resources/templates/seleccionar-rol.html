@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Schooledule — Seleccionar Perfil</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/img/favicon.ico}" />
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}" />
+    <link rel="apple-touch-icon" th:href="@{/img/apple-touch-icon.png}" />
     <link rel="stylesheet" th:href="@{/css/seleccionar-rol.css}" />
   </head>
   <body>
@@ -22,6 +25,20 @@
           <span class="role-card__name">Administrador</span>
           <p class="role-card__desc">
             Gestión de infraestructura, usuarios y centros educativos.
+          </p>
+        </a>
+
+        <!-- card ADMIN_CENTRO -->
+        <a
+          href="/centro-admin/dashboard"
+          class="role-card animate-in"
+          th:if="${roles.contains('ROLE_ADMIN_CENTRO')}"
+        >
+          <div class="role-card__icon">&#9632;</div>
+          <span class="role-card__name">Admin de Centro</span>
+          <p class="role-card__desc">
+            Gestión de usuarios, grupos e imparticiones de tus centros
+            asignados.
           </p>
         </a>
 

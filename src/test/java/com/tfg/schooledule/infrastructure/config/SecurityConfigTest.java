@@ -85,4 +85,22 @@ class SecurityConfigTest {
   void snapAdminDenyAll_conAdmin_retorna403() throws Exception {
     mockMvc.perform(get("/snap-admin/")).andExpect(status().isForbidden());
   }
+
+  @Test
+  @WithMockUser(roles = "ADMIN_CENTRO")
+  void adminModulos_403_paraAdminCentro() throws Exception {
+    mockMvc.perform(get("/admin/modulos")).andExpect(status().isForbidden());
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN_CENTRO")
+  void adminCentros_403_paraAdminCentro() throws Exception {
+    mockMvc.perform(get("/admin/centros")).andExpect(status().isForbidden());
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN_CENTRO")
+  void centroAdminModulos_noExiste_404() throws Exception {
+    mockMvc.perform(get("/centro-admin/modulos")).andExpect(status().isNotFound());
+  }
 }

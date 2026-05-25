@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none" role="img" aria-label="Schooledule">
+  <!-- Background -->
+  <rect width="40" height="40" rx="7" fill="#2e3a5c"/>
+
+  <!-- Vertical coral rule (editorial accent — matches btn-editorial-primary border-left) -->
+  <rect x="9" y="10" width="3" height="20" rx="1.5" fill="#c24e3d"/>
+
+  <!-- Schedule rows -->
+  <!-- Header / week label -->
+  <rect x="16" y="10" width="15" height="2" rx="1" fill="#f7f2ea" opacity="0.35"/>
+
+  <!-- Row 1 — highlighted event (full opacity) -->
+  <rect x="16" y="16" width="15" height="3" rx="1.5" fill="#f7f2ea"/>
+
+  <!-- Row 2 — regular class -->
+  <rect x="16" y="23" width="11" height="2.5" rx="1.25" fill="#f7f2ea" opacity="0.65"/>
+
+  <!-- Row 3 — short note -->
+  <rect x="16" y="29" width="7" height="2.5" rx="1.25" fill="#f7f2ea" opacity="0.38"/>
+</svg>

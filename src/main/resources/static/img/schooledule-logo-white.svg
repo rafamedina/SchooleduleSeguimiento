@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 70" width="300" height="70" role="img">
+  <title>Schooledule</title>
+  <desc>Logotipo de Schooledule — plataforma de gestión académica multi-centro</desc>
+
+  <defs>
+    <clipPath id="mark-clip-w">
+      <rect x="0" y="8" width="54" height="54" rx="10"/>
+    </clipPath>
+  </defs>
+
+  <!-- Mark: navy square -->
+  <rect x="0" y="8" width="54" height="54" rx="10" fill="#2e3a5c"/>
+  <!-- Mark: coral left-border accent -->
+  <rect x="0" y="8" width="4" height="54" fill="#c24e3d" clip-path="url(#mark-clip-w)"/>
+  <!-- Mark: letter S -->
+  <text x="29" y="36" text-anchor="middle" dominant-baseline="middle"
+        font-family="Fraunces, Georgia, serif" font-weight="900" font-style="italic"
+        font-size="24" fill="#f7f2ea" letter-spacing="-0.03em">S</text>
+
+  <!-- Name — cream on dark -->
+  <text x="70" y="30" dominant-baseline="middle"
+        font-family="Fraunces, Georgia, serif" font-weight="900"
+        font-size="26" fill="#f7f2ea" letter-spacing="-0.03em">Schooledule</text>
+  <!-- Tagline — muted cream -->
+  <text x="71" y="51" dominant-baseline="middle"
+        font-family="Geist, Helvetica Neue, sans-serif" font-weight="500"
+        font-size="8.5" fill="rgba(247,242,234,0.55)" letter-spacing="0.22em">GESTIÓN ACADÉMICA</text>
+</svg>

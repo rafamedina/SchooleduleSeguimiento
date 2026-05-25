@@ -81,11 +81,21 @@ public class ChangePasswordController {
   }
 
   private String redirectToDashboard(Usuario usuario) {
-    boolean isAdmin = usuario.getRoles().stream().anyMatch(r -> r.getNombre().contains("ADMIN"));
-    boolean isProfesor =
-        usuario.getRoles().stream().anyMatch(r -> r.getNombre().contains("PROFESOR"));
-    if (isAdmin) return "redirect:/admin/dashboard";
-    if (isProfesor) return "redirect:/profe/dashboard";
+    java.util.Set<String> functional =
+        usuario.getRoles().stream()
+            .map(r -> r.getNombre())
+            .filter(
+                r ->
+                    r.equals("ROLE_ADMIN")
+                        || r.equals("ROLE_ADMIN_CENTRO")
+                        || r.equals("ROLE_PROFESOR")
+                        || r.equals("ROLE_ALUMNO"))
+            .collect(java.util.stream.Collectors.toSet());
+
+    if (functional.size() > 1) return "redirect:/seleccionar-rol";
+    if (functional.contains("ROLE_ADMIN")) return "redirect:/admin/dashboard";
+    if (functional.contains("ROLE_ADMIN_CENTRO")) return "redirect:/centro-admin/dashboard";
+    if (functional.contains("ROLE_PROFESOR")) return "redirect:/profe/dashboard";
     return "redirect:/alumno/dashboard";
   }
 }

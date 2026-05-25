@@ -9,11 +9,14 @@ import com.tfg.schooledule.domain.dto.AdminUsuarioFormDTO;
 import com.tfg.schooledule.domain.dto.AdminUsuarioListDTO;
 import com.tfg.schooledule.domain.entity.*;
 import com.tfg.schooledule.infrastructure.repository.*;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -174,5 +177,44 @@ class CentroAdminUsuarioServiceTest {
 
     assertThatThrownBy(() -> service.eliminar(ADMIN_ID, 1))
         .isInstanceOf(AccessDeniedException.class);
+  }
+
+  @Test
+  void actualizar_preservaRolesExistentes() {
+    // form envía roleId=3 (ALUMNO), pero el usuario ya tiene ROLE_PROFESOR (id=2)
+    AdminUsuarioFormDTO form = new AdminUsuarioFormDTO();
+    form.setRoleIds(Set.of(3));
+
+    doNothing().when(context).validateUsuarioGestionablePorCentroAdmin(ADMIN_ID, 30);
+    when(usuarioRepository.findById(30)).thenReturn(Optional.of(profesor));
+
+    service.actualizar(ADMIN_ID, 30, form);
+
+    ArgumentCaptor<AdminUsuarioFormDTO> captor = ArgumentCaptor.forClass(AdminUsuarioFormDTO.class);
+    verify(adminUsuarioService).actualizar(eq(30), captor.capture());
+    assertThat(captor.getValue().getRoleIds()).isEqualTo(Set.of(2));
+  }
+
+  @Test
+  void actualizar_lanza_siUsuarioNoEsGestionable() {
+    AdminUsuarioFormDTO form = new AdminUsuarioFormDTO();
+    doThrow(new AccessDeniedException("no"))
+        .when(context)
+        .validateUsuarioGestionablePorCentroAdmin(ADMIN_ID, 99);
+
+    assertThatThrownBy(() -> service.actualizar(ADMIN_ID, 99, form))
+        .isInstanceOf(AccessDeniedException.class);
+    verify(adminUsuarioService, never()).actualizar(anyInt(), any());
+  }
+
+  @Test
+  void actualizar_lanza_siUsuarioNoExisteEnBD() {
+    AdminUsuarioFormDTO form = new AdminUsuarioFormDTO();
+    doNothing().when(context).validateUsuarioGestionablePorCentroAdmin(ADMIN_ID, 99);
+    when(usuarioRepository.findById(99)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> service.actualizar(ADMIN_ID, 99, form))
+        .isInstanceOf(EntityNotFoundException.class);
+    verify(adminUsuarioService, never()).actualizar(anyInt(), any());
   }
 }

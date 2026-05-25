@@ -14,7 +14,7 @@ repos:
 
   # --- SEGURIDAD ---
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.18.2
+    rev: v8.18.4
     hooks:
       - id: gitleaks
 
@@ -23,7 +23,7 @@ repos:
     hooks:
       - id: spotless-apply
         name: ✨ Spotless Apply
-        entry: bash -c "./mvnw spotless:apply"
+        entry: powershell -NoProfile -NonInteractive -Command "./mvnw spotless:apply"
         language: system
         files: "\\.java$"
         pass_filenames: false
@@ -43,7 +43,7 @@ repos:
     hooks:
       - id: maven-check
         name: 🔨 Maven Validate
-        entry: bash -c "./mvnw validate"
+        entry: powershell -NoProfile -NonInteractive -Command "./mvnw validate"
         language: system
         files: pom.xml
         pass_filenames: false

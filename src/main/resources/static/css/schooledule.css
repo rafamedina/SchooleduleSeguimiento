@@ -141,6 +141,19 @@ table,
   line-height: 1;
 }
 
+.masthead__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  line-height: 1;
+}
+
+.masthead__logo {
+  height: 1.75rem;
+  width: auto;
+  display: block;
+}
+
 .masthead__subtitle {
   font-family: var(--font-body);
   font-size: 0.625rem;
@@ -421,6 +434,16 @@ table,
   text-transform: uppercase;
   letter-spacing: 0.16em;
   color: var(--ink-muted);
+}
+
+.colophon a {
+  color: var(--ink-muted);
+  text-decoration: none;
+  transition: color var(--transition-base);
+}
+
+.colophon a:hover {
+  color: var(--ink);
 }
 
 /* ── Responsive base ─────────────────────────────────────────────────────── */
