@@ -55,6 +55,8 @@
         th:if="${!alumnos.isEmpty()}"
         class="roster"
         id="rosterList"
+        th:data-api-base="@{/tutor/api/matricula/}"
+        data-read-only="true"
         aria-label="Listado de alumnos"
       >
         <li
@@ -135,13 +137,6 @@
       </div>
     </dialog>
 
-    <!-- JS de notas en modo lectura (endpoint /tutor/api/...) -->
-    <script th:inline="javascript">
-      /*<![CDATA[*/
-      const NOTAS_API_BASE = [[@{/tutor/api/matricula/}]];
-      const READ_ONLY = true;
-      /*]]>*/
-    </script>
-    <script type="module" th:src="@{/js/profe-grades.js}"></script>
+    <script type="module" th:src="@{/js/profe-grades.js(v=3)}"></script>
   </body>
 </html>

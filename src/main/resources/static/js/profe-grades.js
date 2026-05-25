@@ -8,6 +8,9 @@
 let currentMatriculaId = null;
 let currentData = null; // TeacherStudentGradesDTO del servidor
 
+const READ_ONLY =
+  document.getElementById("rosterList")?.dataset.readOnly === "true";
+
 // ── Inicio ─────────────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
   wireRosterClicks();
@@ -34,7 +37,7 @@ function wireModalButtons() {
   document
     .getElementById("closeGradesTop")
     .addEventListener("click", closeModal);
-  document.getElementById("saveGrades").addEventListener("click", saveGrades);
+  document.getElementById("saveGrades")?.addEventListener("click", saveGrades);
 
   modal.addEventListener("cancel", (e) => {
     e.preventDefault();
@@ -54,7 +57,12 @@ async function openModal(matriculaId) {
   trapFocus(modal);
 
   try {
-    const resp = await fetch(`/profe/api/matricula/${matriculaId}/notas`, {
+    // Read the API base from the roster's data attribute (set by Thymeleaf in tutor context).
+    // Falling back to the profe endpoint when the attribute is absent.
+    const apiBase =
+      document.getElementById("rosterList")?.dataset.apiBase ||
+      "/profe/api/matricula/";
+    const resp = await fetch(`${apiBase}${matriculaId}/notas`, {
       headers: { Accept: "application/json" },
     });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -206,7 +214,7 @@ function renderCeRow(periodo, item, ce) {
         data-peso="${ce.peso ?? 0}"
         value="${valorStr}"
         ${
-          periodo.cerrado && !isRecuperacion
+          READ_ONLY || (periodo.cerrado && !isRecuperacion)
             ? 'disabled aria-disabled="true"'
             : ""
         }
@@ -227,7 +235,7 @@ function renderCeRow(periodo, item, ce) {
         maxlength="1000"
         value="${escHtml(ce.comentario ?? "")}"
         ${
-          periodo.cerrado && !isRecuperacion
+          READ_ONLY || (periodo.cerrado && !isRecuperacion)
             ? 'disabled aria-disabled="true"'
             : ""
         }
