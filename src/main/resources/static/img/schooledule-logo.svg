@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 70" width="300" height="70" role="img">
+  <title>Schooledule</title>
+  <desc>Logotipo de Schooledule — plataforma de gestión académica multi-centro</desc>
+
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,900&amp;family=Geist:wght@500&amp;display=swap');
+      .logo-name {
+        font-family: "Fraunces", Georgia, serif;
+        font-weight: 900;
+        font-size: 26px;
+        fill: #1b1f2a;
+        letter-spacing: -0.03em;
+      }
+      .logo-tagline {
+        font-family: "Geist", "Helvetica Neue", sans-serif;
+        font-weight: 500;
+        font-size: 8.5px;
+        fill: #8a8e9a;
+        letter-spacing: 0.22em;
+      }
+      .logo-s {
+        font-family: "Fraunces", Georgia, serif;
+        font-weight: 900;
+        font-style: italic;
+        font-size: 24px;
+        fill: #f7f2ea;
+        letter-spacing: -0.03em;
+      }
+    </style>
+    <clipPath id="mark-clip">
+      <rect x="0" y="8" width="54" height="54" rx="10"/>
+    </clipPath>
+  </defs>
+
+  <!-- Mark: navy square -->
+  <rect x="0" y="8" width="54" height="54" rx="10" fill="#2e3a5c"/>
+  <!-- Mark: coral left-border accent -->
+  <rect x="0" y="8" width="4" height="54" fill="#c24e3d" clip-path="url(#mark-clip)"/>
+  <!-- Mark: letter S -->
+  <text x="29" y="36" text-anchor="middle" dominant-baseline="middle" class="logo-s">S</text>
+
+  <!-- Name -->
+  <text x="70" y="30" dominant-baseline="middle" class="logo-name">Schooledule</text>
+  <!-- Tagline -->
+  <text x="71" y="51" dominant-baseline="middle" class="logo-tagline">GESTIÓN ACADÉMICA</text>
+</svg>

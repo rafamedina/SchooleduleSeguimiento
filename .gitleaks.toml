@@ -1,0 +1,9 @@
+title = "Schooledule Gitleaks Config"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "BCrypt seed hash in Flyway migration (known, to be replaced with forced password change)"
+regexes = ['''\$2a\$10\$LwjJeRKHaydg2n5bPd\.5guuBwZow7V6dZTfit\.vl6Re3xgdR88aLi''']
+paths = ['''V1__Initial_Schema\.sql''']

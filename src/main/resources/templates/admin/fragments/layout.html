@@ -9,6 +9,9 @@
     <title th:text="${title} + ' — Schooledule'">Schooledule</title>
     <meta th:name="_csrf" th:content="${_csrf.token}" />
     <meta th:name="_csrf_header" th:content="${_csrf.headerName}" />
+    <link rel="icon" type="image/x-icon" th:href="@{/img/favicon.ico}" />
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}" />
+    <link rel="apple-touch-icon" th:href="@{/img/apple-touch-icon.png}" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/driver.js@1.3.5/dist/driver.css"
@@ -17,7 +20,13 @@
   </head>
 
   <nav th:fragment="sidebar(active)" class="admin-sidebar">
-    <div class="sidebar-wordmark">Schooledule</div>
+    <div class="sidebar-wordmark">
+      <img
+        th:src="@{/img/schooledule-logo-white.svg}"
+        alt="Schooledule"
+        class="sidebar-logo"
+      />
+    </div>
     <ul class="sidebar-nav">
       <li>
         <a
@@ -112,7 +121,11 @@
 
   <footer th:fragment="colophon" role="contentinfo">
     <div class="colophon">
-      <span>Schooledule</span>
+      <span>© 2025 Rafael Medina Ayuso</span>
+      &nbsp;·&nbsp;
+      <a href="mailto:rafael.medina.ayuso@gmail.com"
+        >rafael.medina.ayuso@gmail.com</a
+      >
       &nbsp;·&nbsp;
       <span
         th:text="${#temporals.format(#temporals.createNow(), 'dd MMM yyyy')}"

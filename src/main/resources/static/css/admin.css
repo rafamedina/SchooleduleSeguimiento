@@ -29,6 +29,12 @@
   color: var(--paper);
 }
 
+.sidebar-logo {
+  height: 1.75rem;
+  width: auto;
+  display: block;
+}
+
 .sidebar-nav {
   list-style: none;
   padding: 1.5rem 0;

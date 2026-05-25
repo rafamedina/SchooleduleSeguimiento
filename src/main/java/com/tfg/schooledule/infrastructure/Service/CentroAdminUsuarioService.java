@@ -3,8 +3,10 @@ package com.tfg.schooledule.infrastructure.service;
 import com.tfg.schooledule.domain.dto.AdminUsuarioFormDTO;
 import com.tfg.schooledule.domain.dto.AdminUsuarioListDTO;
 import com.tfg.schooledule.domain.entity.Rol;
+import com.tfg.schooledule.domain.entity.Usuario;
 import com.tfg.schooledule.infrastructure.repository.RolRepository;
 import com.tfg.schooledule.infrastructure.repository.UsuarioRepository;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -70,7 +72,13 @@ public class CentroAdminUsuarioService {
   @Transactional
   public void actualizar(Integer adminId, Integer usuarioId, AdminUsuarioFormDTO form) {
     context.validateUsuarioGestionablePorCentroAdmin(adminId, usuarioId);
-    validateNoProtectedRoles(form.getRoleIds());
+    Usuario existente =
+        usuarioRepository
+            .findById(usuarioId)
+            .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado: " + usuarioId));
+    Set<Integer> rolesActuales =
+        existente.getRoles().stream().map(Rol::getId).collect(Collectors.toSet());
+    form.setRoleIds(rolesActuales);
     adminUsuarioService.actualizar(usuarioId, form);
   }
 

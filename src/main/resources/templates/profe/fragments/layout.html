@@ -7,18 +7,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title th:text="${title} + ' — Schooledule'">Schooledule</title>
-    <!-- CSRF para peticiones AJAX -->
     <meta th:name="_csrf" th:content="${_csrf.token}" />
     <meta th:name="_csrf_header" th:content="${_csrf.headerName}" />
-    <!-- Diseño editorial propio -->
+    <link rel="icon" type="image/x-icon" th:href="@{/img/favicon.ico}" />
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}" />
+    <link rel="apple-touch-icon" th:href="@{/img/apple-touch-icon.png}" />
     <link rel="stylesheet" th:href="@{/css/profe.css}" />
   </head>
 
   <!-- Masthead (cabecera editorial) -->
   <nav th:fragment="topnav(active)" class="masthead" role="banner">
     <div class="masthead__inner">
-      <a href="/profe/dashboard" class="text-decoration-none">
-        <span class="masthead__wordmark">Schooledule</span>
+      <a href="/profe/dashboard" class="text-decoration-none masthead__brand">
+        <img
+          th:src="@{/img/schooledule-logo.svg}"
+          alt="Schooledule"
+          class="masthead__logo"
+        />
         <span class="masthead__subtitle">Claustro</span>
       </a>
       <ul
@@ -83,6 +88,12 @@
       <span
         th:text="${#temporals.format(#temporals.createNow(), 'dd MMM yyyy')}"
         >hoy</span
+      >
+      &nbsp;·&nbsp;
+      <span>© 2025 Rafael Medina Ayuso</span>
+      &nbsp;·&nbsp;
+      <a href="mailto:rafael.medina.ayuso@gmail.com"
+        >rafael.medina.ayuso@gmail.com</a
       >
     </div>
   </footer>

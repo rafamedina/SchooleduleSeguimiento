@@ -126,7 +126,7 @@
               >
             </div>
 
-            <div class="form-group">
+            <div class="form-group" th:if="${form.id == null}">
               <label>Roles</label>
               <div class="form-check" th:each="rol : ${roles}">
                 <input
@@ -141,6 +141,19 @@
                   th:text="${rol.nombre}"
                 ></label>
               </div>
+            </div>
+            <div class="form-group" th:if="${form.id != null}">
+              <label>Rol actual</label>
+              <p>
+                <span
+                  th:each="rol : ${roles}"
+                  th:if="${form.roleIds.contains(rol.id)}"
+                  th:text="${rol.nombre}"
+                ></span>
+              </p>
+              <small class="form-text text-muted"
+                >El rol no puede modificarse desde este panel.</small
+              >
             </div>
 
             <div class="form-group">

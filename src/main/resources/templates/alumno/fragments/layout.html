@@ -9,13 +9,23 @@
     <title th:text="${title} + ' — Schooledule'">Schooledule</title>
     <meta th:name="_csrf" th:content="${_csrf.token}" />
     <meta th:name="_csrf_header" th:content="${_csrf.headerName}" />
+    <link rel="icon" type="image/x-icon" th:href="@{/img/favicon.ico}" />
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}" />
+    <link rel="apple-touch-icon" th:href="@{/img/apple-touch-icon.png}" />
     <link rel="stylesheet" th:href="@{/css/alumno.css}" />
   </head>
 
   <nav th:fragment="topnav(active)" class="masthead" role="banner">
     <div class="masthead__inner">
-      <a th:href="@{/alumno/dashboard}" class="text-decoration-none">
-        <span class="masthead__wordmark">Schooledule</span>
+      <a
+        th:href="@{/alumno/dashboard}"
+        class="text-decoration-none masthead__brand"
+      >
+        <img
+          th:src="@{/img/schooledule-logo.svg}"
+          alt="Schooledule"
+          class="masthead__logo"
+        />
         <span class="masthead__subtitle">Aula</span>
       </a>
 
@@ -91,6 +101,12 @@
       <span
         th:text="${#temporals.format(#temporals.createNow(), 'dd MMM yyyy')}"
         >hoy</span
+      >
+      &nbsp;·&nbsp;
+      <span>© 2025 Rafael Medina Ayuso</span>
+      &nbsp;·&nbsp;
+      <a href="mailto:rafael.medina.ayuso@gmail.com"
+        >rafael.medina.ayuso@gmail.com</a
       >
     </div>
   </footer>
