@@ -3,6 +3,7 @@ package com.tfg.schooledule.infrastructure.controller;
 import com.tfg.schooledule.domain.dto.ChangePasswordForm;
 import com.tfg.schooledule.domain.entity.Usuario;
 import com.tfg.schooledule.infrastructure.repository.UsuarioRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -48,7 +49,8 @@ public class ChangePasswordController {
       BindingResult result,
       Principal principal,
       Model model,
-      RedirectAttributes redirectAttributes) {
+      RedirectAttributes redirectAttributes,
+      HttpServletRequest request) {
 
     Usuario usuario = resolveUsuario(principal);
 
@@ -69,6 +71,7 @@ public class ChangePasswordController {
     usuario.setMustChangePassword(false);
     usuarioRepository.save(usuario);
 
+    request.getSession().setAttribute("mustChangePassword", false);
     redirectAttributes.addFlashAttribute("successMessage", "Contraseña actualizada correctamente.");
     return redirectToDashboard(usuario);
   }

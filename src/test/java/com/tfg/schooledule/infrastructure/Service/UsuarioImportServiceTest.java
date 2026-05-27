@@ -205,7 +205,7 @@ class UsuarioImportServiceTest {
   }
 
   @Test
-  void importar_usernameYaExiste_lanzaUsuarioImportException() {
+  void importar_usernameYaExiste_asignaAlGrupoSinCrearUsuario() {
     List<UsuarioImportRowDTO> filas = List.of(filaValida(1, "alumno01"));
     when(parser.parsear(any())).thenReturn(filas);
     when(validator.validar(filas)).thenReturn(new UsuarioImportPreviewDTO(true, List.of(), 1));
@@ -216,15 +216,16 @@ class UsuarioImportServiceTest {
             anyString(), anyInt(), anyInt()))
         .thenReturn(Optional.of(grupo));
     when(usuarioRepository.existsByUsername("alumno01")).thenReturn(true);
+    when(usuarioRepository.findByUsername("alumno01")).thenReturn(Optional.of(usuarioGuardado));
+    when(imparticionRepository.findByGrupoId(1)).thenReturn(List.of(imparticion));
 
-    assertThatThrownBy(() -> service.importar(new byte[] {1}))
-        .isInstanceOf(UsuarioImportException.class)
-        .satisfies(
-            ex -> {
-              List<UsuarioImportErrorDTO> err = ((UsuarioImportException) ex).getErrores();
-              assertThat(err).anyMatch(e -> e.campo().equals("username"));
-            });
+    UsuarioImportResultado resultado = service.importar(new byte[] {1});
+
     verify(usuarioRepository, never()).save(any());
+    verify(matriculaRepository).save(any());
+    assertThat(resultado.usuariosCreados()).isEqualTo(0);
+    assertThat(resultado.alumnosAsignados()).isEqualTo(1);
+    assertThat(resultado.matriculasCreadas()).isEqualTo(1);
   }
 
   @Test
@@ -279,13 +280,9 @@ class UsuarioImportServiceTest {
     List<UsuarioImportRowDTO> filas = List.of(filaValida(1, "user1"), filaValida(2, "user2"));
     when(parser.parsear(any())).thenReturn(filas);
     when(validator.validar(filas)).thenReturn(new UsuarioImportPreviewDTO(true, List.of(), 2));
-    when(centroRepository.findByNombreIgnoreCase(anyString())).thenReturn(Optional.of(centro));
+    when(centroRepository.findByNombreIgnoreCase(anyString())).thenReturn(Optional.empty());
     when(cursoAcademicoRepository.findByNombreIgnoreCase(anyString()))
         .thenReturn(Optional.of(curso));
-    when(grupoRepository.findByNombreIgnoreCaseAndCentroIdAndCursoAcademicoId(
-            anyString(), anyInt(), anyInt()))
-        .thenReturn(Optional.of(grupo));
-    when(usuarioRepository.existsByUsername(anyString())).thenReturn(true);
 
     assertThatThrownBy(() -> service.importar(new byte[] {1}))
         .isInstanceOf(UsuarioImportException.class)

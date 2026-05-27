@@ -5,6 +5,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.tfg.schooledule.domain.dto.AdminAlumnoListDTO;
 import com.tfg.schooledule.domain.dto.AdminMatriculaFormDTO;
 import com.tfg.schooledule.domain.entity.Rol;
 import com.tfg.schooledule.domain.entity.Usuario;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -67,7 +69,8 @@ class AdminAlumnoControllerTest {
   @Test
   @WithMockUser(roles = "ADMIN")
   void lista_conAdmin_200_retornaVista() throws Exception {
-    when(adminAlumnoService.listarFiltrado(any())).thenReturn(Collections.emptyList());
+    when(adminAlumnoService.listarFiltrado(any(), anyInt()))
+        .thenReturn(new PageImpl<AdminAlumnoListDTO>(Collections.emptyList()));
 
     mockMvc
         .perform(get("/admin/alumnos"))

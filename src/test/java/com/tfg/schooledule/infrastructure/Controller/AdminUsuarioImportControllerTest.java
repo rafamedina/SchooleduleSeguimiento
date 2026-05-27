@@ -158,7 +158,7 @@ class AdminUsuarioImportControllerTest {
   @Test
   @WithMockUser(roles = "ADMIN")
   void importar_archivoValido_redirige() throws Exception {
-    when(usuarioImportService.importar(any())).thenReturn(new UsuarioImportResultado(3, 9));
+    when(usuarioImportService.importar(any())).thenReturn(new UsuarioImportResultado(3, 0, 9));
 
     mockMvc
         .perform(multipart("/admin/usuarios/importar").file(xlsxFile()).with(csrf()))

@@ -15,6 +15,7 @@ import com.tfg.schooledule.domain.entity.Rol;
 import com.tfg.schooledule.domain.entity.Usuario;
 import com.tfg.schooledule.domain.enums.EstadoMatricula;
 import com.tfg.schooledule.infrastructure.repository.CalificacionRepository;
+import com.tfg.schooledule.infrastructure.repository.GrupoRepository;
 import com.tfg.schooledule.infrastructure.repository.ImparticionRepository;
 import com.tfg.schooledule.infrastructure.repository.MatriculaRepository;
 import com.tfg.schooledule.infrastructure.repository.UsuarioRepository;
@@ -33,6 +34,9 @@ class AdminAlumnoServiceTest {
   @Mock private MatriculaRepository matriculaRepository;
   @Mock private ImparticionRepository imparticionRepository;
   @Mock private CalificacionRepository calificacionRepository;
+  @Mock private GrupoRepository grupoRepository;
+  @Mock private AdminCursoActivoService cursoActivoService;
+  @Mock private EvaluacionBootstrapService evaluacionBootstrapService;
 
   @InjectMocks private AdminAlumnoService adminAlumnoService;
 

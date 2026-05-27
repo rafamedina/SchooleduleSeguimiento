@@ -105,6 +105,7 @@ public class AdminUsuarioService {
             .email(dto.getEmail())
             .passwordHash(passwordEncoder.encode(dto.getPassword()))
             .activo(true)
+            .mustChangePassword(true)
             .roles(new HashSet<>(roles))
             .centros(new HashSet<>(centros))
             .build();

@@ -85,6 +85,12 @@ function renderModal(data) {
   const body = document.getElementById("gradesBody");
   body.innerHTML = "";
 
+  if (!data.periodos || data.periodos.length === 0) {
+    body.innerHTML =
+      '<p class="modal-empty-state">No hay ítems evaluables para esta impartición. Crea los ítems en la sección superior antes de calificar.</p>';
+    return;
+  }
+
   data.periodos.forEach((p) => {
     body.appendChild(renderPeriodo(p));
   });
@@ -95,7 +101,7 @@ function renderPeriodo(periodo) {
   const section = document.createElement("section");
   section.className =
     "periodo-section" + (periodo.cerrado ? " periodo-section--cerrado" : "");
-  section.dataset.periodoId = periodo.id;
+  section.dataset.periodoId = periodo.periodoId;
   section.dataset.peso = periodo.peso != null ? periodo.peso : "1";
 
   const pesoLabel = periodo.peso != null ? `${periodo.peso}%` : "—";
@@ -107,7 +113,7 @@ function renderPeriodo(periodo) {
       <span class="peso-chip">Peso ${pesoLabel}</span>
       ${periodo.cerrado ? '<span class="cerrado-chip">Cerrado</span>' : ""}
       <span class="periodo-media" data-periodo-media="${
-        periodo.id
+        periodo.periodoId
       }">${mediaFmt}</span>
     </div>`;
 
@@ -124,7 +130,7 @@ function renderRaBlock(periodo, item) {
   details.className = "ra-block";
   details.open = true;
   details.dataset.raId = item.itemEvaluableId;
-  details.dataset.periodoId = periodo.id;
+  details.dataset.periodoId = periodo.periodoId;
 
   const mediaRaFmt = item.mediaRa != null ? formatNota(item.mediaRa) : "—";
 
@@ -137,7 +143,7 @@ function renderRaBlock(periodo, item) {
       item.raDescripcion,
     )}">${escHtml(item.itemNombre)}</span>
     <span class="ra-block__media" data-ra-media="${item.itemEvaluableId}-${
-      periodo.id
+      periodo.periodoId
     }" data-ra-peso="${item.raPeso ?? 0}">${mediaRaFmt}</span>`;
 
   if (item.tipoActividad === "RECUPERACION") {
@@ -180,7 +186,7 @@ function renderRaBlock(periodo, item) {
 function renderCeRow(periodo, item, ce) {
   const tr = document.createElement("tr");
   const valorStr = ce.valor != null ? ce.valor : "";
-  const ceKey = `${item.itemEvaluableId}-${periodo.id}`;
+  const ceKey = `${item.itemEvaluableId}-${periodo.periodoId}`;
   const isRecuperacion = item.tipoActividad === "RECUPERACION";
   const inputExtraClass = isRecuperacion ? " input--recuperacion" : "";
 
@@ -209,7 +215,7 @@ function renderCeRow(periodo, item, ce) {
         data-ce-id="${ce.criterioEvaluacionId}"
         data-item-id="${item.itemEvaluableId}"
         data-ra-key="${ceKey}"
-        data-periodo-id="${periodo.id}"
+        data-periodo-id="${periodo.periodoId}"
         data-calificacion-id="${ce.calificacionId ?? ""}"
         data-peso="${ce.peso ?? 0}"
         value="${valorStr}"
@@ -243,7 +249,7 @@ function renderCeRow(periodo, item, ce) {
     </td>`;
 
   tr.querySelector(".ce-nota-input").addEventListener("input", () => {
-    recomputeClientMedias(ceKey, periodo.id);
+    recomputeClientMedias(ceKey, periodo.periodoId);
   });
 
   return tr;
