@@ -1,19 +1,24 @@
 package com.tfg.schooledule.infrastructure.service;
 
 import com.tfg.schooledule.domain.dto.AdminAlumnoListDTO;
+import com.tfg.schooledule.domain.dto.AdminAsignarGrupoFormDTO;
 import com.tfg.schooledule.domain.dto.AdminMatriculaFormDTO;
 import com.tfg.schooledule.domain.dto.AdminMatriculaListDTO;
 import com.tfg.schooledule.domain.dto.AlumnoFiltroDTO;
+import com.tfg.schooledule.domain.entity.Grupo;
 import com.tfg.schooledule.domain.entity.Imparticion;
 import com.tfg.schooledule.domain.entity.Matricula;
 import com.tfg.schooledule.domain.entity.Usuario;
 import com.tfg.schooledule.domain.enums.EstadoMatricula;
 import com.tfg.schooledule.infrastructure.repository.CalificacionRepository;
+import com.tfg.schooledule.infrastructure.repository.GrupoRepository;
 import com.tfg.schooledule.infrastructure.repository.ImparticionRepository;
 import com.tfg.schooledule.infrastructure.repository.MatriculaRepository;
 import com.tfg.schooledule.infrastructure.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,19 +31,25 @@ public class AdminAlumnoService {
   private final MatriculaRepository matriculaRepository;
   private final ImparticionRepository imparticionRepository;
   private final CalificacionRepository calificacionRepository;
+  private final GrupoRepository grupoRepository;
   private final AdminCursoActivoService cursoActivoService;
+  private final EvaluacionBootstrapService evaluacionBootstrapService;
 
   public AdminAlumnoService(
       UsuarioRepository usuarioRepository,
       MatriculaRepository matriculaRepository,
       ImparticionRepository imparticionRepository,
       CalificacionRepository calificacionRepository,
-      AdminCursoActivoService cursoActivoService) {
+      GrupoRepository grupoRepository,
+      AdminCursoActivoService cursoActivoService,
+      EvaluacionBootstrapService evaluacionBootstrapService) {
     this.usuarioRepository = usuarioRepository;
     this.matriculaRepository = matriculaRepository;
     this.imparticionRepository = imparticionRepository;
     this.calificacionRepository = calificacionRepository;
+    this.grupoRepository = grupoRepository;
     this.cursoActivoService = cursoActivoService;
+    this.evaluacionBootstrapService = evaluacionBootstrapService;
   }
 
   private AdminAlumnoListDTO toListDTO(Usuario u) {
@@ -50,17 +61,23 @@ public class AdminAlumnoService {
         matriculaRepository.findByAlumnoId(u.getId()).size());
   }
 
+  static final int TAMANIO_PAGINA = 50;
+
   @Transactional(readOnly = true)
-  public List<AdminAlumnoListDTO> listarFiltrado(AlumnoFiltroDTO filtro) {
+  public Page<AdminAlumnoListDTO> listarFiltrado(AlumnoFiltroDTO filtro, int numeroPagina) {
+    PageRequest pageable = PageRequest.of(numeroPagina, TAMANIO_PAGINA);
+    boolean hayFiltro =
+        filtro.centroId() != null || filtro.grupoId() != null || filtro.cursoAcademicoId() != null;
+    if (!hayFiltro) {
+      return usuarioRepository.findAllAlumnosOrdenados(pageable).map(this::toListDTO);
+    }
     Integer cursoId =
         filtro.cursoAcademicoId() != null
             ? filtro.cursoAcademicoId()
             : cursoActivoService.getCursoActivoId();
     return usuarioRepository
-        .findAlumnosByFiltro(filtro.centroId(), filtro.grupoId(), cursoId)
-        .stream()
-        .map(this::toListDTO)
-        .toList();
+        .findAlumnosByFiltro(filtro.centroId(), filtro.grupoId(), cursoId, pageable)
+        .map(this::toListDTO);
   }
 
   @Transactional(readOnly = true)
@@ -151,6 +168,37 @@ public class AdminAlumnoService {
     matricula.setEstado(dto.getEstado());
     matricula.setEsRepetidor(Boolean.TRUE.equals(dto.getEsRepetidor()));
     matriculaRepository.save(matricula);
+  }
+
+  @Transactional
+  public int asignarGrupo(Integer alumnoId, AdminAsignarGrupoFormDTO dto) {
+    Usuario alumno = findAlumno(alumnoId);
+    Grupo grupo =
+        grupoRepository
+            .findById(dto.getGrupoId())
+            .orElseThrow(
+                () -> new EntityNotFoundException("Grupo no encontrado: " + dto.getGrupoId()));
+    List<Imparticion> imparticiones = imparticionRepository.findByGrupoId(grupo.getId());
+    if (imparticiones.isEmpty()) {
+      throw new IllegalArgumentException(
+          "El grupo '" + grupo.getNombre() + "' no tiene módulos asignados todavía");
+    }
+    int count = 0;
+    for (Imparticion imp : imparticiones) {
+      if (!matriculaRepository.existsByAlumnoIdAndImparticionId(alumno.getId(), imp.getId())) {
+        matriculaRepository.save(
+            Matricula.builder()
+                .alumno(alumno)
+                .imparticion(imp)
+                .centro(grupo.getCentro())
+                .esRepetidor(dto.isEsRepetidor())
+                .estado(EstadoMatricula.ACTIVA)
+                .build());
+        evaluacionBootstrapService.bootstrapParaImparticion(imp);
+        count++;
+      }
+    }
+    return count;
   }
 
   @Transactional

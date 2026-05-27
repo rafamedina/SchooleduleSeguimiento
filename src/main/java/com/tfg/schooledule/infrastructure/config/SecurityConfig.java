@@ -1,6 +1,7 @@
 package com.tfg.schooledule.infrastructure.config;
 
 import com.tfg.schooledule.infrastructure.security.LoginRateLimitFilter;
+import com.tfg.schooledule.infrastructure.security.MustChangePasswordFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -58,6 +59,7 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+        .addFilterAfter(new MustChangePasswordFilter(), UsernamePasswordAuthenticationFilter.class)
         .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers("/snap-admin/**")

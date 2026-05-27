@@ -3,6 +3,8 @@ package com.tfg.schooledule.infrastructure.repository;
 import com.tfg.schooledule.domain.entity.Usuario;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,6 +27,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
   @org.springframework.data.jpa.repository.Query(
       "SELECT u FROM Usuario u JOIN u.roles r WHERE r.nombre = 'ROLE_ALUMNO' ORDER BY u.apellidos ASC, u.nombre ASC")
   List<Usuario> findAllAlumnosOrdenados();
+
+  @org.springframework.data.jpa.repository.Query(
+      "SELECT u FROM Usuario u JOIN u.roles r WHERE r.nombre = 'ROLE_ALUMNO' ORDER BY u.apellidos ASC, u.nombre ASC")
+  Page<Usuario> findAllAlumnosOrdenados(Pageable pageable);
 
   @org.springframework.data.jpa.repository.Query(
       "SELECT u FROM Usuario u JOIN u.roles r WHERE r.nombre = 'ROLE_PROFESOR' ORDER BY u.apellidos ASC, u.nombre ASC")
@@ -65,4 +71,31 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
       @Param("centroId") Integer centroId,
       @Param("grupoId") Integer grupoId,
       @Param("cursoId") Integer cursoId);
+
+  @Query(
+      value =
+          """
+          SELECT DISTINCT u FROM Usuario u
+          JOIN u.roles r, Matricula m
+          WHERE m.alumno = u
+            AND r.nombre = 'ROLE_ALUMNO'
+            AND (:centroId IS NULL OR m.centro.id = :centroId)
+            AND (:grupoId  IS NULL OR m.imparticion.grupo.id = :grupoId)
+            AND (:cursoId  IS NULL OR m.imparticion.grupo.cursoAcademico.id = :cursoId)
+          """,
+      countQuery =
+          """
+          SELECT COUNT(DISTINCT u) FROM Usuario u
+          JOIN u.roles r, Matricula m
+          WHERE m.alumno = u
+            AND r.nombre = 'ROLE_ALUMNO'
+            AND (:centroId IS NULL OR m.centro.id = :centroId)
+            AND (:grupoId  IS NULL OR m.imparticion.grupo.id = :grupoId)
+            AND (:cursoId  IS NULL OR m.imparticion.grupo.cursoAcademico.id = :cursoId)
+          """)
+  Page<Usuario> findAlumnosByFiltro(
+      @Param("centroId") Integer centroId,
+      @Param("grupoId") Integer grupoId,
+      @Param("cursoId") Integer cursoId,
+      Pageable pageable);
 }

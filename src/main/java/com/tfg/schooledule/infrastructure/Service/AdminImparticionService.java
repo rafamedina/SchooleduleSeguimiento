@@ -25,6 +25,7 @@ public class AdminImparticionService {
   private final PeriodoEvaluacionRepository periodoEvaluacionRepository;
   private final AdminImparticionMapper adminImparticionMapper;
   private final AdminCursoActivoService cursoActivoService;
+  private final EvaluacionBootstrapService evaluacionBootstrapService;
 
   public AdminImparticionService(
       ImparticionRepository imparticionRepository,
@@ -35,7 +36,8 @@ public class AdminImparticionService {
       MatriculaRepository matriculaRepository,
       PeriodoEvaluacionRepository periodoEvaluacionRepository,
       AdminImparticionMapper adminImparticionMapper,
-      AdminCursoActivoService cursoActivoService) {
+      AdminCursoActivoService cursoActivoService,
+      EvaluacionBootstrapService evaluacionBootstrapService) {
     this.imparticionRepository = imparticionRepository;
     this.moduloRepository = moduloRepository;
     this.grupoRepository = grupoRepository;
@@ -45,6 +47,7 @@ public class AdminImparticionService {
     this.periodoEvaluacionRepository = periodoEvaluacionRepository;
     this.adminImparticionMapper = adminImparticionMapper;
     this.cursoActivoService = cursoActivoService;
+    this.evaluacionBootstrapService = evaluacionBootstrapService;
   }
 
   private AdminImparticionListDTO toListDTO(Imparticion i) {
@@ -121,13 +124,15 @@ public class AdminImparticionService {
             .findById(dto.getCentroId())
             .orElseThrow(
                 () -> new EntityNotFoundException("Centro no encontrado: " + dto.getCentroId()));
-    imparticionRepository.save(
-        Imparticion.builder()
-            .modulo(modulo)
-            .grupo(grupo)
-            .profesor(profesor)
-            .centro(centro)
-            .build());
+    Imparticion saved =
+        imparticionRepository.save(
+            Imparticion.builder()
+                .modulo(modulo)
+                .grupo(grupo)
+                .profesor(profesor)
+                .centro(centro)
+                .build());
+    evaluacionBootstrapService.bootstrapParaImparticion(saved);
   }
 
   @Transactional

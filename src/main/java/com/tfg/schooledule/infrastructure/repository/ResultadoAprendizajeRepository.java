@@ -13,6 +13,9 @@ public interface ResultadoAprendizajeRepository
 
   List<ResultadoAprendizaje> findByModuloIdOrderByCodigoAsc(Integer moduloId);
 
+  List<ResultadoAprendizaje> findByModuloIdAndCursoAcademicoIdOrderByCodigoAsc(
+      Integer moduloId, Integer cursoAcademicoId);
+
   List<ResultadoAprendizaje> findByModuloIdOrderByCursoAcademicoIdAscCodigoAsc(Integer moduloId);
 
   boolean existsByModuloId(Integer moduloId);

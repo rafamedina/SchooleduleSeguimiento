@@ -6,6 +6,7 @@ import com.tfg.schooledule.domain.entity.Usuario;
 import com.tfg.schooledule.infrastructure.repository.UsuarioRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
@@ -32,6 +33,7 @@ class CustomLoginSuccessHandlerTest {
     response = mock(HttpServletResponse.class);
     authentication = mock(Authentication.class);
     when(authentication.getName()).thenReturn("user@test.com");
+    when(request.getSession()).thenReturn(mock(HttpSession.class));
   }
 
   private void givenUserMustChangePassword(boolean mustChange) {

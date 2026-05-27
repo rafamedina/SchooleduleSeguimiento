@@ -78,10 +78,44 @@
                     class="btn btn-sm btn-secondary"
                     >Ver matrículas</a
                   >
+                  <a
+                    th:href="@{/admin/alumnos/{id}/asignar-grupo(id=${a.id})}"
+                    class="btn btn-sm btn-primary"
+                    >Asignar a grupo</a
+                  >
                 </td>
               </tr>
             </tbody>
           </table>
+
+          <div class="pagination" th:if="${totalPaginas > 1}">
+            <a
+              th:if="${paginaActual > 0}"
+              th:href="@{/admin/alumnos(page=${paginaActual - 1},
+                centroId=${filtro.centroId()},
+                grupoId=${filtro.grupoId()},
+                cursoAcademicoId=${filtro.cursoAcademicoId()})}"
+              class="btn btn-sm btn-secondary"
+              >&larr; Anterior</a
+            >
+            <span class="pagination__info">
+              Página
+              <strong th:text="${paginaActual + 1}"></strong>
+              de
+              <strong th:text="${totalPaginas}"></strong>
+              &nbsp;·&nbsp;
+              <span th:text="${totalAlumnos}"></span> alumnos
+            </span>
+            <a
+              th:if="${paginaActual + 1 < totalPaginas}"
+              th:href="@{/admin/alumnos(page=${paginaActual + 1},
+                centroId=${filtro.centroId()},
+                grupoId=${filtro.grupoId()},
+                cursoAcademicoId=${filtro.cursoAcademicoId()})}"
+              class="btn btn-sm btn-secondary"
+              >Siguiente &rarr;</a
+            >
+          </div>
         </div>
       </main>
     </div>

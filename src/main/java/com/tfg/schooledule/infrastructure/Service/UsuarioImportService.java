@@ -87,15 +87,22 @@ public class UsuarioImportService {
 
     Rol rolAlumno = rolRepository.findByNombre("ROLE_ALUMNO");
     int usuariosCreados = 0;
+    int alumnosAsignados = 0;
     int matriculasCreadas = 0;
 
     for (FilaResuelta fr : filasResueltas) {
-      Usuario usuario = crearUsuario(fr, rolAlumno);
-      usuariosCreados++;
+      Usuario usuario;
+      if (fr.existingUsuario() != null) {
+        usuario = fr.existingUsuario();
+        alumnosAsignados++;
+      } else {
+        usuario = crearUsuario(fr, rolAlumno);
+        usuariosCreados++;
+      }
       matriculasCreadas += matricularEnGrupo(usuario, fr.grupo(), fr.fila().esRepetidorRaw());
     }
 
-    return new UsuarioImportResultado(usuariosCreados, matriculasCreadas);
+    return new UsuarioImportResultado(usuariosCreados, alumnosAsignados, matriculasCreadas);
   }
 
   private void resolverFila(
@@ -139,16 +146,13 @@ public class UsuarioImportService {
       }
     }
 
+    Usuario existingUsuario = null;
     if (usuarioRepository.existsByUsername(fila.username())) {
-      errores.add(
-          new UsuarioImportErrorDTO(
-              f,
-              "username",
-              "El username '" + fila.username() + "' ya está registrado en el sistema"));
-      filaOk = false;
+      existingUsuario = usuarioRepository.findByUsername(fila.username()).orElse(null);
     }
 
-    if (fila.email() != null
+    if (existingUsuario == null
+        && fila.email() != null
         && !fila.email().isBlank()
         && usuarioRepository.existsByEmail(fila.email())) {
       errores.add(
@@ -157,8 +161,9 @@ public class UsuarioImportService {
       filaOk = false;
     }
 
-    if (filaOk) {
-      filasResueltas.add(new FilaResuelta(fila, centroOpt.get(), cursoOpt.get(), grupoOpt.get()));
+    if (filaOk && centroOpt.isPresent() && cursoOpt.isPresent() && grupoOpt.isPresent()) {
+      filasResueltas.add(
+          new FilaResuelta(fila, centroOpt.get(), cursoOpt.get(), grupoOpt.get(), existingUsuario));
     }
   }
 
@@ -208,5 +213,9 @@ public class UsuarioImportService {
   }
 
   private record FilaResuelta(
-      UsuarioImportRowDTO fila, Centro centro, CursoAcademico curso, Grupo grupo) {}
+      UsuarioImportRowDTO fila,
+      Centro centro,
+      CursoAcademico curso,
+      Grupo grupo,
+      Usuario existingUsuario) {}
 }

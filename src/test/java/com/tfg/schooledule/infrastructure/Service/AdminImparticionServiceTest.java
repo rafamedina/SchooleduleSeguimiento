@@ -27,6 +27,8 @@ class AdminImparticionServiceTest {
   @Mock private MatriculaRepository matriculaRepository;
   @Mock private PeriodoEvaluacionRepository periodoEvaluacionRepository;
   @Mock private AdminImparticionMapper adminImparticionMapper;
+  @Mock private AdminCursoActivoService adminCursoActivoService;
+  @Mock private EvaluacionBootstrapService evaluacionBootstrapService;
 
   @InjectMocks private AdminImparticionService adminImparticionService;
 

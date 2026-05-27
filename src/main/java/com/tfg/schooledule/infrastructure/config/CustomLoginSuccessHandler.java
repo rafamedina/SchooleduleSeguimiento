@@ -30,6 +30,8 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
             .map(u -> Boolean.TRUE.equals(u.getMustChangePassword()))
             .orElse(false);
 
+    request.getSession().setAttribute("mustChangePassword", mustChange);
+
     if (mustChange) {
       response.sendRedirect("/change-password");
       return;

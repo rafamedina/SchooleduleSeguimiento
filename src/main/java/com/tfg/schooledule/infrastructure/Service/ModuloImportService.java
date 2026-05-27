@@ -13,6 +13,7 @@ import com.tfg.schooledule.infrastructure.repository.CursoAcademicoRepository;
 import com.tfg.schooledule.infrastructure.repository.ModuloRepository;
 import com.tfg.schooledule.infrastructure.repository.ResultadoAprendizajeRepository;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ public class ModuloImportService {
   private final CursoAcademicoRepository cursoAcademicoRepository;
   private final ResultadoAprendizajeRepository raRepository;
   private final CriterioEvaluacionRepository ceRepository;
+  private final EvaluacionBootstrapService evaluacionBootstrapService;
 
   public ModuloImportService(
       ModuloExcelParserService parser,
@@ -36,13 +38,15 @@ public class ModuloImportService {
       ModuloRepository moduloRepository,
       CursoAcademicoRepository cursoAcademicoRepository,
       ResultadoAprendizajeRepository raRepository,
-      CriterioEvaluacionRepository ceRepository) {
+      CriterioEvaluacionRepository ceRepository,
+      EvaluacionBootstrapService evaluacionBootstrapService) {
     this.parser = parser;
     this.validatorService = validatorService;
     this.moduloRepository = moduloRepository;
     this.cursoAcademicoRepository = cursoAcademicoRepository;
     this.raRepository = raRepository;
     this.ceRepository = ceRepository;
+    this.evaluacionBootstrapService = evaluacionBootstrapService;
   }
 
   @Transactional(readOnly = true)
@@ -81,6 +85,7 @@ public class ModuloImportService {
       filasPorRa.computeIfAbsent(fila.raCodigo(), k -> new java.util.ArrayList<>()).add(fila);
     }
 
+    List<ResultadoAprendizaje> savedRas = new ArrayList<>();
     int totalCes = 0;
     for (Map.Entry<String, List<ModuloImportRowDTO>> entry : filasPorRa.entrySet()) {
       ModuloImportRowDTO primeraFila = entry.getValue().get(0);
@@ -93,6 +98,7 @@ public class ModuloImportService {
                   .descripcion(primeraFila.raDescripcion().trim())
                   .pesoSugerido(primeraFila.raPeso())
                   .build());
+      savedRas.add(ra);
 
       for (ModuloImportRowDTO fila : entry.getValue()) {
         InstrumentoEvaluacion instrumento =
@@ -112,6 +118,8 @@ public class ModuloImportService {
         totalCes++;
       }
     }
+
+    evaluacionBootstrapService.bootstrapParaRas(modulo, savedRas, cursoAcademicoId);
 
     return totalCes;
   }

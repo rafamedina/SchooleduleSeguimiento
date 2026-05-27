@@ -706,3 +706,19 @@ dialog#moduloResumenModal:not([open]) {
   border-radius: 6px;
   max-width: 320px;
 }
+
+/* ── Pagination ──────────────────────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.pagination__info {
+  font-size: 0.85rem;
+  color: var(--ink-muted, rgba(30, 25, 20, 0.6));
+}

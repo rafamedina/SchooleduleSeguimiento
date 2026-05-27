@@ -63,12 +63,21 @@ public class AdminUsuarioImportController {
     }
     try {
       UsuarioImportResultado resultado = usuarioImportService.importar(archivo.getBytes());
-      redirectAttributes.addFlashAttribute(
-          "exito",
-          resultado.usuariosCreados()
-              + " usuarios creados, "
-              + resultado.matriculasCreadas()
-              + " matrículas generadas");
+      int procesados = resultado.usuariosCreados() + resultado.alumnosAsignados();
+      StringBuilder msg = new StringBuilder();
+      msg.append(resultado.usuariosCreados()).append(" usuarios creados");
+      if (resultado.alumnosAsignados() > 0) {
+        msg.append(", ")
+            .append(resultado.alumnosAsignados())
+            .append(" alumnos existentes asignados a grupo");
+      }
+      msg.append(", ").append(resultado.matriculasCreadas()).append(" matrículas generadas");
+      if (procesados > 0 && resultado.matriculasCreadas() == 0) {
+        msg.append(
+            ". AVISO: el grupo no tiene imparticiones asignadas todavía"
+                + " — crea las imparticiones y usa 'Asignar a grupo' para matricular");
+      }
+      redirectAttributes.addFlashAttribute("exito", msg.toString());
       return "redirect:/admin/usuarios";
     } catch (UsuarioImportException ex) {
       model.addAttribute("errores", ex.getErrores());

@@ -37,6 +37,7 @@ class ModuloImportServiceTest {
   @Mock private CursoAcademicoRepository cursoAcademicoRepository;
   @Mock private ResultadoAprendizajeRepository raRepository;
   @Mock private CriterioEvaluacionRepository ceRepository;
+  @Mock private EvaluacionBootstrapService evaluacionBootstrapService;
 
   @InjectMocks private ModuloImportService importService;
 

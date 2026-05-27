@@ -1,5 +1,7 @@
 package com.tfg.schooledule.infrastructure.controller;
 
+import com.tfg.schooledule.domain.dto.AdminAlumnoListDTO;
+import com.tfg.schooledule.domain.dto.AdminAsignarGrupoFormDTO;
 import com.tfg.schooledule.domain.dto.AdminMatriculaFormDTO;
 import com.tfg.schooledule.domain.dto.AlumnoFiltroDTO;
 import com.tfg.schooledule.domain.enums.EstadoMatricula;
@@ -14,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -71,9 +74,14 @@ public class AdminAlumnoController {
       @RequestParam(required = false) Integer centroId,
       @RequestParam(required = false) Integer grupoId,
       @RequestParam(required = false) Integer cursoAcademicoId,
+      @RequestParam(defaultValue = "0") int page,
       Model model) {
     AlumnoFiltroDTO filtro = new AlumnoFiltroDTO(centroId, grupoId, cursoAcademicoId);
-    model.addAttribute("alumnos", adminAlumnoService.listarFiltrado(filtro));
+    Page<AdminAlumnoListDTO> pagina = adminAlumnoService.listarFiltrado(filtro, page);
+    model.addAttribute("alumnos", pagina.getContent());
+    model.addAttribute("paginaActual", page);
+    model.addAttribute("totalPaginas", pagina.getTotalPages());
+    model.addAttribute("totalAlumnos", pagina.getTotalElements());
     model.addAttribute("centros", centroRepository.findAllByOrderByNombreAsc());
     model.addAttribute("grupos", grupoRepository.findAllByOrderByCentroNombreAscNombreAsc());
     model.addAttribute("cursos", cursoAcademicoRepository.findAllByOrderByNombreAsc());
@@ -254,6 +262,75 @@ public class AdminAlumnoController {
       adminAlumnoService.eliminarMatricula(id);
     } catch (IllegalStateException ex) {
       redirectAttributes.addFlashAttribute("error", ex.getMessage());
+    }
+    return REDIRECT_ALUMNOS + alumnoId + PATH_MATRICULAS;
+  }
+
+  @Operation(
+      summary = "Formulario: asignar alumno a grupo",
+      description =
+          "Muestra el formulario para asignar el alumno a todas las imparticiones de un grupo. "
+              + "Equivale a matricular al alumno en todos los módulos del grupo a la vez.")
+  @ApiResponse(
+      responseCode = "200",
+      description =
+          "Vista HTML: admin/alumnos/asignar-grupo. "
+              + "Modelo: alumno (Usuario), form (AdminAsignarGrupoFormDTO), grupos (List<Grupo>)")
+  @ApiResponse(responseCode = "403", description = "Acceso denegado — requiere ROLE_ADMIN")
+  @GetMapping("/{alumnoId}/asignar-grupo")
+  public String asignarGrupoForm(
+      @Parameter(description = "ID del alumno", required = true, example = "10")
+          @PathVariable
+          @Positive
+          Integer alumnoId,
+      Model model) {
+    model.addAttribute(ATTR_ALUMNO, adminAlumnoService.obtenerAlumno(alumnoId));
+    model.addAttribute("form", new AdminAsignarGrupoFormDTO());
+    model.addAttribute("grupos", grupoRepository.findAllByOrderByCentroNombreAscNombreAsc());
+    model.addAttribute("matriculasActuales", adminAlumnoService.listarMatriculas(alumnoId));
+    return "admin/alumnos/asignar-grupo";
+  }
+
+  @Operation(
+      summary = "Acción: asignar alumno a grupo",
+      description =
+          "Crea una matrícula por cada impartición activa del grupo seleccionado. "
+              + "Las imparticiones en las que el alumno ya esté matriculado se omiten. "
+              + "Con éxito: redirect a /admin/alumnos/{alumnoId}/matriculas.")
+  @ApiResponse(
+      responseCode = "302",
+      description = "Asignación exitosa → redirect a /admin/alumnos/{alumnoId}/matriculas")
+  @ApiResponse(responseCode = "200", description = "Formulario con errores de validación")
+  @ApiResponse(responseCode = "403", description = "Acceso denegado — requiere ROLE_ADMIN")
+  @PostMapping("/{alumnoId}/asignar-grupo")
+  public String asignarGrupo(
+      @Parameter(description = "ID del alumno", required = true, example = "10")
+          @PathVariable
+          @Positive
+          Integer alumnoId,
+      @Valid @ModelAttribute("form") AdminAsignarGrupoFormDTO form,
+      BindingResult bindingResult,
+      Model model,
+      RedirectAttributes redirectAttributes) {
+    if (bindingResult.hasErrors()) {
+      model.addAttribute(ATTR_ALUMNO, adminAlumnoService.obtenerAlumno(alumnoId));
+      model.addAttribute("grupos", grupoRepository.findAllByOrderByCentroNombreAscNombreAsc());
+      model.addAttribute("matriculasActuales", adminAlumnoService.listarMatriculas(alumnoId));
+      return "admin/alumnos/asignar-grupo";
+    }
+    try {
+      int created = adminAlumnoService.asignarGrupo(alumnoId, form);
+      redirectAttributes.addFlashAttribute(
+          "exito",
+          created > 0
+              ? created + " matrículas generadas correctamente"
+              : "El alumno ya estaba matriculado en todos los módulos de ese grupo");
+    } catch (IllegalArgumentException ex) {
+      model.addAttribute(ATTR_ALUMNO, adminAlumnoService.obtenerAlumno(alumnoId));
+      model.addAttribute("grupos", grupoRepository.findAllByOrderByCentroNombreAscNombreAsc());
+      model.addAttribute("matriculasActuales", adminAlumnoService.listarMatriculas(alumnoId));
+      model.addAttribute("error", ex.getMessage());
+      return "admin/alumnos/asignar-grupo";
     }
     return REDIRECT_ALUMNOS + alumnoId + PATH_MATRICULAS;
   }
