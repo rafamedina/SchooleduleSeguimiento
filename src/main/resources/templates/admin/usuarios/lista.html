@@ -59,32 +59,25 @@
               <option
                 value="true"
                 th:selected="${filtro != null and filtro.activo() != null and filtro.activo()}"
-              >
-                Solo activos
-              </option>
+              >Solo activos</option>
               <option
                 value="false"
                 th:selected="${filtro != null and filtro.activo() != null and !filtro.activo()}"
-              >
-                Solo inactivos
-              </option>
+              >Solo inactivos</option>
             </select>
             <button type="submit" class="btn btn-secondary btn-sm">
               Filtrar
             </button>
             <a th:href="@{/admin/usuarios}" class="btn btn-sm">Limpiar</a>
-          </form>
-
-          <div style="margin-bottom: 0.75rem">
+            <div class="filter-bar__sep"></div>
             <input
               id="buscar-nombre"
-              type="text"
-              class="form-control"
+              type="search"
               placeholder="Buscar por nombre…"
               autocomplete="off"
-              style="max-width: 320px"
+              onkeydown="if(event.key==='Enter') event.preventDefault()"
             />
-          </div>
+          </form>
 
           <div th:if="${#lists.isEmpty(usuarios)}" class="empty-state">
             <p>No hay usuarios registrados.</p>
@@ -143,24 +136,17 @@
     </div>
     <script>
       (function () {
-        const normalize = (s) =>
-          s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-
-        const input = document.getElementById("buscar-nombre");
+        function norm(s) {
+          return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+        }
+        var input = document.getElementById("buscar-nombre");
         if (!input) return;
-
         input.addEventListener("input", function () {
-          const query = normalize(this.value.trim());
-          const rows = document.querySelectorAll("table tbody tr");
-          let visible = 0;
-          rows.forEach((row) => {
-            // columna 1 = nombre+apellidos, columna 0 = username
-            const nombre = normalize(row.cells[1]?.textContent ?? "");
-            const username = normalize(row.cells[0]?.textContent ?? "");
-            const match =
-              !query || nombre.includes(query) || username.includes(query);
-            row.style.display = match ? "" : "none";
-            if (match) visible++;
+          var q = norm(this.value.trim());
+          document.querySelectorAll("table tbody tr").forEach(function (row) {
+            var nombre   = norm(row.cells[1] ? row.cells[1].textContent : "");
+            var username = norm(row.cells[0] ? row.cells[0].textContent : "");
+            row.style.display = (!q || nombre.includes(q) || username.includes(q)) ? "" : "none";
           });
         });
       })();
