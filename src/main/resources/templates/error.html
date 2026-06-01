@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title th:text="'Error ' + ${status} + ' — Schooledule'">
+      Error — Schooledule
+    </title>
+    <link rel="stylesheet" th:href="@{/css/login.css}" />
+    <style>
+      .error-card {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 3rem 2rem;
+        text-align: center;
+      }
+      .error-card__code {
+        font-size: 5rem;
+        font-weight: 900;
+        line-height: 1;
+        margin: 0 0 0.5rem;
+        opacity: 0.15;
+      }
+      .error-card__title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0 0 0.75rem;
+      }
+      .error-card__msg {
+        color: #666;
+        margin: 0 0 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-shell">
+      <aside class="login-aside" aria-hidden="true">
+        <span class="aside-word">Schoo&shy;ledule</span>
+        <span class="aside-sub">Plataforma académica</span>
+      </aside>
+      <main class="login-main">
+        <div class="login-card error-card">
+          <p class="error-card__code" th:text="${status}">Error</p>
+          <h1 class="error-card__title" th:text="${error}">
+            Ha ocurrido un error
+          </h1>
+          <p
+            class="error-card__msg"
+            th:text="${message != null and !message.isBlank() ? message : 'Vuelve al inicio e inténtalo de nuevo.'}"
+          >
+            Vuelve al inicio e inténtalo de nuevo.
+          </p>
+          <a
+            th:href="@{/login}"
+            class="login-form__submit"
+            style="display: inline-block; text-decoration: none"
+          >
+            Volver al inicio
+          </a>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

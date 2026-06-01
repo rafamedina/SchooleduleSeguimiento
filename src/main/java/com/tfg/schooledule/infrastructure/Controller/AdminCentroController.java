@@ -46,9 +46,13 @@ public class AdminCentroController {
       description = "Vista HTML: admin/centros/lista. Modelo: centros (List<AdminCentroListDTO>)")
   @ApiResponse(responseCode = "403", description = "Acceso denegado — requiere ROLE_ADMIN")
   @GetMapping
-  public String lista(@RequestParam(required = false) String nombre, Model model) {
-    model.addAttribute("centros", adminCentroService.listarFiltrado(nombre));
+  public String lista(
+      @RequestParam(required = false) String nombre,
+      @RequestParam(required = false) Boolean activo,
+      Model model) {
+    model.addAttribute("centros", adminCentroService.listarFiltrado(nombre, activo));
     model.addAttribute("nombre", nombre);
+    model.addAttribute("activo", activo);
     return "admin/centros/lista";
   }
 

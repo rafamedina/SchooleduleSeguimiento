@@ -26,7 +26,11 @@ class SecurityConfigTest {
   @Test
   @WithMockUser(roles = "ALUMNO")
   void testAdminPathIsForbiddenForAlumno() throws Exception {
-    mockMvc.perform(get("/admin/dashboard")).andExpect(status().isForbidden());
+    // accessDeniedHandler redirige a /login?denied en lugar de devolver 403
+    mockMvc
+        .perform(get("/admin/dashboard"))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(header().string("Location", "/login?denied"));
   }
 
   @Test
@@ -42,9 +46,11 @@ class SecurityConfigTest {
 
   @Test
   void testLoginPostRequiresCsrf() throws Exception {
+    // Sin token CSRF el accessDeniedHandler redirige a /login?denied
     mockMvc
         .perform(post("/login").param("username", "test").param("password", "test"))
-        .andExpect(status().isForbidden());
+        .andExpect(status().is3xxRedirection())
+        .andExpect(header().string("Location", "/login?denied"));
   }
 
   @Test
@@ -83,19 +89,29 @@ class SecurityConfigTest {
   @Test
   @WithMockUser(roles = "ADMIN")
   void snapAdminDenyAll_conAdmin_retorna403() throws Exception {
-    mockMvc.perform(get("/snap-admin/")).andExpect(status().isForbidden());
+    // denyAll() + accessDeniedHandler → redirige a /login?denied
+    mockMvc
+        .perform(get("/snap-admin/"))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(header().string("Location", "/login?denied"));
   }
 
   @Test
   @WithMockUser(roles = "ADMIN_CENTRO")
   void adminModulos_403_paraAdminCentro() throws Exception {
-    mockMvc.perform(get("/admin/modulos")).andExpect(status().isForbidden());
+    mockMvc
+        .perform(get("/admin/modulos"))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(header().string("Location", "/login?denied"));
   }
 
   @Test
   @WithMockUser(roles = "ADMIN_CENTRO")
   void adminCentros_403_paraAdminCentro() throws Exception {
-    mockMvc.perform(get("/admin/centros")).andExpect(status().isForbidden());
+    mockMvc
+        .perform(get("/admin/centros"))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(header().string("Location", "/login?denied"));
   }
 
   @Test

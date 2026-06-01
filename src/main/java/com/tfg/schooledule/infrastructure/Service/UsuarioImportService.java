@@ -43,6 +43,7 @@ public class UsuarioImportService {
   private final ImparticionRepository imparticionRepository;
   private final MatriculaRepository matriculaRepository;
   private final PasswordEncoder passwordEncoder;
+  private final EmailService emailService;
 
   public UsuarioImportService(
       UsuarioExcelParserService parser,
@@ -54,7 +55,8 @@ public class UsuarioImportService {
       RolRepository rolRepository,
       ImparticionRepository imparticionRepository,
       MatriculaRepository matriculaRepository,
-      PasswordEncoder passwordEncoder) {
+      PasswordEncoder passwordEncoder,
+      EmailService emailService) {
     this.parser = parser;
     this.validator = validator;
     this.centroRepository = centroRepository;
@@ -65,6 +67,7 @@ public class UsuarioImportService {
     this.imparticionRepository = imparticionRepository;
     this.matriculaRepository = matriculaRepository;
     this.passwordEncoder = passwordEncoder;
+    this.emailService = emailService;
   }
 
   public UsuarioImportResultado importar(byte[] bytes) {
@@ -171,19 +174,23 @@ public class UsuarioImportService {
     Set<Rol> roles = new HashSet<>();
     roles.add(rolAlumno);
 
+    String plainPassword = fr.fila().password();
+
     Usuario usuario =
         Usuario.builder()
             .username(fr.fila().username())
             .nombre(fr.fila().nombre())
             .apellidos(fr.fila().apellidos())
             .email(fr.fila().email())
-            .passwordHash(passwordEncoder.encode(fr.fila().password()))
+            .passwordHash(passwordEncoder.encode(plainPassword))
             .activo(true)
             .mustChangePassword(true)
             .roles(roles)
             .build();
 
-    return usuarioRepository.save(usuario);
+    Usuario guardado = usuarioRepository.save(usuario);
+    emailService.enviarBienvenida(fr.fila().email(), fr.fila().username(), plainPassword);
+    return guardado;
   }
 
   private int matricularEnGrupo(Usuario usuario, Grupo grupo, String esRepetidorRaw) {

@@ -64,8 +64,11 @@ class ProfeControllerIntegrationTest {
   @Test
   @WithMockUser(roles = "ALUMNO")
   void rolAlumno_accedeAProfe_retorna403() throws Exception {
-    // Un usuario con ROLE_ALUMNO no puede entrar en /profe/**
-    mockMvc.perform(get("/profe/dashboard")).andExpect(status().isForbidden());
+    // AccessDeniedHandler redirige a /login?denied en lugar de devolver 403
+    mockMvc
+        .perform(get("/profe/dashboard"))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrl("/login?denied"));
   }
 
   @Test

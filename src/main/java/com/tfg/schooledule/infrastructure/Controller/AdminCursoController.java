@@ -45,8 +45,11 @@ public class AdminCursoController {
       description = "Vista HTML: admin/cursos/lista. Modelo: cursos (List<AdminCursoListDTO>)")
   @ApiResponse(responseCode = "403", description = "Acceso denegado — requiere ROLE_ADMIN")
   @GetMapping
-  public String lista(Model model) {
-    model.addAttribute("cursos", adminCursoService.listarTodos());
+  public String lista(
+      @org.springframework.web.bind.annotation.RequestParam(required = false) String estado,
+      Model model) {
+    model.addAttribute("cursos", adminCursoService.listarFiltrado(estado));
+    model.addAttribute("estadoFiltro", estado);
     return "admin/cursos/lista";
   }
 

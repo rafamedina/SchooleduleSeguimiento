@@ -53,6 +53,7 @@ class UsuarioImportServiceTest {
   @Mock private ImparticionRepository imparticionRepository;
   @Mock private MatriculaRepository matriculaRepository;
   @Mock private PasswordEncoder passwordEncoder;
+  @Mock private EmailService emailService;
 
   @InjectMocks private UsuarioImportService service;
 

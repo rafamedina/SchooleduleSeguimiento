@@ -52,6 +52,17 @@
             <a th:href="@{/admin/alumnos}" class="btn btn-sm">Limpiar</a>
           </form>
 
+          <div style="margin-bottom: 0.75rem">
+            <input
+              id="buscar-nombre"
+              type="text"
+              class="form-control"
+              placeholder="Buscar por nombre o apellidos…"
+              autocomplete="off"
+              style="max-width: 320px"
+            />
+          </div>
+
           <div th:if="${#lists.isEmpty(alumnos)}" class="empty-state">
             <p>No hay alumnos registrados.</p>
           </div>
@@ -119,5 +130,26 @@
         </div>
       </main>
     </div>
+    <script>
+      (function () {
+        const normalize = (s) =>
+          s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+        const input = document.getElementById("buscar-nombre");
+        if (!input) return;
+
+        input.addEventListener("input", function () {
+          const query = normalize(this.value.trim());
+          const rows = document.querySelectorAll("table tbody tr");
+          rows.forEach((row) => {
+            const apellidos = normalize(row.cells[0]?.textContent ?? "");
+            const nombre = normalize(row.cells[1]?.textContent ?? "");
+            const match =
+              !query || apellidos.includes(query) || nombre.includes(query);
+            row.style.display = match ? "" : "none";
+          });
+        });
+      })();
+    </script>
   </body>
 </html>

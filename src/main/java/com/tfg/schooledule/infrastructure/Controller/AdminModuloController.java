@@ -57,9 +57,13 @@ public class AdminModuloController {
   @ApiResponse(responseCode = "200", description = "Vista HTML: admin/modulos/lista")
   @ApiResponse(responseCode = "403", description = "Acceso denegado — requiere ROLE_ADMIN")
   @GetMapping
-  public String lista(@RequestParam(required = false) String nombre, Model model) {
-    model.addAttribute("modulos", adminModuloService.listarFiltrado(nombre));
+  public String lista(
+      @RequestParam(required = false) String nombre,
+      @RequestParam(required = false) Boolean activo,
+      Model model) {
+    model.addAttribute("modulos", adminModuloService.listarFiltrado(nombre, activo));
     model.addAttribute("nombre", nombre);
+    model.addAttribute("activo", activo);
     return "admin/modulos/lista";
   }
 

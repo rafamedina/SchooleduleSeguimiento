@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bienvenido/a a Schooledule</title>
+  </head>
+  <body
+    style="margin: 0; padding: 0; background: #f5f5f5; font-family: sans-serif"
+  >
+    <table
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      style="background: #f5f5f5; padding: 32px 0"
+    >
+      <tr>
+        <td align="center">
+          <table
+            width="560"
+            cellpadding="0"
+            cellspacing="0"
+            style="
+              background: #ffffff;
+              border-radius: 8px;
+              overflow: hidden;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            "
+          >
+            <!-- Cabecera -->
+            <tr>
+              <td style="background: #1a1a2e; padding: 28px 36px">
+                <span
+                  style="
+                    color: #ffffff;
+                    font-size: 1.25rem;
+                    font-weight: 700;
+                    letter-spacing: -0.02em;
+                  "
+                >
+                  Schooledule
+                </span>
+              </td>
+            </tr>
+            <!-- Cuerpo -->
+            <tr>
+              <td style="padding: 36px 36px 24px">
+                <h1
+                  style="margin: 0 0 12px; font-size: 1.35rem; color: #1a1a2e"
+                >
+                  Bienvenido/a a Schooledule
+                </h1>
+                <p style="margin: 0 0 24px; color: #444; line-height: 1.6">
+                  Tu cuenta ha sido creada. A continuación encontrarás tus
+                  credenciales de acceso:
+                </p>
+
+                <table
+                  cellpadding="10"
+                  cellspacing="0"
+                  width="100%"
+                  style="
+                    border: 1px solid #e5e7eb;
+                    border-radius: 6px;
+                    margin-bottom: 24px;
+                  "
+                >
+                  <tr>
+                    <td style="color: #666; font-size: 0.875rem; width: 120px">
+                      Usuario
+                    </td>
+                    <td
+                      style="font-weight: 600; color: #1a1a2e"
+                      th:text="${username}"
+                    >
+                      usuario
+                    </td>
+                  </tr>
+                  <tr style="border-top: 1px solid #e5e7eb">
+                    <td style="color: #666; font-size: 0.875rem">Contraseña</td>
+                    <td
+                      style="
+                        font-weight: 600;
+                        color: #1a1a2e;
+                        font-family: monospace;
+                      "
+                      th:text="${password}"
+                    >
+                      contraseña
+                    </td>
+                  </tr>
+                </table>
+
+                <a
+                  th:href="${loginUrl}"
+                  style="
+                    display: inline-block;
+                    background: #1a1a2e;
+                    color: #ffffff;
+                    padding: 12px 24px;
+                    border-radius: 6px;
+                    text-decoration: none;
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                  "
+                >
+                  Acceder ahora
+                </a>
+              </td>
+            </tr>
+            <!-- Aviso seguridad -->
+            <tr>
+              <td style="padding: 0 36px 28px">
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 0.8rem;
+                    color: #888;
+                    border-top: 1px solid #e5e7eb;
+                    padding-top: 20px;
+                    line-height: 1.5;
+                  "
+                >
+                  Por seguridad, se te pedirá que cambies tu contraseña la
+                  primera vez que inicies sesión. No compartas tus credenciales
+                  con nadie.<br />
+                  Este mensaje ha sido generado automáticamente; no respondas a
+                  este correo.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

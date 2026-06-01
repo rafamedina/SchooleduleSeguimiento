@@ -7,6 +7,7 @@ import com.tfg.schooledule.infrastructure.mapper.AdminCursoMapper;
 import com.tfg.schooledule.infrastructure.repository.CursoAcademicoRepository;
 import com.tfg.schooledule.infrastructure.repository.GrupoRepository;
 import jakarta.persistence.EntityNotFoundException;
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +32,14 @@ public class AdminCursoService {
 
   @Transactional(readOnly = true)
   public List<AdminCursoListDTO> listarTodos() {
+    return listarFiltrado(null);
+  }
+
+  @Transactional(readOnly = true)
+  public List<AdminCursoListDTO> listarFiltrado(String estado) {
     return cursoAcademicoRepository.findAllByOrderByFechaInicioDesc().stream()
+        .filter(
+            c -> estado == null || estado.isBlank() || estado.equalsIgnoreCase(calcularEstado(c)))
         .map(
             c ->
                 new AdminCursoListDTO(
@@ -42,6 +50,12 @@ public class AdminCursoService {
                     c.getActivo(),
                     (int) grupoRepository.countByCursoAcademicoId(c.getId())))
         .toList();
+  }
+
+  private String calcularEstado(CursoAcademico c) {
+    if (Boolean.TRUE.equals(c.getActivo())) return "activo";
+    if (c.getFechaFin() != null && c.getFechaFin().isBefore(LocalDate.now())) return "cerrado";
+    return "pendiente";
   }
 
   @Transactional(readOnly = true)

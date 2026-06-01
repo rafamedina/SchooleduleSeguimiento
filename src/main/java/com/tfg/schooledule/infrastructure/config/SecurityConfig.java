@@ -103,6 +103,11 @@ public class SecurityConfig {
                     .changeSessionId()
                     .maximumSessions(1)
                     .expiredUrl("/login?expired"))
+        .exceptionHandling(
+            ex ->
+                ex.accessDeniedHandler(
+                    (request, response, accessDeniedException) ->
+                        response.sendRedirect(request.getContextPath() + "/login?denied")))
         .headers(
             headers ->
                 headers

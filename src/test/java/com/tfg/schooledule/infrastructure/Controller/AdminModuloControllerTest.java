@@ -83,7 +83,7 @@ class AdminModuloControllerTest {
   @Test
   @WithMockUser(roles = "ADMIN")
   void lista_conAdmin_200_retornaVista() throws Exception {
-    when(adminModuloService.listarFiltrado(any())).thenReturn(Collections.emptyList());
+    when(adminModuloService.listarFiltrado(any(), any())).thenReturn(Collections.emptyList());
 
     mockMvc
         .perform(get("/admin/modulos"))
