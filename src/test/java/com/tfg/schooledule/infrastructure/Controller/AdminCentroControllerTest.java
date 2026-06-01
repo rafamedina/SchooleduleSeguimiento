@@ -57,7 +57,7 @@ class AdminCentroControllerTest {
   @Test
   @WithMockUser(roles = "ADMIN")
   void lista_conAdmin_200_retornaVista() throws Exception {
-    when(adminCentroService.listarFiltrado(any())).thenReturn(Collections.emptyList());
+    when(adminCentroService.listarFiltrado(any(), any())).thenReturn(Collections.emptyList());
 
     mockMvc
         .perform(get("/admin/centros"))

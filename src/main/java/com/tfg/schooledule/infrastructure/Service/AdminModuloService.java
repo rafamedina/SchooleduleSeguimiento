@@ -62,12 +62,17 @@ public class AdminModuloService {
   }
 
   @Transactional(readOnly = true)
-  public List<AdminModuloListDTO> listarFiltrado(String nombre) {
-    List<Modulo> modulos =
-        (nombre == null || nombre.isBlank())
-            ? moduloRepository.findAllByOrderByNombreAsc()
-            : moduloRepository.findByNombreContaining(nombre);
-    return modulos.stream().map(this::toListDTO).toList();
+  public List<AdminModuloListDTO> listarFiltrado(String nombre, Boolean activo) {
+    return moduloRepository.findAllByOrderByNombreAsc().stream()
+        .filter(
+            m ->
+                nombre == null
+                    || nombre.isBlank()
+                    || m.getNombre().toLowerCase().contains(nombre.toLowerCase())
+                    || m.getCodigo().toLowerCase().contains(nombre.toLowerCase()))
+        .filter(m -> activo == null || activo.equals(m.getActivo()))
+        .map(this::toListDTO)
+        .toList();
   }
 
   @Transactional

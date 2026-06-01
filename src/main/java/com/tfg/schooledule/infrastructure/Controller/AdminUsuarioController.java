@@ -1,6 +1,7 @@
 package com.tfg.schooledule.infrastructure.controller;
 
 import com.tfg.schooledule.domain.dto.AdminUsuarioFormDTO;
+import com.tfg.schooledule.domain.dto.UsuarioFiltroDTO;
 import com.tfg.schooledule.infrastructure.repository.CentroRepository;
 import com.tfg.schooledule.infrastructure.repository.RolRepository;
 import com.tfg.schooledule.infrastructure.service.AdminUsuarioService;
@@ -58,12 +59,16 @@ public class AdminUsuarioController {
   @GetMapping
   public String lista(
       @org.springframework.web.bind.annotation.RequestParam(required = false) String rolNombre,
+      @org.springframework.web.bind.annotation.RequestParam(required = false) Integer centroId,
+      @org.springframework.web.bind.annotation.RequestParam(required = false) Boolean activo,
       Model model) {
-    model.addAttribute("usuarios", adminUsuarioService.listarFiltrado(rolNombre));
+    UsuarioFiltroDTO filtro = new UsuarioFiltroDTO(rolNombre, centroId, activo);
+    model.addAttribute("usuarios", adminUsuarioService.listarFiltrado(filtro));
     model.addAttribute(
         ATTR_ROLES,
         java.util.List.of("ROLE_ADMIN", "ROLE_PROFESOR", "ROLE_ALUMNO", "ROLE_ADMIN_CENTRO"));
-    model.addAttribute("rolNombre", rolNombre);
+    model.addAttribute(ATTR_CENTROS, centroRepository.findAll());
+    model.addAttribute("filtro", filtro);
     return "admin/usuarios/lista";
   }
 

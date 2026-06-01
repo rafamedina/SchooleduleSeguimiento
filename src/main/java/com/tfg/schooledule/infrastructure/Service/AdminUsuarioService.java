@@ -3,6 +3,7 @@ package com.tfg.schooledule.infrastructure.service;
 import com.tfg.schooledule.domain.dto.AdminUsuarioFormDTO;
 import com.tfg.schooledule.domain.dto.AdminUsuarioListDTO;
 import com.tfg.schooledule.domain.dto.DashboardStatsDTO;
+import com.tfg.schooledule.domain.dto.UsuarioFiltroDTO;
 import com.tfg.schooledule.domain.entity.Centro;
 import com.tfg.schooledule.domain.entity.Rol;
 import com.tfg.schooledule.domain.entity.Usuario;
@@ -34,6 +35,7 @@ public class AdminUsuarioService {
   private final PasswordEncoder passwordEncoder;
   private final MatriculaRepository matriculaRepository;
   private final ImparticionRepository imparticionRepository;
+  private final EmailService emailService;
 
   public AdminUsuarioService(
       UsuarioRepository usuarioRepository,
@@ -43,7 +45,8 @@ public class AdminUsuarioService {
       AdminUsuarioMapper adminUsuarioMapper,
       PasswordEncoder passwordEncoder,
       MatriculaRepository matriculaRepository,
-      ImparticionRepository imparticionRepository) {
+      ImparticionRepository imparticionRepository,
+      EmailService emailService) {
     this.usuarioRepository = usuarioRepository;
     this.rolRepository = rolRepository;
     this.centroRepository = centroRepository;
@@ -52,6 +55,7 @@ public class AdminUsuarioService {
     this.passwordEncoder = passwordEncoder;
     this.matriculaRepository = matriculaRepository;
     this.imparticionRepository = imparticionRepository;
+    this.emailService = emailService;
   }
 
   @Transactional(readOnly = true)
@@ -62,13 +66,19 @@ public class AdminUsuarioService {
   }
 
   @Transactional(readOnly = true)
-  public List<AdminUsuarioListDTO> listarFiltrado(String rolNombre) {
-    if (rolNombre == null || rolNombre.isBlank()) {
-      return usuarioRepository.findAllByOrderByApellidosAscNombreAsc().stream()
-          .map(adminUsuarioMapper::toListDTO)
-          .toList();
-    }
-    return usuarioRepository.findByRol(rolNombre).stream()
+  public List<AdminUsuarioListDTO> listarFiltrado(UsuarioFiltroDTO filtro) {
+    return usuarioRepository.findAllByOrderByApellidosAscNombreAsc().stream()
+        .filter(
+            u ->
+                filtro.rolNombre() == null
+                    || filtro.rolNombre().isBlank()
+                    || u.getRoles().stream()
+                        .anyMatch(r -> r.getNombre().equals(filtro.rolNombre())))
+        .filter(
+            u ->
+                filtro.centroId() == null
+                    || u.getCentros().stream().anyMatch(c -> c.getId().equals(filtro.centroId())))
+        .filter(u -> filtro.activo() == null || filtro.activo().equals(u.getActivo()))
         .map(adminUsuarioMapper::toListDTO)
         .toList();
   }
@@ -97,13 +107,15 @@ public class AdminUsuarioService {
     List<Rol> roles = rolRepository.findAllById(dto.getRoleIds());
     List<Centro> centros = centroRepository.findAllById(dto.getCentroIds());
 
+    String plainPassword = dto.getPassword();
+
     Usuario usuario =
         Usuario.builder()
             .username(dto.getUsername())
             .nombre(dto.getNombre())
             .apellidos(dto.getApellidos())
             .email(dto.getEmail())
-            .passwordHash(passwordEncoder.encode(dto.getPassword()))
+            .passwordHash(passwordEncoder.encode(plainPassword))
             .activo(true)
             .mustChangePassword(true)
             .roles(new HashSet<>(roles))
@@ -111,6 +123,7 @@ public class AdminUsuarioService {
             .build();
 
     usuarioRepository.save(usuario);
+    emailService.enviarBienvenida(dto.getEmail(), dto.getUsername(), plainPassword);
   }
 
   @Transactional

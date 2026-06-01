@@ -45,11 +45,16 @@ public class AdminCentroService {
   }
 
   @Transactional(readOnly = true)
-  public List<AdminCentroListDTO> listarFiltrado(String nombre) {
-    if (nombre == null || nombre.isBlank()) {
-      return centroRepository.findAllByOrderByNombreAsc().stream().map(this::toListDTO).toList();
-    }
-    return centroRepository.findByNombreContaining(nombre).stream().map(this::toListDTO).toList();
+  public List<AdminCentroListDTO> listarFiltrado(String nombre, Boolean activo) {
+    return centroRepository.findAllByOrderByNombreAsc().stream()
+        .filter(
+            c ->
+                nombre == null
+                    || nombre.isBlank()
+                    || c.getNombre().toLowerCase().contains(nombre.toLowerCase()))
+        .filter(c -> activo == null || activo.equals(c.getActivo()))
+        .map(this::toListDTO)
+        .toList();
   }
 
   @Transactional(readOnly = true)

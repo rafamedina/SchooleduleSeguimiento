@@ -59,6 +59,14 @@
             Tu cuenta no tiene ningún rol asignado. Contacta con el
             administrador.
           </div>
+          <div
+            th:if="${param.denied}"
+            class="login-alert login-alert--error"
+            role="alert"
+          >
+            No tienes permiso para acceder a esa página. Inicia sesión con una
+            cuenta autorizada.
+          </div>
 
           <!-- Formulario -->
           <form

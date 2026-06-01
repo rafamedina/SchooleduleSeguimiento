@@ -25,6 +25,31 @@
         </div>
 
         <div class="animate-in">
+          <form method="get" action="/admin/cursos" class="filter-bar">
+            <select name="estado">
+              <option value="">Todos los estados</option>
+              <option value="activo" th:selected="${estadoFiltro == 'activo'}">
+                Activo
+              </option>
+              <option
+                value="pendiente"
+                th:selected="${estadoFiltro == 'pendiente'}"
+              >
+                Pendiente
+              </option>
+              <option
+                value="cerrado"
+                th:selected="${estadoFiltro == 'cerrado'}"
+              >
+                Cerrado
+              </option>
+            </select>
+            <button type="submit" class="btn btn-secondary btn-sm">
+              Filtrar
+            </button>
+            <a th:href="@{/admin/cursos}" class="btn btn-sm">Limpiar</a>
+          </form>
+
           <div
             th:if="${error}"
             class="alert alert-danger"

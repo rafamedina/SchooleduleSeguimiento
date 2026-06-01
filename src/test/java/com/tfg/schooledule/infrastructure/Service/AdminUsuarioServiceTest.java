@@ -38,6 +38,7 @@ class AdminUsuarioServiceTest {
   @Mock private PasswordEncoder passwordEncoder;
   @Mock private MatriculaRepository matriculaRepository;
   @Mock private ImparticionRepository imparticionRepository;
+  @Mock private EmailService emailService;
 
   @InjectMocks private AdminUsuarioService adminUsuarioService;
 

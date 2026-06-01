@@ -42,14 +42,49 @@
                 th:each="r : ${roles}"
                 th:value="${r}"
                 th:text="${r}"
-                th:selected="${rolNombre != null and rolNombre == r}"
+                th:selected="${filtro != null and filtro.rolNombre() != null and filtro.rolNombre() == r}"
               ></option>
+            </select>
+            <select name="centroId">
+              <option value="">Todos los centros</option>
+              <option
+                th:each="c : ${centros}"
+                th:value="${c.id}"
+                th:text="${c.nombre}"
+                th:selected="${filtro != null and filtro.centroId() != null and filtro.centroId() == c.id}"
+              ></option>
+            </select>
+            <select name="activo">
+              <option value="">Activos e inactivos</option>
+              <option
+                value="true"
+                th:selected="${filtro != null and filtro.activo() != null and filtro.activo()}"
+              >
+                Solo activos
+              </option>
+              <option
+                value="false"
+                th:selected="${filtro != null and filtro.activo() != null and !filtro.activo()}"
+              >
+                Solo inactivos
+              </option>
             </select>
             <button type="submit" class="btn btn-secondary btn-sm">
               Filtrar
             </button>
             <a th:href="@{/admin/usuarios}" class="btn btn-sm">Limpiar</a>
           </form>
+
+          <div style="margin-bottom: 0.75rem">
+            <input
+              id="buscar-nombre"
+              type="text"
+              class="form-control"
+              placeholder="Buscar por nombre…"
+              autocomplete="off"
+              style="max-width: 320px"
+            />
+          </div>
 
           <div th:if="${#lists.isEmpty(usuarios)}" class="empty-state">
             <p>No hay usuarios registrados.</p>
@@ -106,5 +141,29 @@
         </div>
       </main>
     </div>
+    <script>
+      (function () {
+        const normalize = (s) =>
+          s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+        const input = document.getElementById("buscar-nombre");
+        if (!input) return;
+
+        input.addEventListener("input", function () {
+          const query = normalize(this.value.trim());
+          const rows = document.querySelectorAll("table tbody tr");
+          let visible = 0;
+          rows.forEach((row) => {
+            // columna 1 = nombre+apellidos, columna 0 = username
+            const nombre = normalize(row.cells[1]?.textContent ?? "");
+            const username = normalize(row.cells[0]?.textContent ?? "");
+            const match =
+              !query || nombre.includes(query) || username.includes(query);
+            row.style.display = match ? "" : "none";
+            if (match) visible++;
+          });
+        });
+      })();
+    </script>
   </body>
 </html>
