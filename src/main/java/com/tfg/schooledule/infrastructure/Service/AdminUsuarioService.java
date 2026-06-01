@@ -15,6 +15,7 @@ import com.tfg.schooledule.infrastructure.repository.MatriculaRepository;
 import com.tfg.schooledule.infrastructure.repository.RolRepository;
 import com.tfg.schooledule.infrastructure.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
+import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.List;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -70,6 +71,13 @@ public class AdminUsuarioService {
     return usuarioRepository.findAllByOrderByApellidosAscNombreAsc().stream()
         .filter(
             u ->
+                filtro.nombre() == null
+                    || filtro.nombre().isBlank()
+                    || norm(u.getNombre() + " " + u.getApellidos()).contains(norm(filtro.nombre()))
+                    || norm(u.getApellidos() + " " + u.getNombre()).contains(norm(filtro.nombre()))
+                    || norm(u.getUsername()).contains(norm(filtro.nombre())))
+        .filter(
+            u ->
                 filtro.rolNombre() == null
                     || filtro.rolNombre().isBlank()
                     || u.getRoles().stream()
@@ -81,6 +89,13 @@ public class AdminUsuarioService {
         .filter(u -> filtro.activo() == null || filtro.activo().equals(u.getActivo()))
         .map(adminUsuarioMapper::toListDTO)
         .toList();
+  }
+
+  private static String norm(String s) {
+    if (s == null) return "";
+    return Normalizer.normalize(s, Normalizer.Form.NFD)
+        .replaceAll("\\p{InCombiningDiacriticalMarks}", "")
+        .toLowerCase();
   }
 
   @Transactional(readOnly = true)

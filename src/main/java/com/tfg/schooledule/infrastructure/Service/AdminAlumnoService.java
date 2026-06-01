@@ -66,8 +66,13 @@ public class AdminAlumnoService {
   @Transactional(readOnly = true)
   public Page<AdminAlumnoListDTO> listarFiltrado(AlumnoFiltroDTO filtro, int numeroPagina) {
     PageRequest pageable = PageRequest.of(numeroPagina, TAMANIO_PAGINA);
+    String nombre =
+        (filtro.nombre() != null && !filtro.nombre().isBlank()) ? filtro.nombre() : null;
     boolean hayFiltro =
-        filtro.centroId() != null || filtro.grupoId() != null || filtro.cursoAcademicoId() != null;
+        filtro.centroId() != null
+            || filtro.grupoId() != null
+            || filtro.cursoAcademicoId() != null
+            || nombre != null;
     if (!hayFiltro) {
       return usuarioRepository.findAllAlumnosOrdenados(pageable).map(this::toListDTO);
     }
@@ -76,7 +81,7 @@ public class AdminAlumnoService {
             ? filtro.cursoAcademicoId()
             : cursoActivoService.getCursoActivoId();
     return usuarioRepository
-        .findAlumnosByFiltro(filtro.centroId(), filtro.grupoId(), cursoId, pageable)
+        .findAlumnosByFiltro(filtro.centroId(), filtro.grupoId(), cursoId, nombre, pageable)
         .map(this::toListDTO);
   }
 
