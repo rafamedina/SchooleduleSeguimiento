@@ -1,12 +1,12 @@
 package com.tfg.schooledule.infrastructure.service;
 
-import jakarta.mail.internet.MimeMessage;
+import com.resend.Resend;
+import com.resend.core.exception.ResendException;
+import com.resend.services.emails.model.CreateEmailOptions;
 import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
@@ -17,18 +17,19 @@ public class EmailService {
 
   private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 
-  private final JavaMailSender mailSender;
   private final SpringTemplateEngine templateEngine;
+  private final Resend resend;
 
-  @Value("${app.mail.from:no-reply@schooledule.com}")
+  @Value("${app.mail.from:Schooledule <no-reply@schooledule.com>}")
   private String fromAddress;
 
-  @Value("${app.base-url:http://localhost:8080}")
+  @Value("${app.base-url:https://schooledule.up.railway.app}")
   private String baseUrl;
 
-  public EmailService(JavaMailSender mailSender, SpringTemplateEngine templateEngine) {
-    this.mailSender = mailSender;
+  public EmailService(
+      @Value("${resend.api-key:}") String apiKey, SpringTemplateEngine templateEngine) {
     this.templateEngine = templateEngine;
+    this.resend = new Resend(apiKey);
   }
 
   @Async
@@ -41,16 +42,16 @@ public class EmailService {
 
       String html = templateEngine.process("email/bienvenida", ctx);
 
-      MimeMessage message = mailSender.createMimeMessage();
-      MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-      helper.setFrom(fromAddress);
-      helper.setTo(destinatario);
-      helper.setSubject("Bienvenido/a a Schooledule — tus credenciales de acceso");
-      helper.setText(html, true);
+      CreateEmailOptions params =
+          CreateEmailOptions.builder()
+              .from(fromAddress)
+              .to(destinatario)
+              .subject("Bienvenido/a a Schooledule — tus credenciales de acceso")
+              .html(html)
+              .build();
 
-      mailSender.send(message);
-    } catch (Exception e) {
-      // El fallo de email nunca interrumpe la creación del usuario
+      resend.emails().send(params);
+    } catch (ResendException e) {
       log.warn("No se pudo enviar email de bienvenida a {}: {}", destinatario, e.getMessage());
     }
   }
