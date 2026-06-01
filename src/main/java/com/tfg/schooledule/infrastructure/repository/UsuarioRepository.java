@@ -65,12 +65,15 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
         AND (:centroId IS NULL OR m.centro.id = :centroId)
         AND (:grupoId  IS NULL OR m.imparticion.grupo.id = :grupoId)
         AND (:cursoId  IS NULL OR m.imparticion.grupo.cursoAcademico.id = :cursoId)
+        AND (:nombre   IS NULL OR LOWER(CONCAT(u.nombre, ' ', u.apellidos)) LIKE LOWER(CONCAT('%', :nombre, '%'))
+                               OR LOWER(CONCAT(u.apellidos, ' ', u.nombre)) LIKE LOWER(CONCAT('%', :nombre, '%')))
       ORDER BY u.apellidos ASC, u.nombre ASC
       """)
   List<Usuario> findAlumnosByFiltro(
       @Param("centroId") Integer centroId,
       @Param("grupoId") Integer grupoId,
-      @Param("cursoId") Integer cursoId);
+      @Param("cursoId") Integer cursoId,
+      @Param("nombre") String nombre);
 
   @Query(
       value =
@@ -82,6 +85,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
             AND (:centroId IS NULL OR m.centro.id = :centroId)
             AND (:grupoId  IS NULL OR m.imparticion.grupo.id = :grupoId)
             AND (:cursoId  IS NULL OR m.imparticion.grupo.cursoAcademico.id = :cursoId)
+            AND (:nombre   IS NULL OR LOWER(CONCAT(u.nombre, ' ', u.apellidos)) LIKE LOWER(CONCAT('%', :nombre, '%'))
+                                   OR LOWER(CONCAT(u.apellidos, ' ', u.nombre)) LIKE LOWER(CONCAT('%', :nombre, '%')))
           """,
       countQuery =
           """
@@ -92,10 +97,13 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
             AND (:centroId IS NULL OR m.centro.id = :centroId)
             AND (:grupoId  IS NULL OR m.imparticion.grupo.id = :grupoId)
             AND (:cursoId  IS NULL OR m.imparticion.grupo.cursoAcademico.id = :cursoId)
+            AND (:nombre   IS NULL OR LOWER(CONCAT(u.nombre, ' ', u.apellidos)) LIKE LOWER(CONCAT('%', :nombre, '%'))
+                                   OR LOWER(CONCAT(u.apellidos, ' ', u.nombre)) LIKE LOWER(CONCAT('%', :nombre, '%')))
           """)
   Page<Usuario> findAlumnosByFiltro(
       @Param("centroId") Integer centroId,
       @Param("grupoId") Integer grupoId,
       @Param("cursoId") Integer cursoId,
+      @Param("nombre") String nombre,
       Pageable pageable);
 }

@@ -71,12 +71,13 @@ public class AdminAlumnoController {
   @ApiResponse(responseCode = "403", description = "Acceso denegado — requiere ROLE_ADMIN")
   @GetMapping
   public String lista(
+      @RequestParam(required = false) String nombre,
       @RequestParam(required = false) Integer centroId,
       @RequestParam(required = false) Integer grupoId,
       @RequestParam(required = false) Integer cursoAcademicoId,
       @RequestParam(defaultValue = "0") int page,
       Model model) {
-    AlumnoFiltroDTO filtro = new AlumnoFiltroDTO(centroId, grupoId, cursoAcademicoId);
+    AlumnoFiltroDTO filtro = new AlumnoFiltroDTO(nombre, centroId, grupoId, cursoAcademicoId);
     Page<AdminAlumnoListDTO> pagina = adminAlumnoService.listarFiltrado(filtro, page);
     model.addAttribute("alumnos", pagina.getContent());
     model.addAttribute("paginaActual", page);

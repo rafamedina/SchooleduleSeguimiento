@@ -58,11 +58,12 @@ public class AdminUsuarioController {
   @ApiResponse(responseCode = "403", description = "Acceso denegado — requiere ROLE_ADMIN")
   @GetMapping
   public String lista(
+      @org.springframework.web.bind.annotation.RequestParam(required = false) String nombre,
       @org.springframework.web.bind.annotation.RequestParam(required = false) String rolNombre,
       @org.springframework.web.bind.annotation.RequestParam(required = false) Integer centroId,
       @org.springframework.web.bind.annotation.RequestParam(required = false) Boolean activo,
       Model model) {
-    UsuarioFiltroDTO filtro = new UsuarioFiltroDTO(rolNombre, centroId, activo);
+    UsuarioFiltroDTO filtro = new UsuarioFiltroDTO(nombre, rolNombre, centroId, activo);
     model.addAttribute("usuarios", adminUsuarioService.listarFiltrado(filtro));
     model.addAttribute(
         ATTR_ROLES,

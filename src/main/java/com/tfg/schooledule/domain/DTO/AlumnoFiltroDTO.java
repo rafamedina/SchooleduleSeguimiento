@@ -1,3 +1,4 @@
 package com.tfg.schooledule.domain.dto;
 
-public record AlumnoFiltroDTO(Integer centroId, Integer grupoId, Integer cursoAcademicoId) {}
+public record AlumnoFiltroDTO(
+    String nombre, Integer centroId, Integer grupoId, Integer cursoAcademicoId) {}

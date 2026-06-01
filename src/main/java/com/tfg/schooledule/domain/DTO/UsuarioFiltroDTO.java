@@ -1,3 +1,3 @@
 package com.tfg.schooledule.domain.dto;
 
-public record UsuarioFiltroDTO(String rolNombre, Integer centroId, Boolean activo) {}
+public record UsuarioFiltroDTO(String nombre, String rolNombre, Integer centroId, Boolean activo) {}
